@@ -6,7 +6,6 @@ import { Upload } from "lucide-react";
 export type OverlayType = "none" | "dots" | "lines" | "grid" | "cells" | "blobs" | "noise";
 type BgTab = "color" | "photo" | "video";
 
-
 const overlayOptions: { id: OverlayType; label: string }[] = [
   { id: "none", label: "Без элементов" },
   { id: "dots", label: "Точки" },
@@ -45,7 +44,6 @@ const BackgroundPanel = ({
   const photoRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
 
-  // Snapshot initial values for cancel
   const initial = useMemo(() => ({
     bgColor, overlayType, overlayOpacity,
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -84,7 +82,7 @@ const BackgroundPanel = ({
 
   return (
     <div className="flex flex-col gap-3 overflow-y-auto max-h-[28vh] scrollbar-hide">
-      {/* Section 1: Bg type tabs */}
+      {/* Tabs */}
       <div>
         <div className="flex gap-1 mb-2">
           {tabItems.map((t) => (
@@ -103,180 +101,96 @@ const BackgroundPanel = ({
           ))}
         </div>
 
-        {bgTab === "color" && null}
-
         {bgTab === "photo" && (
           <>
-            <input
-              ref={photoRef}
-              type="file"
-              accept="image/*"
-              className="sr-only"
+            <input ref={photoRef} type="file" accept="image/*" className="sr-only"
               onChange={(e) => {
                 const file = e.target.files?.[0];
-                if (file) {
-                  const url = URL.createObjectURL(file);
-                  onBgColorChange(`url(${url})`);
-                }
+                if (file) onBgColorChange(`url(${URL.createObjectURL(file)})`);
               }}
             />
-            <button
-              onClick={() => photoRef.current?.click()}
+            <button onClick={() => photoRef.current?.click()}
               className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-xs font-medium transition-all active:scale-[0.98]"
-              style={{
-                background: "rgba(255,255,255,0.6)",
-                border: "1px solid rgba(200,200,220,0.5)",
-                color: "#1a1a2e",
-              }}
+              style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(200,200,220,0.5)", color: "#1a1a2e" }}
             >
-              <Upload size={14} />
-              Загрузить фото
+              <Upload size={14} /> Загрузить фото
             </button>
           </>
         )}
 
         {bgTab === "video" && (
           <>
-            <input
-              ref={videoRef}
-              type="file"
-              accept="video/*"
-              className="sr-only"
+            <input ref={videoRef} type="file" accept="video/*" className="sr-only"
               onChange={(e) => {
                 const file = e.target.files?.[0];
-                if (file) {
-                  const url = URL.createObjectURL(file);
-                  onBgColorChange(`video(${url})`);
-                }
+                if (file) onBgColorChange(`video(${URL.createObjectURL(file)})`);
               }}
             />
-            <button
-              onClick={() => videoRef.current?.click()}
+            <button onClick={() => videoRef.current?.click()}
               className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-xs font-medium transition-all active:scale-[0.98]"
-              style={{
-                background: "rgba(255,255,255,0.6)",
-                border: "1px solid rgba(200,200,220,0.5)",
-                color: "#1a1a2e",
-              }}
+              style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(200,200,220,0.5)", color: "#1a1a2e" }}
             >
-              <Upload size={14} />
-              Загрузить видео (до 1 мин)
+              <Upload size={14} /> Загрузить видео (до 1 мин)
             </button>
           </>
         )}
       </div>
 
-      {/* Section 2: Accent color */}
-      <div>
-        <p className="text-[11px] font-medium mb-1.5" style={{ color: "rgba(26,26,46,0.5)" }}>
-          Акцентный цвет
-        </p>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => colorRef.current?.click()}
-            className="w-7 h-7 rounded-full flex-shrink-0 transition-all active:scale-90"
-            style={{
-              background: hexInput,
-              border: "2px solid rgba(255,255,255,0.8)",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-            }}
-          />
-          <input
-            ref={colorRef}
-            type="color"
-            value={hexInput}
-            onChange={handleColorPickerChange}
-            className="sr-only"
-          />
-          <input
-            type="text"
-            value={hexInput}
-            onChange={(e) => handleHexInput(e.target.value)}
-            maxLength={7}
-            className="w-20 rounded-lg px-2 py-1 text-xs font-mono outline-none"
-            style={{
-              background: "rgba(255,255,255,0.6)",
-              border: "1px solid rgba(200,200,220,0.5)",
-              color: "#1a1a2e",
-            }}
-          />
-        </div>
-      </div>
+      {/* Color-only sections */}
+      {bgTab === "color" && (
+        <>
+          <div>
+            <p className="text-[11px] font-medium mb-1.5" style={{ color: "rgba(26,26,46,0.5)" }}>Акцентный цвет</p>
+            <div className="flex items-center gap-2">
+              <button onClick={() => colorRef.current?.click()} className="w-7 h-7 rounded-full flex-shrink-0 transition-all active:scale-90"
+                style={{ background: hexInput, border: "2px solid rgba(255,255,255,0.8)", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }} />
+              <input ref={colorRef} type="color" value={hexInput} onChange={handleColorPickerChange} className="sr-only" />
+              <input type="text" value={hexInput} onChange={(e) => handleHexInput(e.target.value)} maxLength={7}
+                className="w-20 rounded-lg px-2 py-1 text-xs font-mono outline-none"
+                style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(200,200,220,0.5)", color: "#1a1a2e" }} />
+            </div>
+          </div>
 
-      {/* Section 3: Elements */}
-      <div>
-        <p className="text-[11px] font-medium mb-1.5" style={{ color: "rgba(26,26,46,0.5)" }}>
-          Элементы
-        </p>
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
-          {overlayOptions.map((opt) => (
-            <button
-              key={opt.id}
-              onClick={() => onOverlayTypeChange(opt.id)}
-              className="flex-shrink-0 rounded-lg px-2.5 py-1.5 text-[10px] font-medium transition-all active:scale-95"
-              style={{
-                background: overlayType === opt.id ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.3)",
-                color: overlayType === opt.id ? "#1a1a2e" : "rgba(26,26,46,0.5)",
-                border: overlayType === opt.id ? "1px solid rgba(200,200,220,0.6)" : "1px solid transparent",
-                boxShadow: overlayType === opt.id ? "0 2px 6px rgba(0,0,0,0.05)" : "none",
-              }}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+          <div>
+            <p className="text-[11px] font-medium mb-1.5" style={{ color: "rgba(26,26,46,0.5)" }}>Элементы</p>
+            <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
+              {overlayOptions.map((opt) => (
+                <button key={opt.id} onClick={() => onOverlayTypeChange(opt.id)}
+                  className="flex-shrink-0 rounded-lg px-2.5 py-1.5 text-[10px] font-medium transition-all active:scale-95"
+                  style={{
+                    background: overlayType === opt.id ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.3)",
+                    color: overlayType === opt.id ? "#1a1a2e" : "rgba(26,26,46,0.5)",
+                    border: overlayType === opt.id ? "1px solid rgba(200,200,220,0.6)" : "1px solid transparent",
+                    boxShadow: overlayType === opt.id ? "0 2px 6px rgba(0,0,0,0.05)" : "none",
+                  }}
+                >{opt.label}</button>
+              ))}
+            </div>
 
-        {/* Opacity slider */}
-        <div className="mt-2 flex items-center gap-2">
-          <span className="text-[10px] flex-shrink-0" style={{ color: "rgba(26,26,46,0.45)" }}>
-            Прозрачность
-          </span>
-          <Slider
-            value={[overlayOpacity]}
-            onValueChange={([v]) => onOverlayOpacityChange(v)}
-            max={100}
-            min={0}
-            step={1}
-            className="flex-1"
-          />
-          <span className="text-[10px] w-6 text-right" style={{ color: "rgba(26,26,46,0.6)" }}>
-            {overlayOpacity}
-          </span>
-        </div>
+            <div className="mt-2 flex items-center gap-2">
+              <span className="text-[10px] flex-shrink-0" style={{ color: "rgba(26,26,46,0.45)" }}>Прозрачность</span>
+              <Slider value={[overlayOpacity]} onValueChange={([v]) => onOverlayOpacityChange(v)} max={100} min={0} step={1} className="flex-1" />
+              <span className="text-[10px] w-6 text-right" style={{ color: "rgba(26,26,46,0.6)" }}>{overlayOpacity}</span>
+            </div>
 
-        {/* Apply to all */}
-        <div className="mt-2 flex items-center justify-between">
-          <span className="text-[11px]" style={{ color: "rgba(26,26,46,0.6)" }}>
-            Применить ко всем слайдам
-          </span>
-          <Switch checked={applyToAll} onCheckedChange={handleApplyToggle} />
-        </div>
+            <div className="mt-2 flex items-center justify-between">
+              <span className="text-[11px]" style={{ color: "rgba(26,26,46,0.6)" }}>Применить ко всем слайдам</span>
+              <Switch checked={applyToAll} onCheckedChange={handleApplyToggle} />
+            </div>
 
-        {/* Cancel / Save buttons */}
-        <div className="mt-3 flex gap-2">
-          <button
-            onClick={handleCancel}
-            className="flex-1 rounded-xl py-2 text-[11px] font-medium transition-all active:scale-[0.97]"
-            style={{
-              background: "rgba(255,255,255,0.5)",
-              border: "1px solid rgba(200,200,220,0.5)",
-              color: "rgba(26,26,46,0.6)",
-            }}
-          >
-            Отменить
-          </button>
-          <button
-            onClick={() => onClose?.()}
-            className="flex-1 rounded-xl py-2 text-[11px] font-medium transition-all active:scale-[0.97]"
-            style={{
-              background: "rgba(26,26,46,0.85)",
-              color: "#fff",
-            }}
-          >
-            Сохранить
-          </button>
-        </div>
-      </div>
+            <div className="mt-3 flex gap-2">
+              <button onClick={handleCancel} className="flex-1 rounded-xl py-2 text-[11px] font-medium transition-all active:scale-[0.97]"
+                style={{ background: "rgba(255,255,255,0.5)", border: "1px solid rgba(200,200,220,0.5)", color: "rgba(26,26,46,0.6)" }}>
+                Отменить
+              </button>
+              <button onClick={() => onClose?.()} className="flex-1 rounded-xl py-2 text-[11px] font-medium transition-all active:scale-[0.97]"
+                style={{ background: "rgba(26,26,46,0.85)", color: "#fff" }}>
+                Сохранить
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
