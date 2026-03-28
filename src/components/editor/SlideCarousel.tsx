@@ -178,6 +178,7 @@ const SlideCarousel = ({
                 }}
               >
                 <div
+                  data-slide-id={slide.id}
                   className="relative flex h-full flex-col p-6 overflow-hidden"
                   style={{
                     background: slide.bgColor,
