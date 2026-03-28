@@ -148,7 +148,10 @@ const SlideCarousel = ({
                 "flex-shrink-0 snap-center transition-all duration-300 overflow-hidden",
                 index === activeSlide ? "scale-100" : "scale-[0.92] opacity-60"
               )}
-              style={{ width: "min(78vw, 320px)", aspectRatio: "1080/1440" }}
+              style={{
+                width: isLandscape ? "min(90vw, 420px)" : "min(78vw, 320px)",
+                aspectRatio: slideAspectRatio,
+              }}
             >
               <div
                 className="h-full w-full p-[5px]"
