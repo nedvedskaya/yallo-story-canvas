@@ -54,6 +54,7 @@ interface SlideCarouselProps {
   activeSlide: number;
   onSlideChange: (index: number) => void;
   isSheetOpen?: boolean;
+  slideFormat?: SlideFormat;
   onUpdateSlide: (id: number, updates: Partial<Slide>) => void;
   onAddSlide: (atIndex: number) => void;
   onMoveSlide: (fromIdx: number, dir: -1 | 1) => void;
@@ -62,7 +63,7 @@ interface SlideCarouselProps {
 }
 
 const SlideCarousel = ({
-  slides, activeSlide, onSlideChange, isSheetOpen = false,
+  slides, activeSlide, onSlideChange, isSheetOpen = false, slideFormat = "carousel",
   onUpdateSlide, onAddSlide, onMoveSlide, onDuplicateSlide, onDeleteSlide,
 }: SlideCarouselProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
