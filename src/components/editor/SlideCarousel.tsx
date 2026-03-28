@@ -186,7 +186,7 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
         <div
           className="flex flex-shrink-0 snap-center items-center justify-center overflow-hidden glass"
           style={{
-            width: "min(85vw, 360px)",
+            width: "min(78vw, 320px)",
             aspectRatio: "1080/1440",
           }}
         >
