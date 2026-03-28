@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Image, FileText, Loader2 } from "lucide-react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import JSZip from "jszip";
 import type { Slide } from "./SlideCarousel";
 import { FORMAT_OPTIONS, type SlideFormat } from "./SizePanel";
 
@@ -42,12 +43,18 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
     setLoadingType("png");
     try {
       const canvases = await captureSlides();
-      canvases.forEach((canvas, i) => {
-        const link = document.createElement("a");
-        link.download = `slide-${i + 1}.png`;
-        link.href = canvas.toDataURL("image/png");
-        link.click();
-      });
+      const zip = new JSZip();
+      for (let i = 0; i < canvases.length; i++) {
+        const dataUrl = canvases[i].toDataURL("image/png");
+        const base64 = dataUrl.split(",")[1];
+        zip.file(`slide-${i + 1}.png`, base64, { base64: true });
+      }
+      const blob = await zip.generateAsync({ type: "blob" });
+      const link = document.createElement("a");
+      link.download = "slides.zip";
+      link.href = URL.createObjectURL(blob);
+      link.click();
+      URL.revokeObjectURL(link.href);
     } catch (e) {
       console.error("PNG export error:", e);
     } finally {
