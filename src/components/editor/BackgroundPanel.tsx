@@ -25,6 +25,7 @@ interface BackgroundPanelProps {
   onOverlayTypeChange: (type: OverlayType) => void;
   onOverlayOpacityChange: (opacity: number) => void;
   onApplyToAll: () => void;
+  onClose?: () => void;
 }
 
 const BackgroundPanel = ({
