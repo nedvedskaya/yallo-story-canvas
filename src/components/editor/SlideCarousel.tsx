@@ -75,9 +75,10 @@ const addBtnStyle: React.CSSProperties = {
 interface SlideCarouselProps {
   activeSlide: number;
   onSlideChange: (index: number) => void;
+  isSheetOpen?: boolean;
 }
 
-const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
+const SlideCarousel = ({ activeSlide, onSlideChange, isSheetOpen = false }: SlideCarouselProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [slides, setSlides] = useState(initialSlides);
   const [bgModalOpen, setBgModalOpen] = useState(false);
