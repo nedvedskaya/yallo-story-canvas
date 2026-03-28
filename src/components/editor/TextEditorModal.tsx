@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from "react";
-import { Bold, Italic, Underline, Type, Palette, Highlighter, X, RotateCcw } from "lucide-react";
+import { Bold, Italic, Underline, Type, Palette, Highlighter, X, RotateCcw, Strikethrough } from "lucide-react";
 
 interface TextEditorModalProps {
   open: boolean;
@@ -10,16 +10,11 @@ interface TextEditorModalProps {
   onClose: () => void;
 }
 
-const ACCENT_PRESETS = [
-  "#FF6B6B", "#FFD93D", "#6BCB77", "#4D96FF",
-  "#FF922B", "#CC5DE8", "#20C997", "#F06595",
-  "#ffffff", "#000000",
-];
-
 const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEditorModalProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const colorInputRef = useRef<HTMLInputElement>(null);
-  const [selectedAccent, setSelectedAccent] = useState(ACCENT_PRESETS[3]);
+  const [accentColor, setAccentColor] = useState("#4D96FF");
+  const [hexInput, setHexInput] = useState("#4D96FF");
 
   useEffect(() => {
     if (open && editorRef.current) {
@@ -34,33 +29,26 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
   }, []);
 
   const handleLight = () => {
-    const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
-    const range = sel.getRangeAt(0);
-    const span = document.createElement("span");
-    span.style.fontWeight = "300";
-    range.surroundContents(span);
-    sel.removeAllRanges();
+    exec("fontSize", "2");
+    // Find the font elements created by fontSize and replace with span
+    if (editorRef.current) {
+      const fonts = editorRef.current.querySelectorAll('font[size="2"]');
+      fonts.forEach((font) => {
+        const span = document.createElement("span");
+        span.style.fontWeight = "300";
+        span.innerHTML = font.innerHTML;
+        font.parentNode?.replaceChild(span, font);
+      });
+    }
     editorRef.current?.focus();
   };
 
   const handleHighlight = () => {
-    const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
-    const range = sel.getRangeAt(0);
-    const span = document.createElement("span");
-    span.style.backgroundColor = selectedAccent;
-    span.style.borderRadius = "3px";
-    span.style.padding = "0 2px";
-    range.surroundContents(span);
-    sel.removeAllRanges();
-    editorRef.current?.focus();
+    exec("hiliteColor", accentColor);
   };
 
   const handleResetFormatting = () => {
     exec("removeFormat");
-    // Also remove background highlights
-    const sel = window.getSelection();
     if (editorRef.current) {
       const spans = editorRef.current.querySelectorAll("span[style]");
       spans.forEach((span) => {
@@ -74,6 +62,17 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
     editorRef.current?.focus();
   };
 
+  const handleColorPickerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const c = e.target.value;
+    setAccentColor(c);
+    setHexInput(c);
+  };
+
+  const handleHexInput = (val: string) => {
+    setHexInput(val);
+    if (/^#[0-9a-fA-F]{6}$/.test(val)) setAccentColor(val);
+  };
+
   const handleSave = () => {
     onSave(editorRef.current?.innerHTML || "");
     onClose();
@@ -81,7 +80,6 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
 
   if (!open) return null;
 
-  const labelStyle: React.CSSProperties = { color: "rgba(26,26,46,0.5)" };
   const btnBase: React.CSSProperties = {
     background: 'rgba(255,255,255,0.5)',
     border: '1px solid rgba(255,255,255,0.7)',
@@ -135,62 +133,51 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
           />
         </div>
 
-        {/* Toolbar — compact */}
+        {/* Toolbar */}
         <div className="px-4 pb-3 flex flex-col gap-2.5">
-          {/* Format buttons row */}
+          {/* Format icons — no labels */}
           <div className="flex items-center gap-1.5">
-            <ToolBtn icon={<Bold size={15} strokeWidth={2.5} />} label="Жирный" onClick={() => exec("bold")} style={btnBase} />
-            <ToolBtn icon={<Italic size={15} />} label="Курсив" onClick={() => exec("italic")} style={btnBase} />
-            <ToolBtn icon={<Type size={15} strokeWidth={1} />} label="Тонкий" onClick={handleLight} style={btnBase} />
-            <ToolBtn icon={<Underline size={15} />} label="Подчёрк." onClick={() => exec("underline")} style={btnBase} />
+            <IconBtn icon={<Bold size={16} strokeWidth={2.5} />} title="Жирный" onClick={() => exec("bold")} style={btnBase} />
+            <IconBtn icon={<Italic size={16} />} title="Курсив" onClick={() => exec("italic")} style={btnBase} />
+            <IconBtn icon={<Type size={16} strokeWidth={1} />} title="Тонкий" onClick={handleLight} style={btnBase} />
+            <IconBtn icon={<Underline size={16} />} title="Подчёркнутый" onClick={() => exec("underline")} style={btnBase} />
+            <IconBtn icon={<Strikethrough size={16} />} title="Зачёркнутый" onClick={() => exec("strikeThrough")} style={btnBase} />
 
-            <div className="w-px h-8 mx-0.5" style={{ background: 'rgba(200,200,220,0.5)' }} />
+            <div className="w-px h-7 mx-0.5" style={{ background: 'rgba(200,200,220,0.5)' }} />
 
-            <ToolBtn icon={<Palette size={15} />} label="Цвет" onClick={() => exec("foreColor", selectedAccent)} style={{ ...btnBase, color: selectedAccent }} />
-            <ToolBtn icon={<Highlighter size={15} />} label="Фон" onClick={handleHighlight} style={{ ...btnBase, color: selectedAccent }} />
+            <IconBtn icon={<Palette size={16} />} title="Цвет текста" onClick={() => exec("foreColor", accentColor)} style={{ ...btnBase, color: accentColor }} />
+            <IconBtn icon={<Highlighter size={16} />} title="Фон текста" onClick={handleHighlight} style={{ ...btnBase, color: accentColor }} />
 
-            <div className="w-px h-8 mx-0.5" style={{ background: 'rgba(200,200,220,0.5)' }} />
+            <div className="w-px h-7 mx-0.5" style={{ background: 'rgba(200,200,220,0.5)' }} />
 
-            <ToolBtn icon={<RotateCcw size={14} />} label="Сброс" onClick={handleResetFormatting} style={btnBase} />
+            <IconBtn icon={<RotateCcw size={14} />} title="Сброс" onClick={handleResetFormatting} style={btnBase} />
           </div>
 
-          {/* Color picker row */}
+          {/* Accent color — like BackgroundPanel */}
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-medium flex-shrink-0" style={labelStyle}>Акцент</span>
-            <div className="flex items-center gap-1.5 flex-1 overflow-x-auto scrollbar-hide">
-              {ACCENT_PRESETS.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setSelectedAccent(c)}
-                  className="flex-shrink-0 rounded-full transition-all"
-                  style={{
-                    width: 22, height: 22,
-                    background: c,
-                    border: selectedAccent === c ? '2.5px solid rgba(26,26,46,0.7)' : c === '#ffffff' ? '1.5px solid rgba(200,200,220,0.6)' : '1.5px solid rgba(255,255,255,0.7)',
-                    boxShadow: selectedAccent === c ? '0 0 0 1.5px rgba(255,255,255,0.6)' : '0 1px 3px rgba(0,0,0,0.08)',
-                    transform: selectedAccent === c ? 'scale(1.2)' : 'scale(1)',
-                  }}
-                />
-              ))}
-              {/* Custom color picker */}
-              <button
-                onClick={() => colorInputRef.current?.click()}
-                className="flex-shrink-0 rounded-full transition-all active:scale-90 flex items-center justify-center"
-                style={{
-                  width: 22, height: 22,
-                  background: 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)',
-                  border: '1.5px solid rgba(255,255,255,0.7)',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-                }}
-              />
-              <input
-                ref={colorInputRef}
-                type="color"
-                value={selectedAccent}
-                onChange={(e) => setSelectedAccent(e.target.value)}
-                className="sr-only"
-              />
-            </div>
+            <p className="text-[11px] font-medium flex-shrink-0" style={{ color: 'rgba(26,26,46,0.5)' }}>Акцентный цвет</p>
+            <button
+              onClick={() => colorInputRef.current?.click()}
+              className="w-6 h-6 rounded-full flex-shrink-0 transition-all active:scale-90"
+              style={{
+                background: accentColor,
+                border: '2px solid rgba(255,255,255,0.8)',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              }}
+            />
+            <input ref={colorInputRef} type="color" value={accentColor} onChange={handleColorPickerChange} className="sr-only" />
+            <input
+              type="text"
+              value={hexInput}
+              onChange={(e) => handleHexInput(e.target.value)}
+              maxLength={7}
+              className="w-20 rounded-lg px-2 py-1 text-xs font-mono outline-none"
+              style={{
+                background: 'rgba(255,255,255,0.6)',
+                border: '1px solid rgba(200,200,220,0.5)',
+                color: '#1a1a2e',
+              }}
+            />
           </div>
         </div>
 
@@ -203,7 +190,6 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
               background: 'rgba(26,26,46,0.85)',
               color: '#fff',
               borderRadius: '12px',
-              border: 'none',
             }}
           >
             Сохранить
@@ -214,22 +200,21 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
   );
 };
 
-const ToolBtn = ({
-  icon, label, onClick, style,
+const IconBtn = ({
+  icon, title, onClick, style,
 }: {
   icon: React.ReactNode;
-  label: string;
+  title: string;
   onClick: () => void;
   style: React.CSSProperties;
 }) => (
   <button
     onClick={onClick}
-    title={label}
-    className="flex flex-col items-center justify-center gap-0.5 transition-all active:scale-90"
-    style={{ ...style, width: 40, height: 40, padding: '4px 2px' }}
+    title={title}
+    className="flex items-center justify-center transition-all active:scale-90"
+    style={{ ...style, width: 34, height: 34 }}
   >
     {icon}
-    <span className="text-[7px] font-medium leading-none" style={{ color: 'rgba(26,26,46,0.45)' }}>{label}</span>
   </button>
 );
 
