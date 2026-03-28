@@ -13,7 +13,7 @@ const Index = () => {
     <div className="flex min-h-[100dvh] flex-col bg-gradient-main">
       <TopBar />
 
-      <main className="flex flex-1 flex-col pt-14 pb-20">
+      <main className="flex flex-1 flex-col pb-20">
         <SlideCarousel activeSlide={activeSlide} onSlideChange={setActiveSlide} />
       </main>
 
