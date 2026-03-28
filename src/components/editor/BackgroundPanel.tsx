@@ -46,7 +46,7 @@ const BackgroundPanel = ({
   onBgImageChange, onBgVideoChange, onBgScaleChange, onBgPosXChange, onBgPosYChange, onBgDarkenChange,
   onApplyToAll, onClose,
 }: BackgroundPanelProps) => {
-  const [bgTab, setBgTab] = useState<BgTab>(bgImage ? "photo" : "color");
+  const [bgTab, setBgTab] = useState<BgTab>(bgVideo ? "video" : bgImage ? "photo" : "color");
   const [applyToAll, setApplyToAll] = useState(false);
   const [hexInput, setHexInput] = useState(bgColor.startsWith("#") ? bgColor : "#667eea");
   const colorRef = useRef<HTMLInputElement>(null);
