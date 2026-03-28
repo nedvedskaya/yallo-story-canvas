@@ -22,6 +22,16 @@ export interface Slide {
   bgPosX: number;
   bgPosY: number;
   bgDarken: number;
+  titleFont?: string;
+  titleSize?: number;
+  titleCase?: string;
+  titleLineHeight?: number;
+  titleLetterSpacing?: number;
+  bodyFont?: string;
+  bodySize?: number;
+  bodyCase?: string;
+  bodyLineHeight?: number;
+  bodyLetterSpacing?: number;
 }
 
 const hAlignToText: Record<HAlign, string> = { left: "left", center: "center", right: "right" };
