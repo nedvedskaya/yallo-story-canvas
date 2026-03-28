@@ -143,16 +143,17 @@ const SlideCarousel = ({
                     textAlign: hAlignToText[slide.hAlign] as React.CSSProperties['textAlign'],
                   }}
                 >
+                  {/* Background image layer */}
                   {slide.bgImage && (
-                    <div className="absolute inset-0" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+                    <div className="absolute inset-0 z-0" style={{ borderRadius: '16px', overflow: 'hidden' }}>
                       <img
                         src={slide.bgImage}
                         alt=""
                         className="absolute"
                         style={{
-                          width: slide.bgScale === 100 ? '100%' : `${slide.bgScale}%`,
-                          height: slide.bgScale === 100 ? '100%' : `${slide.bgScale}%`,
-                          objectFit: 'contain',
+                          width: `${slide.bgScale}%`,
+                          height: `${slide.bgScale}%`,
+                          objectFit: 'cover',
                           left: `${slide.bgPosX}%`,
                           top: `${slide.bgPosY}%`,
                           transform: 'translate(-50%, -50%)',
@@ -160,7 +161,9 @@ const SlideCarousel = ({
                       />
                     </div>
                   )}
-                  <SlideOverlay type={slide.overlayType} opacity={slide.overlayOpacity} />
+                  {/* Overlay layer */}
+                  <div className="relative z-10 flex flex-col h-full w-full" style={{ justifyContent: vAlignToJustify[slide.vAlign] }}>
+                    <SlideOverlay type={slide.overlayType} opacity={slide.overlayOpacity} />
 
                   <div
                     className="flex items-center justify-between w-full"
