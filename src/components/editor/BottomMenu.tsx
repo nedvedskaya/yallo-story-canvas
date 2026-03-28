@@ -20,7 +20,7 @@ const BottomMenu = ({ activeTab, onTabChange }: BottomMenuProps) => {
   return (
     <nav className="fixed bottom-4 left-4 right-4 z-50">
       <div
-        className="mx-auto max-w-md px-2 py-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] font-sans rounded-full shadow-2xl border-primary border border-dotted"
+        className="mx-auto max-w-md px-2 py-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] font-sans"
         style={{
           background: 'rgba(255, 255, 255, 0.45)',
           backdropFilter: 'blur(24px) saturate(180%)',
@@ -37,7 +37,7 @@ const BottomMenu = ({ activeTab, onTabChange }: BottomMenuProps) => {
               <button
                 key={item.id}
                 onClick={() => onTabChange(isActive ? null : item.id)}
-                className="relative flex flex-col items-center gap-1 rounded-xl px-3 py-2 transition-all duration-300 text-secondary-foreground"
+                className="relative flex flex-col items-center gap-1 rounded-xl px-3 py-2 transition-all duration-300"
               >
                 {isActive && (
                   <div
@@ -48,13 +48,13 @@ const BottomMenu = ({ activeTab, onTabChange }: BottomMenuProps) => {
                 <item.icon
                   size={21}
                   className={cn(
-                    "relative z-10 transition-all duration-300 text-primary",
+                    "relative z-10 transition-all duration-300",
                     isActive && "scale-110"
                   )}
                   style={{ color: isActive ? '#1a1a2e' : 'rgba(26, 26, 46, 0.35)' }}
                 />
                 <span
-                  className="relative z-10 text-[10px] transition-colors font-normal text-secondary-foreground"
+                  className="relative z-10 text-[10px] transition-colors font-normal"
                   style={{ color: isActive ? '#1a1a2e' : 'rgba(26, 26, 46, 0.35)' }}
                 >
                   {item.label}
