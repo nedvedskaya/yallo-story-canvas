@@ -59,6 +59,25 @@ const Index = () => {
     );
   }, [currentSlide]);
 
+  const handleApplyTextToAll = useCallback(() => {
+    if (!currentSlide) return;
+    setSlides(prev =>
+      prev.map(s => ({
+        ...s,
+        titleFont: currentSlide.titleFont,
+        titleSize: currentSlide.titleSize,
+        titleCase: currentSlide.titleCase,
+        titleLineHeight: currentSlide.titleLineHeight,
+        titleLetterSpacing: currentSlide.titleLetterSpacing,
+        bodyFont: currentSlide.bodyFont,
+        bodySize: currentSlide.bodySize,
+        bodyCase: currentSlide.bodyCase,
+        bodyLineHeight: currentSlide.bodyLineHeight,
+        bodyLetterSpacing: currentSlide.bodyLetterSpacing,
+      }))
+    );
+  }, [currentSlide]);
+
   const handleAddSlide = useCallback((atIndex: number) => {
     const newSlide: Slide = {
       id: nextId++, username: "@username", title: "Новый слайд", body: "Введите текст...",
