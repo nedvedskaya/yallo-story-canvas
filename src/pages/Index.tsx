@@ -16,7 +16,7 @@ const initialSlides: Slide[] = [
     bgColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
     bgType: "color", hAlign: "center", vAlign: "center",
     overlayType: "none", overlayOpacity: 50,
-    bgScale: 100, bgPosX: 50, bgPosY: 50,
+    bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0,
   },
   {
     id: 2, username: "@username", title: "Расскажите историю",
