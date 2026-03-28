@@ -20,8 +20,9 @@ const BottomMenu = ({ activeTab, onTabChange }: BottomMenuProps) => {
   return (
     <nav className="fixed bottom-4 left-4 right-4 z-50">
       <div
-        className="mx-auto max-w-md rounded-[2rem] px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] font-sans bg-[#d9d6ce] border-0 border-primary border-dotted shadow-xl opacity-90"
+        className="mx-auto max-w-md rounded-[2rem] px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] font-sans border-0 shadow-xl"
         style={{
+          background: 'hsla(40, 10%, 83%, 0.78)',
           backdropFilter: 'blur(50px) saturate(180%)',
           WebkitBackdropFilter: 'blur(50px) saturate(180%)',
           border: '1px solid hsla(50, 10%, 95%, 0.5)',
