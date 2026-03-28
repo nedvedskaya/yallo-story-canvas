@@ -6,6 +6,7 @@ import BottomMenu from "@/components/editor/BottomMenu";
 import BottomSheet from "@/components/editor/BottomSheet";
 import type { MenuId } from "@/components/editor/BottomMenu";
 import type { SlideFormat } from "@/components/editor/SizePanel";
+import DownloadModal from "@/components/editor/DownloadModal";
 
 let nextId = 4;
 
@@ -44,6 +45,7 @@ const Index = () => {
   const [activeSlide, setActiveSlide] = useState(0);
   const [slides, setSlides] = useState<Slide[]>(initialSlides);
   const [slideFormat, setSlideFormat] = useState<SlideFormat>("carousel");
+  const [downloadOpen, setDownloadOpen] = useState(false);
 
   const slideSnapshotRef = useRef<Slide | null>(null);
   const formatSnapshotRef = useRef<SlideFormat | null>(null);
@@ -171,7 +173,7 @@ const Index = () => {
   return (
     <div className="flex h-[100dvh] flex-col bg-gradient-main overflow-hidden">
       <div className="relative z-10 flex h-[100dvh] flex-col pt-[env(safe-area-inset-top)]">
-        <TopBar />
+        <TopBar onDownload={() => setDownloadOpen(true)} />
         <main className="flex flex-1 flex-col min-h-0 pb-[calc(72px+env(safe-area-inset-bottom))]">
           <SlideCarousel
             slides={slides}
@@ -201,6 +203,7 @@ const Index = () => {
         onSlideFormatChange={setSlideFormat}
       />
       <BottomMenu activeTab={activeTab} onTabChange={handleTabChange} />
+      <DownloadModal open={downloadOpen} onClose={() => setDownloadOpen(false)} slides={slides} slideFormat={slideFormat} />
     </div>
   );
 };
