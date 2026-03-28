@@ -57,7 +57,7 @@ const BottomSheet = ({ activeTab, onClose }: BottomSheetProps) => {
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
             className="fixed bottom-20 left-2 right-2 z-40 overflow-hidden"
             style={{
-              maxHeight: "50vh",
+              maxHeight: "35vh",
               background: 'rgba(255, 255, 255, 0.55)',
               backdropFilter: 'blur(32px) saturate(200%)',
               WebkitBackdropFilter: 'blur(32px) saturate(200%)',
