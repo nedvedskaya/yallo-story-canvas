@@ -1,9 +1,10 @@
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useState } from "react";
 import { Plus, ChevronLeft, ChevronRight, Copy, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SlideToolbar, { type HAlign, type VAlign, type BgType } from "./SlideToolbar";
 import SlideOverlay from "./SlideOverlay";
 import type { OverlayType } from "./BackgroundPanel";
+import TextEditorModal from "./TextEditorModal";
 
 export interface Slide {
   id: number;
@@ -65,6 +66,13 @@ const SlideCarousel = ({
 }: SlideCarouselProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const currentSlide = slides[activeSlide];
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editorField, setEditorField] = useState<"title" | "body">("title");
+
+  const openEditor = (field: "title" | "body") => {
+    setEditorField(field);
+    setEditorOpen(true);
+  };
 
   const scrollToIndex = (index: number) => {
     setTimeout(() => {
@@ -222,7 +230,10 @@ const SlideCarousel = ({
                     </div>
 
                     <div>
-                    <h2 contentEditable suppressContentEditableWarning onBlur={(e) => onUpdateSlide(slide.id, { title: e.currentTarget.textContent || '' })} className="outline-none font-bold" style={{
+                    <h2
+                      onClick={() => openEditor("title")}
+                      className="outline-none font-bold cursor-pointer"
+                      style={{
                         color: '#ffffff',
                         fontSize: `${slide.titleSize ?? 28}px`,
                         fontFamily: slide.titleFont || "'Inter', sans-serif",
@@ -230,15 +241,22 @@ const SlideCarousel = ({
                         lineHeight: slide.titleLineHeight ?? 1.1,
                         letterSpacing: `${slide.titleLetterSpacing ?? 0}px`,
                         marginTop: slide.vAlign === "start" ? "32px" : "0",
-                      }}>{slide.title}</h2>
-                      <p contentEditable suppressContentEditableWarning onBlur={(e) => onUpdateSlide(slide.id, { body: e.currentTarget.textContent || '' })} className="outline-none mt-3 font-normal" style={{
-                        color: 'rgba(255, 255, 255, 0.85)',
-                        fontSize: `${slide.bodySize ?? 16}px`,
-                        fontFamily: slide.bodyFont || "'Inter', sans-serif",
-                        textTransform: (slide.bodyCase === 'uppercase' ? 'uppercase' : slide.bodyCase === 'lowercase' ? 'lowercase' : 'none') as React.CSSProperties['textTransform'],
-                        lineHeight: slide.bodyLineHeight ?? 1.5,
-                        letterSpacing: `${slide.bodyLetterSpacing ?? 0}px`,
-                      }}>{slide.body}</p>
+                      }}
+                      dangerouslySetInnerHTML={{ __html: slide.title }}
+                    />
+                      <p
+                        onClick={() => openEditor("body")}
+                        className="outline-none mt-3 font-normal cursor-pointer"
+                        style={{
+                          color: 'rgba(255, 255, 255, 0.85)',
+                          fontSize: `${slide.bodySize ?? 16}px`,
+                          fontFamily: slide.bodyFont || "'Inter', sans-serif",
+                          textTransform: (slide.bodyCase === 'uppercase' ? 'uppercase' : slide.bodyCase === 'lowercase' ? 'lowercase' : 'none') as React.CSSProperties['textTransform'],
+                          lineHeight: slide.bodyLineHeight ?? 1.5,
+                          letterSpacing: `${slide.bodyLetterSpacing ?? 0}px`,
+                        }}
+                        dangerouslySetInnerHTML={{ __html: slide.body }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -259,6 +277,17 @@ const SlideCarousel = ({
           onVAlignChange={(v) => onUpdateSlide(currentSlide.id, { vAlign: v })}
           onBgClick={() => {}}
           onCropClick={() => {}}
+        />
+      )}
+      {currentSlide && (
+        <TextEditorModal
+          open={editorOpen}
+          field={editorField}
+          initialHtml={editorField === "title" ? currentSlide.title : currentSlide.body}
+          onSave={(html) => {
+            onUpdateSlide(currentSlide.id, { [editorField]: html });
+          }}
+          onClose={() => setEditorOpen(false)}
         />
       )}
     </div>
