@@ -167,6 +167,31 @@ const SlideCarousel = ({
                       )}
                     </div>
                   )}
+                  {/* Background video layer */}
+                  {slide.bgVideo && (
+                    <div className="absolute inset-0 z-0" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+                      <video
+                        src={slide.bgVideo}
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        style={{
+                          position: 'absolute',
+                          left: `${slide.bgPosX}%`,
+                          top: `${slide.bgPosY}%`,
+                          transform: `translate(-50%, -50%) scale(${slide.bgScale / 100})`,
+                          transformOrigin: 'center center',
+                          minWidth: '100%',
+                          minHeight: '100%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                      {slide.bgDarken > 0 && (
+                        <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${slide.bgDarken / 100})` }} />
+                      )}
+                    </div>
+                  )}
                   {/* Overlay layer */}
                   <div className="relative z-10 flex flex-col h-full w-full" style={{ justifyContent: vAlignToJustify[slide.vAlign] }}>
                     <SlideOverlay type={slide.overlayType} opacity={slide.overlayOpacity} />
