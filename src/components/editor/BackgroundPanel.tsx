@@ -30,6 +30,7 @@ interface BackgroundPanelProps {
   onOverlayTypeChange: (type: OverlayType) => void;
   onOverlayOpacityChange: (opacity: number) => void;
   onBgImageChange: (url: string | undefined) => void;
+  onBgVideoChange: (url: string | undefined) => void;
   onBgScaleChange: (scale: number) => void;
   onBgPosXChange: (x: number) => void;
   onBgPosYChange: (y: number) => void;
