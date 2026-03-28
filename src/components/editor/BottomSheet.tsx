@@ -99,7 +99,14 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
             </div>
 
             <div className="px-4 pb-4 pt-1">
-              {isBackground && currentSlide ? (
+              {isText && currentSlide && onUpdateSlide ? (
+                <TextPanel
+                  currentSlide={currentSlide}
+                  onUpdateSlide={onUpdateSlide}
+                  onApplyTextToAll={() => onApplyTextToAll?.()}
+                  onClose={onClose}
+                />
+              ) : isBackground && currentSlide ? (
                 <BackgroundPanel
                   bgColor={currentSlide.bgColor}
                   overlayType={currentSlide.overlayType}
