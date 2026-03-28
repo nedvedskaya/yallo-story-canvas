@@ -24,7 +24,7 @@ const initialSlides: Slide[] = [
     bgColor: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
     bgType: "color", hAlign: "center", vAlign: "center",
     overlayType: "none", overlayOpacity: 50,
-    bgScale: 100, bgPosX: 50, bgPosY: 50,
+    bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0,
   },
   {
     id: 3, username: "@username", title: "Призыв к действию",
