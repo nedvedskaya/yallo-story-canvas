@@ -68,37 +68,64 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
           <div
             key={slide.id}
             className={cn(
-              "flex-shrink-0 snap-center rounded-3xl shadow-lg transition-all duration-300",
-              index === activeSlide ? "scale-100 shadow-xl" : "scale-[0.92] opacity-60"
+              "flex-shrink-0 snap-center transition-all duration-300 overflow-hidden",
+              index === activeSlide ? "scale-100" : "scale-[0.92] opacity-60"
             )}
             style={{
               width: "min(85vw, 360px)",
               aspectRatio: "4/5",
-              background: slide.bgColor,
+              borderRadius: '24px',
             }}
           >
-            <div className="flex h-full flex-col items-center justify-center px-8 text-center">
-              <h2
-                className="mb-4 text-2xl font-semibold leading-tight"
-                style={{ color: slide.textColor }}
+            {/* Glass outer shell */}
+            <div
+              className="h-full w-full p-[6px]"
+              style={{
+                background: 'rgba(255, 255, 255, 0.2)',
+                backdropFilter: 'blur(40px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+                border: '1.5px solid rgba(255, 255, 255, 0.5)',
+                borderRadius: '24px',
+                boxShadow: '0 8px 40px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.7)',
+              }}
+            >
+              {/* Inner content plate */}
+              <div
+                className="flex h-full flex-col items-center justify-center px-8 text-center"
+                style={{
+                  background: slide.bgColor,
+                  borderRadius: '18px',
+                }}
               >
-                {slide.title}
-              </h2>
-              <p
-                className="text-sm font-light leading-relaxed opacity-90"
-                style={{ color: slide.textColor }}
-              >
-                {slide.subtitle}
-              </p>
+                <h2
+                  className="mb-4 text-2xl font-semibold leading-tight"
+                  style={{ color: slide.textColor }}
+                >
+                  {slide.title}
+                </h2>
+                <p
+                  className="text-sm font-light leading-relaxed opacity-90"
+                  style={{ color: slide.textColor }}
+                >
+                  {slide.subtitle}
+                </p>
+              </div>
             </div>
           </div>
         ))}
 
+        {/* Add slide button */}
         <div
-          className="flex flex-shrink-0 snap-center items-center justify-center rounded-3xl glass"
+          className="flex flex-shrink-0 snap-center items-center justify-center overflow-hidden"
           style={{
             width: "min(85vw, 360px)",
             aspectRatio: "4/5",
+            background: 'rgba(255, 255, 255, 0.2)',
+            backdropFilter: 'blur(40px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+            border: '1.5px solid rgba(255, 255, 255, 0.5)',
+            borderRadius: '24px',
+            boxShadow: '0 8px 40px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.7)',
           }}
         >
           <button className="flex flex-col items-center gap-2 text-muted-foreground transition-colors">
@@ -123,8 +150,8 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
             className={cn(
               "h-2 rounded-full transition-all duration-300",
               index === activeSlide
-                ? "w-6 bg-foreground/40"
-                : "w-2 bg-muted-foreground/20"
+                ? "w-6 bg-foreground/30"
+                : "w-2 bg-foreground/10"
             )}
           />
         ))}
