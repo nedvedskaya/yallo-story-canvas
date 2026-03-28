@@ -172,15 +172,42 @@ const BackgroundPanel = ({
             <input ref={videoRef} type="file" accept="video/*" className="sr-only"
               onChange={(e) => {
                 const file = e.target.files?.[0];
-                if (file) onBgColorChange(`video(${URL.createObjectURL(file)})`);
+                if (file) {
+                  const url = URL.createObjectURL(file);
+                  onBgVideoChange(url);
+                  onBgScaleChange(100);
+                  onBgPosXChange(50);
+                  onBgPosYChange(50);
+                  onBgDarkenChange(0);
+                }
               }}
             />
             <button onClick={() => videoRef.current?.click()}
               className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-medium transition-all active:scale-[0.98]"
               style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(200,200,220,0.5)", color: "#1a1a2e" }}
             >
-              <Upload size={14} /> Загрузить видео (до 1 мин)
+              <Upload size={14} /> {bgVideo ? "Заменить видео" : "Загрузить видео (до 1 мин)"}
             </button>
+
+            {bgVideo && (
+              <div className="flex flex-col gap-2 mt-2">
+                <div className="flex items-center gap-2">
+                  <ZoomIn size={12} style={labelStyle} />
+                  <span className="text-[10px] flex-shrink-0" style={labelStyle}>Масштаб</span>
+                  <Slider value={[bgScale]} onValueChange={([v]) => onBgScaleChange(v)} min={50} max={300} step={1} className="flex-1" />
+                  <span className="text-[10px] w-8 text-right" style={valStyle}>{bgScale}%</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] flex-shrink-0" style={labelStyle}>Затемнение</span>
+                  <Slider value={[bgDarken]} onValueChange={([v]) => onBgDarkenChange(v)} min={0} max={100} step={1} className="flex-1" />
+                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgDarken}</span>
+                </div>
+                <button onClick={() => onBgVideoChange(undefined)}
+                  className="w-full rounded-xl py-1.5 text-[10px] font-medium transition-all active:scale-[0.98]"
+                  style={{ background: "rgba(255,255,255,0.4)", border: "1px solid rgba(200,200,220,0.4)", color: "rgba(26,26,46,0.5)" }}
+                >Удалить видео</button>
+              </div>
+            )}
           </>
         )}
       </div>
