@@ -44,7 +44,7 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
 
   return (
     <AnimatePresence>
-      {(content || isBackground) && (
+      {(content || isBackground || isText) && (
         <>
           <motion.div
             initial={{ opacity: 0 }}
