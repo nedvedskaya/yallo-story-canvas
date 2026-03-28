@@ -146,10 +146,12 @@
     z-index: 0;
     pointer-events: none;
     background:
-      radial-gradient(ellipse 600px 500px at 20% 15%, rgba(255, 255, 255, 0.8) 0%, transparent 70%),
-      radial-gradient(ellipse 500px 400px at 75% 20%, rgba(200, 210, 255, 0.5) 0%, transparent 70%),
-      radial-gradient(ellipse 450px 450px at 60% 75%, rgba(220, 200, 255, 0.4) 0%, transparent 70%),
-      radial-gradient(ellipse 400px 350px at 10% 80%, rgba(200, 220, 255, 0.35) 0%, transparent 70%);
+      radial-gradient(circle 350px at 25% 20%, rgba(180, 170, 240, 0.3) 0%, transparent 70%),
+      radial-gradient(circle 300px at 70% 15%, rgba(150, 200, 255, 0.3) 0%, transparent 70%),
+      radial-gradient(circle 400px at 55% 65%, rgba(190, 170, 245, 0.25) 0%, transparent 70%),
+      radial-gradient(circle 320px at 15% 75%, rgba(140, 190, 255, 0.25) 0%, transparent 70%),
+      radial-gradient(circle 280px at 80% 80%, rgba(200, 180, 250, 0.2) 0%, transparent 70%),
+      radial-gradient(ellipse 600px 500px at 50% 40%, rgba(255, 255, 255, 0.6) 0%, transparent 70%);
   }
 
   .scrollbar-hide {
