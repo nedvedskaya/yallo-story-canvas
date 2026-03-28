@@ -82,7 +82,7 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
   }, []);
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-0 py-4">
+    <div className="flex flex-1 flex-col items-center justify-center px-0 py-2 min-h-0">
       <div
         ref={scrollRef}
         onScroll={handleScroll}
@@ -97,7 +97,7 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
               index === activeSlide ? "scale-100" : "scale-[0.92] opacity-60"
             )}
             style={{
-              width: "min(85vw, 360px)",
+              width: "min(78vw, 320px)",
               aspectRatio: "1080/1440",
             }}
           >
@@ -186,7 +186,7 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
         <div
           className="flex flex-shrink-0 snap-center items-center justify-center overflow-hidden glass"
           style={{
-            width: "min(85vw, 360px)",
+            width: "min(78vw, 320px)",
             aspectRatio: "1080/1440",
           }}
         >
@@ -211,7 +211,7 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
       )}
 
       {/* Dots indicator */}
-      <div className="mt-4 flex items-center gap-2">
+      <div className="mt-2 flex items-center gap-2">
         {slides.map((_, index) => (
           <button
             key={index}

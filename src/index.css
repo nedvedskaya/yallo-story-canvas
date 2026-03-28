@@ -90,10 +90,18 @@
   * {
     @apply border-border;
   }
+  html, body, #root {
+    height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', sans-serif;
     color: #1a1a2e;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
   }
 }
 
