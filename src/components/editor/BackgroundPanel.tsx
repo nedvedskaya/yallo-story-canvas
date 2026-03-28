@@ -64,6 +64,7 @@ const BackgroundPanel = ({
     onBgScaleChange(initial.bgScale);
     onBgPosXChange(initial.bgPosX);
     onBgPosYChange(initial.bgPosY);
+    onBgDarkenChange(initial.bgDarken);
     onClose?.();
   };
 
