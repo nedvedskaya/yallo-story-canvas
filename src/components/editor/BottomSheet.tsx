@@ -3,6 +3,7 @@ import { X, Palette, Image, Type, Maximize, Info } from "lucide-react";
 import type { MenuId } from "./BottomMenu";
 import type { Slide } from "./SlideCarousel";
 import BackgroundPanel, { type OverlayType } from "./BackgroundPanel";
+import TextPanel from "./TextPanel";
 
 interface BottomSheetProps {
   activeTab: MenuId | null;
@@ -10,6 +11,7 @@ interface BottomSheetProps {
   currentSlide?: Slide;
   onUpdateSlide?: (id: number, updates: Partial<Slide>) => void;
   onApplyBgToAll?: () => void;
+  onApplyTextToAll?: () => void;
 }
 
 const sheetContent: Record<string, { title: string; icon: React.ElementType; items: string[] }> = {
