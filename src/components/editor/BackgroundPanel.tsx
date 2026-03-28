@@ -26,6 +26,7 @@ export interface BgDraft {
   bgPosX: number;
   bgPosY: number;
   bgDarken: number;
+  bgMuted?: boolean;
 }
 
 interface BackgroundPanelProps {
