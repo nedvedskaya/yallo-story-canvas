@@ -133,20 +133,7 @@
   }
 
   .bg-gradient-main {
-    background:
-      radial-gradient(ellipse 120% 80% at 20% 10%, hsla(280, 30%, 85%, 0.5) 0%, transparent 50%),
-      radial-gradient(ellipse 100% 70% at 80% 20%, hsla(210, 40%, 88%, 0.6) 0%, transparent 50%),
-      radial-gradient(ellipse 90% 60% at 50% 80%, hsla(35, 50%, 88%, 0.5) 0%, transparent 50%),
-      radial-gradient(ellipse 80% 50% at 10% 60%, hsla(190, 30%, 90%, 0.4) 0%, transparent 50%),
-      linear-gradient(
-        160deg,
-        hsl(240 20% 95%) 0%,
-        hsl(220 25% 93%) 20%,
-        hsl(200 20% 92%) 40%,
-        hsl(30 25% 92%) 65%,
-        hsl(45 35% 91%) 85%,
-        hsl(280 15% 92%) 100%
-      );
+    background: hsl(50 10% 89%);
     min-height: 100dvh;
   }
 
