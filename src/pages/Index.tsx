@@ -143,6 +143,7 @@ const Index = () => {
         currentSlide={currentSlide}
         onUpdateSlide={handleUpdateSlide}
         onApplyBgToAll={handleApplyBgToAll}
+        onApplyTextToAll={handleApplyTextToAll}
       />
       <BottomMenu activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
