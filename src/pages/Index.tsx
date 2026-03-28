@@ -32,9 +32,10 @@ const initialSlides: Slide[] = [
     id: 3, username: "@username", title: "Призыв к действию",
     body: "Подписывайтесь, ставьте лайк и делитесь с друзьями ✨",
     bgColor: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-    bgType: "color", hAlign: "center", vAlign: "center",
+    bgType: "color", hAlign: "left", vAlign: "center",
     overlayType: "none", overlayOpacity: 50,
     bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0,
+    titleSize: 24, bodySize: 14,
   },
 ];
 
