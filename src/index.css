@@ -6,23 +6,23 @@
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
+    --background: 215 30% 92%;
     --foreground: 220 25% 10%;
 
-    --card: 0 0% 100%;
+    --card: 0 0% 100% / 0.35;
     --card-foreground: 220 25% 10%;
 
-    --popover: 220 20% 98%;
+    --popover: 0 0% 100% / 0.4;
     --popover-foreground: 220 25% 10%;
 
     --primary: 47 100% 85%;
     --primary-foreground: 220 25% 10%;
 
-    --secondary: 220 15% 92%;
+    --secondary: 220 15% 92% / 0.5;
     --secondary-foreground: 220 25% 20%;
 
-    --muted: 220 15% 94%;
-    --muted-foreground: 220 10% 50%;
+    --muted: 220 15% 94% / 0.4;
+    --muted-foreground: 220 10% 45%;
 
     --accent: 47 100% 85%;
     --accent-foreground: 220 25% 10%;
@@ -30,19 +30,20 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 90%;
-    --input: 220 15% 90%;
+    --border: 0 0% 100% / 0.45;
+    --input: 0 0% 100% / 0.35;
     --ring: 47 100% 85%;
 
-    --radius: 1rem;
+    --radius: 1.25rem;
 
-    --glass-bg: 0 0% 100% / 0.45;
-    --glass-border: 0 0% 100% / 0.5;
-    --glass-blur: 20px;
+    --glass-bg: 0 0% 100% / 0.25;
+    --glass-border: 0 0% 100% / 0.4;
+    --glass-blur: 40px;
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.06);
 
-    --gradient-start: 220 30% 96%;
-    --gradient-mid: 30 30% 95%;
-    --gradient-end: 47 60% 93%;
+    --gradient-start: 210 40% 85%;
+    --gradient-mid: 30 30% 88%;
+    --gradient-end: 45 50% 88%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -58,19 +59,19 @@
     --background: 220 25% 6%;
     --foreground: 220 15% 90%;
 
-    --card: 220 25% 10%;
+    --card: 220 25% 12% / 0.4;
     --card-foreground: 220 15% 90%;
 
-    --popover: 220 25% 8%;
+    --popover: 220 25% 10% / 0.5;
     --popover-foreground: 220 15% 90%;
 
     --primary: 47 100% 85%;
     --primary-foreground: 220 25% 10%;
 
-    --secondary: 220 20% 15%;
+    --secondary: 220 20% 15% / 0.5;
     --secondary-foreground: 220 15% 85%;
 
-    --muted: 220 20% 15%;
+    --muted: 220 20% 15% / 0.4;
     --muted-foreground: 220 10% 55%;
 
     --accent: 47 100% 85%;
@@ -79,12 +80,13 @@
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 20% 18%;
-    --input: 220 20% 18%;
+    --border: 220 20% 25% / 0.4;
+    --input: 220 20% 20% / 0.4;
     --ring: 47 100% 85%;
 
-    --glass-bg: 220 25% 10% / 0.5;
-    --glass-border: 220 20% 20% / 0.5;
+    --glass-bg: 220 25% 10% / 0.3;
+    --glass-border: 220 20% 25% / 0.3;
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
@@ -109,19 +111,41 @@
 
 @layer utilities {
   .glass {
-    background: hsl(var(--glass-bg));
+    background: hsla(var(--glass-bg));
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid hsl(var(--glass-border));
+    border: 1px solid hsla(var(--glass-border));
+    box-shadow: var(--glass-shadow);
+  }
+
+  .glass-strong {
+    background: hsla(0, 0%, 100%, 0.45);
+    backdrop-filter: blur(50px) saturate(180%);
+    -webkit-backdrop-filter: blur(50px) saturate(180%);
+    border: 1px solid hsla(0, 0%, 100%, 0.5);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+  }
+
+  .glass-pill {
+    background: hsla(0, 0%, 100%, 0.35);
+    backdrop-filter: blur(50px) saturate(200%);
+    -webkit-backdrop-filter: blur(50px) saturate(200%);
+    border: 1px solid hsla(0, 0%, 100%, 0.45);
+    box-shadow: 
+      0 2px 20px rgba(0, 0, 0, 0.06),
+      inset 0 1px 0 hsla(0, 0%, 100%, 0.5);
   }
 
   .bg-gradient-main {
     background: linear-gradient(
-      160deg,
-      hsl(var(--gradient-start)) 0%,
-      hsl(var(--gradient-mid)) 50%,
-      hsl(var(--gradient-end)) 100%
+      170deg,
+      hsl(210 35% 88%) 0%,
+      hsl(220 25% 90%) 25%,
+      hsl(30 25% 90%) 55%,
+      hsl(45 40% 87%) 80%,
+      hsl(35 35% 85%) 100%
     );
+    min-height: 100dvh;
   }
 
   .scrollbar-hide {
