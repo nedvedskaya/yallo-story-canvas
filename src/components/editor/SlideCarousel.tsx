@@ -279,6 +279,17 @@ const SlideCarousel = ({
           onCropClick={() => {}}
         />
       )}
+      {currentSlide && (
+        <TextEditorModal
+          open={editorOpen}
+          field={editorField}
+          initialHtml={editorField === "title" ? currentSlide.title : currentSlide.body}
+          onSave={(html) => {
+            onUpdateSlide(currentSlide.id, { [editorField]: html });
+          }}
+          onClose={() => setEditorOpen(false)}
+        />
+      )}
     </div>
   );
 };
