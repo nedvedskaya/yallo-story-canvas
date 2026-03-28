@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   AlignLeft,
   AlignCenter,
@@ -31,55 +32,73 @@ const vAlignIcons = {
   end: AlignVerticalJustifyEnd,
 };
 
+type ActiveTool = "hAlign" | "vAlign" | null;
+
 const SlideToolbar = ({
   hAlign,
   vAlign,
   onHAlignChange,
   onVAlignChange,
 }: SlideToolbarProps) => {
+  const [activeTool, setActiveTool] = useState<ActiveTool>(null);
   const HIcon = hAlignIcons[hAlign];
   const VIcon = vAlignIcons[vAlign];
 
   const cycleH = () => {
+    setActiveTool("hAlign");
     const idx = hAlignCycle.indexOf(hAlign);
     onHAlignChange(hAlignCycle[(idx + 1) % 3]);
   };
 
   const cycleV = () => {
+    setActiveTool("vAlign");
     const idx = vAlignCycle.indexOf(vAlign);
     onVAlignChange(vAlignCycle[(idx + 1) % 3]);
   };
 
+  const btnStyle = (isActive: boolean): React.CSSProperties => ({
+    width: 36,
+    height: 36,
+    color: isActive ? "#1a1a2e" : "#4a4a6a",
+    background: "rgba(255, 255, 255, 0.5)",
+    backdropFilter: "blur(12px)",
+    WebkitBackdropFilter: "blur(12px)",
+    border: "1px solid rgba(255, 255, 255, 0.7)",
+    borderRadius: "10px",
+    boxShadow: isActive
+      ? "0 -3px 8px rgba(100, 120, 220, 0.35), 0 2px 6px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)"
+      : "0 2px 6px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)",
+    position: "relative" as const,
+  });
+
   return (
-    <div
-      className="mt-2 flex items-center justify-center gap-0.5 px-1.5 py-1 mx-auto"
-      style={{
-        background: "rgba(255, 255, 255, 0.45)",
-        backdropFilter: "blur(16px) saturate(180%)",
-        WebkitBackdropFilter: "blur(16px) saturate(180%)",
-        border: "1px solid rgba(255, 255, 255, 0.7)",
-        borderRadius: "12px",
-        boxShadow:
-          "0 4px 16px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9)",
-        width: "fit-content",
-      }}
-    >
-      {/* Horizontal align */}
+    <div className="mt-2 flex items-center justify-center gap-2 mx-auto">
       <button
         onClick={cycleH}
-        className="flex items-center justify-center rounded-lg transition-all active:scale-90"
-        style={{ width: 32, height: 32, color: "#4a4a6a" }}
+        className="flex items-center justify-center transition-all active:scale-90"
+        style={btnStyle(activeTool === "hAlign")}
       >
-        <HIcon size={16} />
+        {activeTool === "hAlign" && (
+          <div
+            className="absolute -top-[1px] left-1/2 -translate-x-1/2 h-[2px] w-4 rounded-full"
+            style={{ background: "rgba(100, 120, 220, 0.7)" }}
+          />
+        )}
+        <HIcon size={15} />
       </button>
 
-      {/* Vertical align */}
       <button
         onClick={cycleV}
-        className="flex items-center justify-center rounded-lg transition-all active:scale-90"
-        style={{ width: 32, height: 32, color: "#4a4a6a" }}
+        className="flex items-center justify-center transition-all active:scale-90"
+        style={btnStyle(activeTool === "vAlign")}
       >
-        <VIcon size={16} />
+        {activeTool === "vAlign" && (
+          <div
+            className="absolute -top-[1px] left-1/2 -translate-x-1/2 h-[2px] w-4 rounded-full"
+            style={{ background: "rgba(100, 120, 220, 0.7)" }}
+          />
+        )}
+        <VIcon size={15} />
       </button>
     </div>
   );
