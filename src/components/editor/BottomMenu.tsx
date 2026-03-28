@@ -22,11 +22,11 @@ const BottomMenu = ({ activeTab, onTabChange }: BottomMenuProps) => {
       <div
         className="mx-auto max-w-md rounded-[2rem] px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
         style={{
-          background: 'rgba(255, 255, 255, 0.12)',
-          backdropFilter: 'blur(60px) saturate(200%)',
-          WebkitBackdropFilter: 'blur(60px) saturate(200%)',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 4px 30px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.25)',
+          background: 'hsla(50, 10%, 89%, 0.5)',
+          backdropFilter: 'blur(50px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(50px) saturate(180%)',
+          border: '1px solid hsla(50, 10%, 95%, 0.5)',
+          boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06)',
         }}
       >
         <div className="flex items-center justify-around">
