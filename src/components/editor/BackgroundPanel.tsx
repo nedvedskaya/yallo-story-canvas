@@ -151,6 +151,11 @@ const BackgroundPanel = ({
                   <Slider value={[bgPosY]} onValueChange={([v]) => onBgPosYChange(v)} min={0} max={100} step={1} className="flex-1" />
                   <span className="text-[10px] w-6 text-right" style={valStyle}>{bgPosY}</span>
                 </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] flex-shrink-0" style={labelStyle}>Затемнение</span>
+                  <Slider value={[bgDarken]} onValueChange={([v]) => onBgDarkenChange(v)} min={0} max={100} step={1} className="flex-1" />
+                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgDarken}</span>
+                </div>
                 <button onClick={() => onBgImageChange(undefined)}
                   className="w-full rounded-xl py-1.5 text-[10px] font-medium transition-all active:scale-[0.98]"
                   style={{ background: "rgba(255,255,255,0.4)", border: "1px solid rgba(200,200,220,0.4)", color: "rgba(26,26,46,0.5)" }}
