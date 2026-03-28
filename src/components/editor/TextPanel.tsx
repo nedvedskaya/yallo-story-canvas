@@ -8,68 +8,71 @@ interface TextPanelProps {
   onSave: (updates: Partial<Slide>) => void;
   onApplyTextToAll: (updates: Partial<Slide>) => void;
   onClose: () => void;
+  onRevert: (snapshot: Partial<Slide>) => void;
 }
 
-const TextPanel = ({ currentSlide, onSave, onApplyTextToAll, onClose }: TextPanelProps) => {
+const TextPanel = ({ currentSlide, onSave, onApplyTextToAll, onClose, onRevert }: TextPanelProps) => {
   const [applyAll, setApplyAll] = useState(false);
 
-  // Local draft state
-  const [draft, setDraft] = useState({
-    titleFont: currentSlide.titleFont || "'Inter', sans-serif",
-    titleSize: currentSlide.titleSize ?? 28,
-    titleCase: currentSlide.titleCase || "none",
-    titleLineHeight: currentSlide.titleLineHeight ?? 1.1,
-    titleLetterSpacing: currentSlide.titleLetterSpacing ?? 0,
-    bodyFont: currentSlide.bodyFont || "'Inter', sans-serif",
-    bodySize: currentSlide.bodySize ?? 16,
-    bodyCase: currentSlide.bodyCase || "none",
-    bodyLineHeight: currentSlide.bodyLineHeight ?? 1.5,
-    bodyLetterSpacing: currentSlide.bodyLetterSpacing ?? 0,
+  // Snapshot for revert on cancel
+  const [snapshot] = useState<Partial<Slide>>({
+    titleFont: currentSlide.titleFont,
+    titleSize: currentSlide.titleSize,
+    titleCase: currentSlide.titleCase,
+    titleLineHeight: currentSlide.titleLineHeight,
+    titleLetterSpacing: currentSlide.titleLetterSpacing,
+    bodyFont: currentSlide.bodyFont,
+    bodySize: currentSlide.bodySize,
+    bodyCase: currentSlide.bodyCase,
+    bodyLineHeight: currentSlide.bodyLineHeight,
+    bodyLetterSpacing: currentSlide.bodyLetterSpacing,
   });
 
   const titleSettings: FontSettings = {
-    font: draft.titleFont,
-    size: draft.titleSize,
-    case: draft.titleCase as FontSettings["case"],
-    lineHeight: draft.titleLineHeight,
-    letterSpacing: draft.titleLetterSpacing,
+    font: currentSlide.titleFont || "'Coolvetica', sans-serif",
+    size: currentSlide.titleSize ?? 28,
+    case: (currentSlide.titleCase || "none") as FontSettings["case"],
+    lineHeight: currentSlide.titleLineHeight ?? 1.1,
+    letterSpacing: currentSlide.titleLetterSpacing ?? 0,
   };
 
   const bodySettings: FontSettings = {
-    font: draft.bodyFont,
-    size: draft.bodySize,
-    case: draft.bodyCase as FontSettings["case"],
-    lineHeight: draft.bodyLineHeight,
-    letterSpacing: draft.bodyLetterSpacing,
+    font: currentSlide.bodyFont || "'Inter', sans-serif",
+    size: currentSlide.bodySize ?? 16,
+    case: (currentSlide.bodyCase || "none") as FontSettings["case"],
+    lineHeight: currentSlide.bodyLineHeight ?? 1.5,
+    letterSpacing: currentSlide.bodyLetterSpacing ?? 0,
   };
 
+  // Live update title
   const handleTitleChange = useCallback((updates: Partial<FontSettings>) => {
-    setDraft(prev => {
-      const next = { ...prev };
-      if (updates.font !== undefined) next.titleFont = updates.font;
-      if (updates.size !== undefined) next.titleSize = updates.size;
-      if (updates.case !== undefined) next.titleCase = updates.case;
-      if (updates.lineHeight !== undefined) next.titleLineHeight = updates.lineHeight;
-      if (updates.letterSpacing !== undefined) next.titleLetterSpacing = updates.letterSpacing;
-      return next;
-    });
-  }, []);
+    const mapped: Partial<Slide> = {};
+    if (updates.font !== undefined) mapped.titleFont = updates.font;
+    if (updates.size !== undefined) mapped.titleSize = updates.size;
+    if (updates.case !== undefined) mapped.titleCase = updates.case;
+    if (updates.lineHeight !== undefined) mapped.titleLineHeight = updates.lineHeight;
+    if (updates.letterSpacing !== undefined) mapped.titleLetterSpacing = updates.letterSpacing;
+    onSave(mapped);
+  }, [onSave]);
 
+  // Live update body
   const handleBodyChange = useCallback((updates: Partial<FontSettings>) => {
-    setDraft(prev => {
-      const next = { ...prev };
-      if (updates.font !== undefined) next.bodyFont = updates.font;
-      if (updates.size !== undefined) next.bodySize = updates.size;
-      if (updates.case !== undefined) next.bodyCase = updates.case;
-      if (updates.lineHeight !== undefined) next.bodyLineHeight = updates.lineHeight;
-      if (updates.letterSpacing !== undefined) next.bodyLetterSpacing = updates.letterSpacing;
-      return next;
-    });
-  }, []);
+    const mapped: Partial<Slide> = {};
+    if (updates.font !== undefined) mapped.bodyFont = updates.font;
+    if (updates.size !== undefined) mapped.bodySize = updates.size;
+    if (updates.case !== undefined) mapped.bodyCase = updates.case;
+    if (updates.lineHeight !== undefined) mapped.bodyLineHeight = updates.lineHeight;
+    if (updates.letterSpacing !== undefined) mapped.bodyLetterSpacing = updates.letterSpacing;
+    onSave(mapped);
+  }, [onSave]);
 
   const handleSave = () => {
-    onSave(draft);
-    if (applyAll) onApplyTextToAll(draft);
+    if (applyAll) onApplyTextToAll({});
+    onClose();
+  };
+
+  const handleCancel = () => {
+    onRevert(snapshot);
     onClose();
   };
 

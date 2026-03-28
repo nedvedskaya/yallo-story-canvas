@@ -22,13 +22,23 @@ interface SizePanelProps {
   currentFormat: SlideFormat;
   onSave: (format: SlideFormat) => void;
   onClose: () => void;
+  onRevert: (format: SlideFormat) => void;
 }
 
-const SizePanel = ({ currentFormat, onSave, onClose }: SizePanelProps) => {
-  const [draft, setDraft] = useState<SlideFormat>(currentFormat);
+const SizePanel = ({ currentFormat, onSave, onClose, onRevert }: SizePanelProps) => {
+  // Snapshot for revert
+  const [snapshot] = useState<SlideFormat>(currentFormat);
+
+  const handleSelect = (format: SlideFormat) => {
+    onSave(format); // Live update
+  };
 
   const handleSave = () => {
-    onSave(draft);
+    onClose();
+  };
+
+  const handleCancel = () => {
+    onRevert(snapshot);
     onClose();
   };
 
@@ -38,12 +48,12 @@ const SizePanel = ({ currentFormat, onSave, onClose }: SizePanelProps) => {
         {FORMAT_OPTIONS.map((opt) => (
           <button
             key={opt.id}
-            onClick={() => setDraft(opt.id)}
+            onClick={() => handleSelect(opt.id)}
             className="flex items-center justify-between rounded-xl px-4 py-2.5 transition-all active:scale-[0.97]"
             style={{
-              background: draft === opt.id ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.35)",
-              border: draft === opt.id ? "1.5px solid rgba(200,200,220,0.6)" : "1px solid rgba(255,255,255,0.6)",
-              boxShadow: draft === opt.id ? "0 2px 8px rgba(0,0,0,0.06)" : "none",
+              background: currentFormat === opt.id ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.35)",
+              border: currentFormat === opt.id ? "1.5px solid rgba(200,200,220,0.6)" : "1px solid rgba(255,255,255,0.6)",
+              boxShadow: currentFormat === opt.id ? "0 2px 8px rgba(0,0,0,0.06)" : "none",
             }}
           >
             <span className="text-xs font-medium" style={{ color: '#1a1a2e' }}>{opt.label}</span>
