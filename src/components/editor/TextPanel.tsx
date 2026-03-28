@@ -15,7 +15,7 @@ const TextPanel = ({ currentSlide, onSave, onApplyTextToAll, onClose }: TextPane
 
   const titleSettings: FontSettings = {
     font: currentSlide.titleFont || "'Coolvetica', sans-serif",
-    size: currentSlide.titleSize ?? 28,
+    size: currentSlide.titleSize ?? 24,
     case: (currentSlide.titleCase || "none") as FontSettings["case"],
     lineHeight: currentSlide.titleLineHeight ?? 1.1,
     letterSpacing: currentSlide.titleLetterSpacing ?? 0,
