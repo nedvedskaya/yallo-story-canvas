@@ -52,7 +52,7 @@ const BackgroundPanel = ({
   const videoRef = useRef<HTMLInputElement>(null);
 
   const initial = useMemo(() => ({
-    bgColor, overlayType, overlayOpacity, bgImage, bgScale, bgPosX, bgPosY,
+    bgColor, overlayType, overlayOpacity, bgImage, bgScale, bgPosX, bgPosY, bgDarken,
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }), []);
 
