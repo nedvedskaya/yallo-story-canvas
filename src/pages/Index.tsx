@@ -45,6 +45,7 @@ const Index = () => {
   const [activeSlide, setActiveSlide] = useState(0);
   const [slides, setSlides] = useState<Slide[]>(initialSlides);
   const [slideFormat, setSlideFormat] = useState<SlideFormat>("carousel");
+  const [downloadOpen, setDownloadOpen] = useState(false);
 
   const slideSnapshotRef = useRef<Slide | null>(null);
   const formatSnapshotRef = useRef<SlideFormat | null>(null);
