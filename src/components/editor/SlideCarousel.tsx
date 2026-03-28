@@ -210,28 +210,6 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
         />
       )}
 
-      {/* Dots indicator */}
-      <div className="mt-2 flex items-center gap-2">
-        {slides.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => {
-              onSlideChange(index);
-              if (scrollRef.current) {
-                const child = scrollRef.current.children[index] as HTMLElement;
-                child?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-              }
-            }}
-            className={cn(
-              "h-2 rounded-full transition-all duration-300",
-              index === activeSlide ? "w-6" : "w-2"
-            )}
-            style={{
-              background: index === activeSlide ? 'rgba(26, 26, 46, 0.3)' : 'rgba(26, 26, 46, 0.1)',
-            }}
-          />
-        ))}
-      </div>
 
       {/* Background modal */}
       <BackgroundModal
