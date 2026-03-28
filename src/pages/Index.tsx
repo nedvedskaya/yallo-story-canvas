@@ -172,7 +172,7 @@ const Index = () => {
   return (
     <div className="flex h-[100dvh] flex-col bg-gradient-main overflow-hidden">
       <div className="relative z-10 flex h-[100dvh] flex-col pt-[env(safe-area-inset-top)]">
-        <TopBar />
+        <TopBar onDownload={() => setDownloadOpen(true)} />
         <main className="flex flex-1 flex-col min-h-0 pb-[calc(72px+env(safe-area-inset-bottom))]">
           <SlideCarousel
             slides={slides}
