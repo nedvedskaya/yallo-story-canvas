@@ -16,6 +16,10 @@ export interface Slide {
   vAlign: VAlign;
   overlayType: OverlayType;
   overlayOpacity: number;
+  bgImage?: string;
+  bgScale: number;
+  bgPosX: number;
+  bgPosY: number;
 }
 
 const hAlignToText: Record<HAlign, string> = { left: "left", center: "center", right: "right" };
