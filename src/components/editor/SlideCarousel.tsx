@@ -165,23 +165,24 @@ const SlideCarousel = ({
                   <div className="relative z-10 flex flex-col h-full w-full" style={{ justifyContent: vAlignToJustify[slide.vAlign] }}>
                     <SlideOverlay type={slide.overlayType} opacity={slide.overlayOpacity} />
 
-                  <div
-                    className="flex items-center justify-between w-full"
-                    style={{
-                      position: slide.vAlign !== "start" ? "absolute" : "relative",
-                      top: slide.vAlign !== "start" ? "24px" : undefined,
-                      left: slide.vAlign !== "start" ? "24px" : undefined,
-                      right: slide.vAlign !== "start" ? "24px" : undefined,
-                      width: slide.vAlign !== "start" ? "calc(100% - 48px)" : undefined,
-                    }}
-                  >
-                    <span contentEditable suppressContentEditableWarning onBlur={(e) => onUpdateSlide(slide.id, { username: e.currentTarget.textContent || '' })} className="outline-none text-xs font-normal" style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '12px' }}>{slide.username}</span>
-                    <span className="text-xs font-normal" style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '12px' }}>{index + 1}/{slides.length}</span>
-                  </div>
+                    <div
+                      className="flex items-center justify-between w-full"
+                      style={{
+                        position: slide.vAlign !== "start" ? "absolute" : "relative",
+                        top: slide.vAlign !== "start" ? "24px" : undefined,
+                        left: slide.vAlign !== "start" ? "24px" : undefined,
+                        right: slide.vAlign !== "start" ? "24px" : undefined,
+                        width: slide.vAlign !== "start" ? "calc(100% - 48px)" : undefined,
+                      }}
+                    >
+                      <span contentEditable suppressContentEditableWarning onBlur={(e) => onUpdateSlide(slide.id, { username: e.currentTarget.textContent || '' })} className="outline-none text-xs font-normal" style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '12px' }}>{slide.username}</span>
+                      <span className="text-xs font-normal" style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '12px' }}>{index + 1}/{slides.length}</span>
+                    </div>
 
-                  <div>
-                    <h2 contentEditable suppressContentEditableWarning onBlur={(e) => onUpdateSlide(slide.id, { title: e.currentTarget.textContent || '' })} className="outline-none font-bold leading-tight" style={{ color: '#ffffff', fontSize: '28px', marginTop: slide.vAlign === "start" ? "32px" : "0" }}>{slide.title}</h2>
-                    <p contentEditable suppressContentEditableWarning onBlur={(e) => onUpdateSlide(slide.id, { body: e.currentTarget.textContent || '' })} className="outline-none mt-3 font-normal" style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '16px', lineHeight: 1.5 }}>{slide.body}</p>
+                    <div>
+                      <h2 contentEditable suppressContentEditableWarning onBlur={(e) => onUpdateSlide(slide.id, { title: e.currentTarget.textContent || '' })} className="outline-none font-bold leading-tight" style={{ color: '#ffffff', fontSize: '28px', marginTop: slide.vAlign === "start" ? "32px" : "0" }}>{slide.title}</h2>
+                      <p contentEditable suppressContentEditableWarning onBlur={(e) => onUpdateSlide(slide.id, { body: e.currentTarget.textContent || '' })} className="outline-none mt-3 font-normal" style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '16px', lineHeight: 1.5 }}>{slide.body}</p>
+                    </div>
                   </div>
                 </div>
               </div>
