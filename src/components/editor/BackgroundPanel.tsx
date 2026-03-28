@@ -90,10 +90,12 @@ const BackgroundPanel = ({
     const file = e.target.files?.[0];
     if (file) {
       const url = URL.createObjectURL(file);
+      onBgVideoChange(undefined); // auto-clear video
       onBgImageChange(url);
       onBgScaleChange(100);
       onBgPosXChange(50);
       onBgPosYChange(50);
+      onBgDarkenChange(0);
     }
   };
 
