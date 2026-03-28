@@ -1,62 +1,33 @@
-# Вкладка "Текст" — полная реализация
+# Мгновенное применение изменений во всех панелях
 
-## Обзор
+## Проблема
 
-Создать панель TextPanel с настройками шрифтов для заголовка и основного текста. Все изменения мгновенно отражаются на слайде. Настройки шрифтов вынесены в общий компонент, чтобы не дублировать код.
+Сейчас все три панели (Фон, Текст, Размер) используют локальный draft-state и применяют изменения только по кнопке «Сохранить». Пользователь не видит результат до сохранения.
 
-## Шрифты
+## Решение
 
-Кастомные шрифты (1-7: Abraxas, HeadingNow Trial, Postertoaster, SouthGhetto, Marvin Visions, SONGER Grotesque, Coolvetica) — потребуют файлов `.woff2`. Файлы прислала в чат.
+Убрать локальный draft во всех трёх панелях. Каждое изменение сразу вызывает `onUpdateSlide` / `onSlideFormatChange`, чтобы слайд обновлялся в реальном времени. Кнопка «Сохранить» остаётся только для закрытия панели и опционального «Применить ко всем». Но если пользователь нажимает на кнопку крестик, то все изменения автоматически отменяются.
 
-Google Fonts (8-20): Playfair Display, Syne, Unbounded, DM Serif Display доступны напрямую. Neue Montreal, Clash Display, Cabinet Grotesk, Satoshi, General Sans, Swear Display, Melodrama, Boska, Chillax — это шрифты с foundry Fontshare/другие, не Google Fonts. Подключим доступные через Google Fonts link, остальные через Fontshare CDN где возможно.
+## Изменения по файлам
 
-## Новые поля в Slide
+### 1. `BackgroundPanel.tsx`
 
-```text
-titleFont, titleSize, titleCase, titleLineHeight, titleLetterSpacing
-bodyFont, bodySize, bodyCase, bodyLineHeight, bodyLetterSpacing
-```
+- Убрать `useState<BgDraft>` (draft)
+- Каждый `update()` сразу вызывает `onSave(...)` — то есть передаёт изменения наверх в реальном времени
+- Кнопка «Сохранить» → закрывает панель + если включён switch «Применить ко всем» — вызывает `onApplyToAll`
 
-## Структура файлов
+### 2. `TextPanel.tsx`
 
-### 1. `src/components/editor/FontSection.tsx` — общий компонент
+- Убрать локальный `draft` state
+- `handleTitleChange` / `handleBodyChange` сразу вызывают `onSave(updates)` вместо `setDraft`
+- Кнопка «Сохранить» → закрывает панель + если switch включён — `onApplyTextToAll`
 
-Переиспользуется для заголовка и основного текста. Содержит:
+### 3. `SizePanel.tsx`
 
-- **Шрифт**: горизонтальный скролл с иконками-превью (название шрифта написано этим шрифтом)
-- **Размер**: слайдер 0-100
-- **Регистр**: 3 иконки — `Aa` (как есть), `AA` (uppercase), `aa` (lowercase)
-- **Межстрочный интервал**: слайдер
-- **Межбуквенный интервал**: слайдер
+- Убрать `draft` state
+- Клик по формату сразу вызывает `onSave(format)` — слайд мгновенно меняет пропорции
+- Кнопка «Сохранить» просто закрывает панель
 
-### 2. `src/components/editor/TextPanel.tsx` — панель для BottomSheet
+### 4. `BottomSheet.tsx`
 
-- Секция "Шрифт заголовка" с `<FontSection>`
-- Секция "Шрифт основного текста" с `<FontSection>`
-- Switch "Применить ко всем слайдам"
-- Кнопки "Отменить" / "Сохранить"
-
-### 3. `src/components/editor/SlideCarousel.tsx`
-
-- Применить `fontFamily`, `fontSize`, `textTransform`, `lineHeight`, `letterSpacing` к `<h2>` и `<p>` из полей слайда
-
-### 4. `src/components/editor/BottomSheet.tsx`
-
-- При `activeTab === "text"` рендерить `<TextPanel>` вместо заглушки
-
-### 5. `src/pages/Index.tsx`
-
-- Добавить дефолтные значения текстовых полей в `initialSlides`
-- Добавить `handleApplyTextToAll`
-
-### 6. `index.html`
-
-- Подключить Google Fonts и Fontshare CDN через `<link>`
-
-### 7. `src/index.css`
-
-- `@font-face` для кастомных шрифтов (fallback)
-
-## Ключевой принцип
-
-FontSection — один компонент, используемый дважды (для title и body). Все callbacks идут через единый `onUpdateSlide`, изменения мгновенно видны на слайде.
+- Обновить передачу пропсов: панели теперь работают напрямую с `onUpdateSlide`, а не через отложенный `onSave`
