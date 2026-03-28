@@ -20,7 +20,7 @@ const BottomMenu = ({ activeTab, onTabChange }: BottomMenuProps) => {
   return (
     <nav className="fixed bottom-4 left-4 right-4 z-50">
       <div
-        className="mx-auto max-w-md rounded-[2rem] px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] font-sans border-0 shadow-xl"
+        className="mx-auto max-w-md rounded-[2rem] px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] font-sans border-0 bg-[#fcfce4]/[0.53] opacity-60 shadow-2xl"
         style={{
           background: 'linear-gradient(135deg, hsla(40, 12%, 88%, 0.55) 0%, hsla(45, 10%, 82%, 0.45) 50%, hsla(40, 8%, 86%, 0.55) 100%)',
           backdropFilter: 'blur(60px) saturate(200%)',
@@ -63,14 +63,14 @@ const BottomMenu = ({ activeTab, onTabChange }: BottomMenuProps) => {
                 <item.icon
                   size={22}
                   className={cn(
-                    "relative z-10 transition-all duration-300 text-muted-foreground",
+                    "relative z-10 transition-all duration-300 text-black",
                     isActive && "scale-110"
                   )}
                   style={isActive ? { color: '#FFF1B6', filter: 'drop-shadow(0 0 6px rgba(255, 241, 182, 0.5))' } : undefined}
                 />
                 <span
                   className={cn(
-                    "relative z-10 text-[10px] transition-colors font-normal text-secondary-foreground",
+                    "relative z-10 text-[10px] transition-colors font-normal text-left text-primary-foreground",
                     !isActive && "text-muted-foreground"
                   )}
                   style={isActive ? { color: '#FFF1B6' } : undefined}
