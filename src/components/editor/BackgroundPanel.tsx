@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Upload, Move, ZoomIn } from "lucide-react";
@@ -16,7 +16,7 @@ const overlayOptions: { id: OverlayType; label: string }[] = [
   { id: "noise", label: "Шум" },
 ];
 
-interface BgDraft {
+export interface BgDraft {
   bgColor: string;
   overlayType: OverlayType;
   overlayOpacity: number;
@@ -38,20 +38,22 @@ interface BackgroundPanelProps {
   bgPosX: number;
   bgPosY: number;
   bgDarken: number;
-  onSave: (draft: BgDraft) => void;
-  onApplyToAll: (draft: BgDraft) => void;
+  onSave: (draft: Partial<BgDraft>) => void;
+  onApplyToAll: (draft: Partial<BgDraft>) => void;
   onClose: () => void;
+  onRevert: (snapshot: BgDraft) => void;
 }
 
 const BackgroundPanel = ({
   bgColor, overlayType, overlayOpacity,
   bgImage, bgVideo, bgScale, bgPosX, bgPosY, bgDarken,
-  onSave, onApplyToAll, onClose,
+  onSave, onApplyToAll, onClose, onRevert,
 }: BackgroundPanelProps) => {
-  // Local draft state — changes here don't affect the slide until Save
-  const [draft, setDraft] = useState<BgDraft>({
+  // Snapshot of initial state for revert on cancel
+  const [snapshot] = useState<BgDraft>({
     bgColor, overlayType, overlayOpacity, bgImage, bgVideo, bgScale, bgPosX, bgPosY, bgDarken,
   });
+
   const [bgTab, setBgTab] = useState<BgTab>(bgVideo ? "video" : bgImage ? "photo" : "color");
   const [applyToAll, setApplyToAll] = useState(false);
   const [hexInput, setHexInput] = useState(bgColor.startsWith("#") ? bgColor : "#667eea");
@@ -59,7 +61,10 @@ const BackgroundPanel = ({
   const photoRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
 
-  const update = (partial: Partial<BgDraft>) => setDraft(prev => ({ ...prev, ...partial }));
+  // Live update — immediately applies to slide
+  const update = useCallback((partial: Partial<BgDraft>) => {
+    onSave(partial);
+  }, [onSave]);
 
   const handleColorPickerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const color = e.target.value;
@@ -88,9 +93,15 @@ const BackgroundPanel = ({
     }
   };
 
+  // Save = confirm + close
   const handleSave = () => {
-    onSave(draft);
-    if (applyToAll) onApplyToAll(draft);
+    if (applyToAll) onApplyToAll({});
+    onClose();
+  };
+
+  // Cancel = revert to snapshot + close
+  const handleCancel = () => {
+    onRevert(snapshot);
     onClose();
   };
 
@@ -105,7 +116,6 @@ const BackgroundPanel = ({
 
   return (
     <div className="flex flex-col gap-3 overflow-y-auto max-h-[28vh] scrollbar-hide">
-      {/* Tabs */}
       <div>
         <div className="flex gap-1 mb-2">
           {tabItems.map((t) => (
@@ -127,33 +137,33 @@ const BackgroundPanel = ({
               className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-medium transition-all active:scale-[0.98]"
               style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(200,200,220,0.5)", color: "#1a1a2e" }}
             >
-              <Upload size={14} /> {draft.bgImage ? "Заменить фото" : "Загрузить фото"}
+              <Upload size={14} /> {bgImage ? "Заменить фото" : "Загрузить фото"}
             </button>
 
-            {draft.bgImage && (
+            {bgImage && (
               <div className="flex flex-col gap-2 mt-2">
                 <div className="flex items-center gap-2">
                   <ZoomIn size={12} style={labelStyle} />
                   <span className="text-[10px] flex-shrink-0" style={labelStyle}>Масштаб</span>
-                  <Slider value={[draft.bgScale]} onValueChange={([v]) => update({ bgScale: v })} min={50} max={300} step={1} className="flex-1" />
-                  <span className="text-[10px] w-8 text-right" style={valStyle}>{draft.bgScale}%</span>
+                  <Slider value={[bgScale]} onValueChange={([v]) => update({ bgScale: v })} min={50} max={300} step={1} className="flex-1" />
+                  <span className="text-[10px] w-8 text-right" style={valStyle}>{bgScale}%</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Move size={12} style={labelStyle} />
                   <span className="text-[10px] flex-shrink-0" style={labelStyle}>X</span>
-                  <Slider value={[draft.bgPosX]} onValueChange={([v]) => update({ bgPosX: v })} min={0} max={100} step={1} className="flex-1" />
-                  <span className="text-[10px] w-6 text-right" style={valStyle}>{draft.bgPosX}</span>
+                  <Slider value={[bgPosX]} onValueChange={([v]) => update({ bgPosX: v })} min={0} max={100} step={1} className="flex-1" />
+                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgPosX}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Move size={12} style={labelStyle} />
                   <span className="text-[10px] flex-shrink-0" style={labelStyle}>Y</span>
-                  <Slider value={[draft.bgPosY]} onValueChange={([v]) => update({ bgPosY: v })} min={0} max={100} step={1} className="flex-1" />
-                  <span className="text-[10px] w-6 text-right" style={valStyle}>{draft.bgPosY}</span>
+                  <Slider value={[bgPosY]} onValueChange={([v]) => update({ bgPosY: v })} min={0} max={100} step={1} className="flex-1" />
+                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgPosY}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] flex-shrink-0" style={labelStyle}>Затемнение</span>
-                  <Slider value={[draft.bgDarken]} onValueChange={([v]) => update({ bgDarken: v })} min={0} max={100} step={1} className="flex-1" />
-                  <span className="text-[10px] w-6 text-right" style={valStyle}>{draft.bgDarken}</span>
+                  <Slider value={[bgDarken]} onValueChange={([v]) => update({ bgDarken: v })} min={0} max={100} step={1} className="flex-1" />
+                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgDarken}</span>
                 </div>
                 <button onClick={() => update({ bgImage: undefined })}
                   className="w-full rounded-xl py-1.5 text-[10px] font-medium transition-all active:scale-[0.98]"
@@ -171,33 +181,33 @@ const BackgroundPanel = ({
               className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-medium transition-all active:scale-[0.98]"
               style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(200,200,220,0.5)", color: "#1a1a2e" }}
             >
-              <Upload size={14} /> {draft.bgVideo ? "Заменить видео" : "Загрузить видео (до 1 мин)"}
+              <Upload size={14} /> {bgVideo ? "Заменить видео" : "Загрузить видео (до 1 мин)"}
             </button>
 
-            {draft.bgVideo && (
+            {bgVideo && (
               <div className="flex flex-col gap-2 mt-2">
                 <div className="flex items-center gap-2">
                   <ZoomIn size={12} style={labelStyle} />
                   <span className="text-[10px] flex-shrink-0" style={labelStyle}>Масштаб</span>
-                  <Slider value={[draft.bgScale]} onValueChange={([v]) => update({ bgScale: v })} min={50} max={300} step={1} className="flex-1" />
-                  <span className="text-[10px] w-8 text-right" style={valStyle}>{draft.bgScale}%</span>
+                  <Slider value={[bgScale]} onValueChange={([v]) => update({ bgScale: v })} min={50} max={300} step={1} className="flex-1" />
+                  <span className="text-[10px] w-8 text-right" style={valStyle}>{bgScale}%</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Move size={12} style={labelStyle} />
                   <span className="text-[10px] flex-shrink-0" style={labelStyle}>X</span>
-                  <Slider value={[draft.bgPosX]} onValueChange={([v]) => update({ bgPosX: v })} min={0} max={100} step={1} className="flex-1" />
-                  <span className="text-[10px] w-6 text-right" style={valStyle}>{draft.bgPosX}</span>
+                  <Slider value={[bgPosX]} onValueChange={([v]) => update({ bgPosX: v })} min={0} max={100} step={1} className="flex-1" />
+                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgPosX}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Move size={12} style={labelStyle} />
                   <span className="text-[10px] flex-shrink-0" style={labelStyle}>Y</span>
-                  <Slider value={[draft.bgPosY]} onValueChange={([v]) => update({ bgPosY: v })} min={0} max={100} step={1} className="flex-1" />
-                  <span className="text-[10px] w-6 text-right" style={valStyle}>{draft.bgPosY}</span>
+                  <Slider value={[bgPosY]} onValueChange={([v]) => update({ bgPosY: v })} min={0} max={100} step={1} className="flex-1" />
+                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgPosY}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] flex-shrink-0" style={labelStyle}>Затемнение</span>
-                  <Slider value={[draft.bgDarken]} onValueChange={([v]) => update({ bgDarken: v })} min={0} max={100} step={1} className="flex-1" />
-                  <span className="text-[10px] w-6 text-right" style={valStyle}>{draft.bgDarken}</span>
+                  <Slider value={[bgDarken]} onValueChange={([v]) => update({ bgDarken: v })} min={0} max={100} step={1} className="flex-1" />
+                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgDarken}</span>
                 </div>
                 <button onClick={() => update({ bgVideo: undefined })}
                   className="w-full rounded-xl py-1.5 text-[10px] font-medium transition-all active:scale-[0.98]"
@@ -209,7 +219,6 @@ const BackgroundPanel = ({
         )}
       </div>
 
-      {/* Color-only sections */}
       {bgTab === "color" && (
         <>
           <div>
@@ -231,10 +240,10 @@ const BackgroundPanel = ({
                 <button key={opt.id} onClick={() => update({ overlayType: opt.id })}
                   className="flex-shrink-0 rounded-lg px-2.5 py-1.5 text-[10px] font-medium transition-all active:scale-95"
                   style={{
-                    background: draft.overlayType === opt.id ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.3)",
-                    color: draft.overlayType === opt.id ? "#1a1a2e" : "rgba(26,26,46,0.5)",
-                    border: draft.overlayType === opt.id ? "1px solid rgba(200,200,220,0.6)" : "1px solid transparent",
-                    boxShadow: draft.overlayType === opt.id ? "0 2px 6px rgba(0,0,0,0.05)" : "none",
+                    background: overlayType === opt.id ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.3)",
+                    color: overlayType === opt.id ? "#1a1a2e" : "rgba(26,26,46,0.5)",
+                    border: overlayType === opt.id ? "1px solid rgba(200,200,220,0.6)" : "1px solid transparent",
+                    boxShadow: overlayType === opt.id ? "0 2px 6px rgba(0,0,0,0.05)" : "none",
                   }}
                 >{opt.label}</button>
               ))}
@@ -242,8 +251,8 @@ const BackgroundPanel = ({
 
             <div className="mt-2 flex items-center gap-2">
               <span className="text-[10px] flex-shrink-0" style={{ color: "rgba(26,26,46,0.45)" }}>Прозрачность</span>
-              <Slider value={[draft.overlayOpacity]} onValueChange={([v]) => update({ overlayOpacity: v })} max={100} min={0} step={1} className="flex-1" />
-              <span className="text-[10px] w-6 text-right" style={valStyle}>{draft.overlayOpacity}</span>
+              <Slider value={[overlayOpacity]} onValueChange={([v]) => update({ overlayOpacity: v })} max={100} min={0} step={1} className="flex-1" />
+              <span className="text-[10px] w-6 text-right" style={valStyle}>{overlayOpacity}</span>
             </div>
 
             <div className="mt-2 flex items-center justify-between">
@@ -254,7 +263,6 @@ const BackgroundPanel = ({
         </>
       )}
 
-      {/* Save button only */}
       <div>
         <button onClick={handleSave} className="w-full rounded-xl py-2 text-[11px] font-medium transition-all active:scale-[0.97]"
           style={{ background: "rgba(26,26,46,0.85)", color: "#fff" }}>

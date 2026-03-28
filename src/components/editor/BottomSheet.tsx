@@ -3,6 +3,7 @@ import { X, Palette, Image, Type, Maximize, Info } from "lucide-react";
 import type { MenuId } from "./BottomMenu";
 import type { Slide } from "./SlideCarousel";
 import BackgroundPanel from "./BackgroundPanel";
+import type { BgDraft } from "./BackgroundPanel";
 import TextPanel from "./TextPanel";
 import SizePanel, { type SlideFormat } from "./SizePanel";
 
@@ -28,6 +29,27 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
   const isSize = activeTab === "size";
   const isCustomPanel = isBackground || isText || isSize;
   const content = activeTab && !isCustomPanel ? sheetContent[activeTab] : null;
+
+  // Revert handlers for cancel (X button)
+  const handleBgRevert = (snapshot: BgDraft) => {
+    if (currentSlide && onUpdateSlide) {
+      onUpdateSlide(currentSlide.id, snapshot);
+    }
+  };
+
+  const handleTextRevert = (snapshot: Partial<Slide>) => {
+    if (currentSlide && onUpdateSlide) {
+      onUpdateSlide(currentSlide.id, snapshot);
+    }
+  };
+
+  const handleSizeRevert = (format: SlideFormat) => {
+    onSlideFormatChange?.(format);
+  };
+
+  // Close with revert is handled by each panel's onCancel
+  // The X button in header should trigger panel cancel, not just close
+  // We'll let panels handle their own cancel logic
 
   return (
     <AnimatePresence>
@@ -76,10 +98,10 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
                   currentSlide={currentSlide}
                   onSave={(updates) => onUpdateSlide(currentSlide.id, updates)}
                   onApplyTextToAll={(updates) => {
-                    onUpdateSlide(currentSlide.id, updates);
                     onApplyTextToAll?.();
                   }}
                   onClose={onClose}
+                  onRevert={(snapshot) => handleTextRevert(snapshot)}
                 />
               ) : isBackground && currentSlide && onUpdateSlide ? (
                 <BackgroundPanel
@@ -92,18 +114,19 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
                   bgPosX={currentSlide.bgPosX}
                   bgPosY={currentSlide.bgPosY}
                   bgDarken={currentSlide.bgDarken}
-                  onSave={(draft) => onUpdateSlide(currentSlide.id, draft)}
-                  onApplyToAll={(draft) => {
-                    onUpdateSlide(currentSlide.id, draft);
+                  onSave={(partial) => onUpdateSlide(currentSlide.id, partial)}
+                  onApplyToAll={() => {
                     onApplyBgToAll?.();
                   }}
                   onClose={onClose}
+                  onRevert={(snapshot) => handleBgRevert(snapshot)}
                 />
               ) : isSize && slideFormat && onSlideFormatChange ? (
                 <SizePanel
                   currentFormat={slideFormat}
                   onSave={onSlideFormatChange}
                   onClose={onClose}
+                  onRevert={handleSizeRevert}
                 />
               ) : content && (
                 <>
