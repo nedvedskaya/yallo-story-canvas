@@ -167,7 +167,7 @@ const SlideCarousel = ({ activeSlide, onSlideChange, isSheetOpen = false }: Slid
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-0 py-2 min-h-0">
       {/* Top actions for active slide */}
-      {currentSlide && (
+      {currentSlide && !isSheetOpen && (
         <div className="flex items-center justify-center gap-2 mb-2">
           <button
             onClick={() => moveSlide(activeSlide, -1)}
