@@ -197,6 +197,21 @@ const BackgroundPanel = ({
                   <Slider value={[bgDarken]} onValueChange={([v]) => update({ bgDarken: v })} min={0} max={100} step={1} className="flex-1" />
                   <span className="text-[10px] w-6 text-right" style={valStyle}>{bgDarken}</span>
                 </div>
+                <div className="flex items-center gap-2">
+                  {bgMuted !== false ? <VolumeX size={12} style={labelStyle} /> : <Volume2 size={12} style={labelStyle} />}
+                  <span className="text-[10px] flex-shrink-0" style={labelStyle}>Звук</span>
+                  <button
+                    onClick={() => update({ bgMuted: bgMuted !== false ? false : true })}
+                    className="flex-1 rounded-lg py-1 text-[10px] font-medium transition-all active:scale-[0.97]"
+                    style={{
+                      background: bgMuted === false ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.35)",
+                      border: "1px solid rgba(200,200,220,0.5)",
+                      color: "#1a1a2e",
+                    }}
+                  >
+                    {bgMuted === false ? "Вкл" : "Выкл"}
+                  </button>
+                </div>
                 <button onClick={() => update({ bgVideo: undefined })}
                   className="w-full rounded-xl py-1.5 text-[10px] font-medium transition-all active:scale-[0.98]"
                   style={{ background: "rgba(255,255,255,0.4)", border: "1px solid rgba(200,200,220,0.4)", color: "rgba(26,26,46,0.5)" }}
