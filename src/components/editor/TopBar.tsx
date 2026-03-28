@@ -3,8 +3,8 @@ import { Download } from "lucide-react";
 const TopBar = () => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
-      <div className="glass-strong mx-0">
-        <div className="flex items-center justify-between px-5 py-3" style={{ background: 'hsla(40, 10%, 83%, 0.78)', backdropFilter: 'blur(50px) saturate(180%)', WebkitBackdropFilter: 'blur(50px) saturate(180%)' }}>
+      <div className="mx-0">
+        <div className="flex items-center justify-between px-5 py-3" style={{ background: 'hsla(50, 10%, 89%, 0.65)', backdropFilter: 'blur(60px) saturate(200%)', WebkitBackdropFilter: 'blur(60px) saturate(200%)' }}>
           <h1 className="tracking-tight text-lg font-thin text-muted-foreground">
             Яло
           </h1>
