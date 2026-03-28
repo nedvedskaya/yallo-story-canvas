@@ -32,6 +32,7 @@ const initialSlides: Slide[] = [
     bgColor: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
     bgType: "color", hAlign: "center", vAlign: "center",
     overlayType: "none", overlayOpacity: 50,
+    bgScale: 100, bgPosX: 50, bgPosY: 50,
   },
 ];
 
