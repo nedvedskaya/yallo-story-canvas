@@ -18,37 +18,43 @@ interface BottomMenuProps {
 
 const BottomMenu = ({ activeTab, onTabChange }: BottomMenuProps) => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 glass">
-      <div className="flex items-center justify-around px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
-        {menuItems.map((item) => {
-          const isActive = activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => onTabChange(isActive ? null : item.id)}
-              className={cn(
-                "flex flex-col items-center gap-1 rounded-xl px-3 py-2 transition-all",
-                isActive
-                  ? "bg-primary/20 text-primary-foreground"
-                  : "text-muted-foreground"
-              )}
-            >
-              <item.icon
-                size={22}
+    <nav className="fixed bottom-4 left-4 right-4 z-50">
+      <div className="glass-pill mx-auto max-w-md rounded-[2rem] px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+        <div className="flex items-center justify-around">
+          {menuItems.map((item) => {
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => onTabChange(isActive ? null : item.id)}
                 className={cn(
-                  "transition-colors",
-                  isActive && "text-foreground drop-shadow-[0_0_8px_hsl(47,100%,85%)]"
+                  "relative flex flex-col items-center gap-1 rounded-2xl px-3 py-2 transition-all duration-300",
+                  isActive
+                    ? "text-foreground"
+                    : "text-muted-foreground"
                 )}
-              />
-              <span className={cn(
-                "text-[10px] font-medium",
-                isActive ? "text-foreground" : "text-muted-foreground"
-              )}>
-                {item.label}
-              </span>
-            </button>
-          );
-        })}
+              >
+                {/* Glow behind active icon */}
+                {isActive && (
+                  <div className="absolute -top-1 left-1/2 h-8 w-8 -translate-x-1/2 rounded-full bg-primary/60 blur-lg" />
+                )}
+                <item.icon
+                  size={22}
+                  className={cn(
+                    "relative z-10 transition-all duration-300",
+                    isActive && "text-foreground scale-110"
+                  )}
+                />
+                <span className={cn(
+                  "relative z-10 text-[10px] font-medium transition-colors",
+                  isActive ? "text-foreground" : "text-muted-foreground"
+                )}>
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </nav>
   );

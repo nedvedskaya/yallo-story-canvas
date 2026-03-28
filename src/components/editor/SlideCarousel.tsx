@@ -58,7 +58,6 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-0 py-4">
-      {/* Slide carousel */}
       <div
         ref={scrollRef}
         onScroll={handleScroll}
@@ -69,8 +68,8 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
           <div
             key={slide.id}
             className={cn(
-              "flex-shrink-0 snap-center rounded-3xl shadow-xl transition-transform duration-300",
-              index === activeSlide ? "scale-100" : "scale-[0.92] opacity-70"
+              "flex-shrink-0 snap-center rounded-3xl shadow-lg transition-all duration-300",
+              index === activeSlide ? "scale-100 shadow-xl" : "scale-[0.92] opacity-60"
             )}
             style={{
               width: "min(85vw, 360px)",
@@ -95,9 +94,8 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
           </div>
         ))}
 
-        {/* Add slide button */}
         <div
-          className="flex flex-shrink-0 snap-center items-center justify-center rounded-3xl border-2 border-dashed border-muted-foreground/30"
+          className="flex flex-shrink-0 snap-center items-center justify-center rounded-3xl glass"
           style={{
             width: "min(85vw, 360px)",
             aspectRatio: "4/5",
@@ -125,8 +123,8 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
             className={cn(
               "h-2 rounded-full transition-all duration-300",
               index === activeSlide
-                ? "w-6 bg-primary"
-                : "w-2 bg-muted-foreground/30"
+                ? "w-6 bg-foreground/40"
+                : "w-2 bg-muted-foreground/20"
             )}
           />
         ))}

@@ -42,26 +42,24 @@ const BottomSheet = ({ activeTab, onClose }: BottomSheetProps) => {
     <AnimatePresence>
       {content && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-40 bg-foreground/10"
+            className="fixed inset-0 z-40 bg-foreground/5"
           />
-          {/* Sheet */}
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed bottom-[72px] left-0 right-0 z-40 rounded-t-3xl glass"
+            className="fixed bottom-20 left-2 right-2 z-40 rounded-3xl glass-strong overflow-hidden"
             style={{ maxHeight: "50vh" }}
           >
             {/* Handle */}
             <div className="flex justify-center pt-3">
-              <div className="h-1 w-10 rounded-full bg-muted-foreground/30" />
+              <div className="h-1 w-10 rounded-full bg-muted-foreground/20" />
             </div>
 
             <div className="flex items-center justify-between px-5 pb-2 pt-3">
@@ -69,8 +67,8 @@ const BottomSheet = ({ activeTab, onClose }: BottomSheetProps) => {
                 <content.icon size={18} className="text-muted-foreground" />
                 <h3 className="text-base font-semibold text-foreground">{content.title}</h3>
               </div>
-              <button onClick={onClose} className="rounded-full p-1 text-muted-foreground transition-colors hover:text-foreground">
-                <X size={18} />
+              <button onClick={onClose} className="rounded-full p-1.5 text-muted-foreground transition-colors hover:text-foreground glass-pill">
+                <X size={16} />
               </button>
             </div>
 
@@ -80,7 +78,7 @@ const BottomSheet = ({ activeTab, onClose }: BottomSheetProps) => {
                   {content.items.map((item) => (
                     <button
                       key={item}
-                      className="rounded-2xl border border-border bg-card/50 px-4 py-3 text-left text-sm text-foreground transition-colors"
+                      className="rounded-2xl glass-pill px-4 py-3 text-left text-sm text-foreground transition-all active:scale-[0.98]"
                     >
                       {item}
                     </button>
@@ -91,9 +89,9 @@ const BottomSheet = ({ activeTab, onClose }: BottomSheetProps) => {
                   {content.items.map((item) => (
                     <button
                       key={item}
-                      className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card/50 p-4 text-xs text-foreground transition-all active:scale-95"
+                      className="flex flex-col items-center gap-2 rounded-2xl glass-pill p-4 text-xs text-foreground transition-all active:scale-95"
                     >
-                      <div className="h-10 w-10 rounded-xl bg-muted" />
+                      <div className="h-10 w-10 rounded-xl bg-muted-foreground/10" />
                       <span>{item}</span>
                     </button>
                   ))}
