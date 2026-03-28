@@ -159,7 +159,7 @@ const SlideCarousel = ({
                         }}
                       />
                     </div>
-                  )
+                  )}
                   <SlideOverlay type={slide.overlayType} opacity={slide.overlayOpacity} />
 
                   <div
