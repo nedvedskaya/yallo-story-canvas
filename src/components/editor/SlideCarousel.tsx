@@ -34,6 +34,11 @@ export interface Slide {
   bodyCase?: string;
   bodyLineHeight?: number;
   bodyLetterSpacing?: number;
+  showUsername?: boolean;
+  showSlideCount?: boolean;
+  showArrow?: boolean;
+  showFooter?: boolean;
+  footerText?: string;
 }
 
 const hAlignToText: Record<HAlign, string> = { left: "left", center: "center", right: "right" };
@@ -232,6 +237,8 @@ const SlideCarousel = ({
                   {/* Content layer */}
                   <div className="relative z-10 flex flex-col h-full w-full" style={{ justifyContent: vAlignToJustify[slide.vAlign] }}>
 
+                    {/* Top bar: username + slide count */}
+                    {(slide.showUsername !== false || slide.showSlideCount !== false) && (
                     <div
                       className="flex items-center justify-between w-full"
                       style={{
@@ -242,9 +249,14 @@ const SlideCarousel = ({
                         width: slide.vAlign !== "start" ? "100%" : undefined,
                       }}
                     >
-                      <span contentEditable suppressContentEditableWarning onBlur={(e) => onUpdateSlide(slide.id, { username: e.currentTarget.textContent || '' })} className="outline-none text-xs font-normal" style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '12px' }}>{slide.username}</span>
-                      <span className="text-xs font-normal" style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '12px' }}>{index + 1}/{slides.length}</span>
+                      {slide.showUsername !== false ? (
+                        <span className="outline-none text-xs font-normal" style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '12px' }}>{slide.username}</span>
+                      ) : <span />}
+                      {slide.showSlideCount !== false ? (
+                        <span className="text-xs font-normal" style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '12px' }}>{index + 1}/{slides.length}</span>
+                      ) : <span />}
                     </div>
+                    )}
 
                     <div>
                     <h2
@@ -275,6 +287,30 @@ const SlideCarousel = ({
                         dangerouslySetInnerHTML={{ __html: slide.body }}
                       />
                     </div>
+
+                    {/* Bottom: footer + swipe arrow */}
+                    {(slide.showFooter || slide.showArrow !== false) && (
+                      <div
+                        className="flex items-end justify-between w-full"
+                        style={{
+                          position: slide.vAlign !== "end" ? "absolute" : "relative",
+                          bottom: slide.vAlign !== "end" ? 0 : undefined,
+                          left: slide.vAlign !== "end" ? 0 : undefined,
+                          right: slide.vAlign !== "end" ? 0 : undefined,
+                          width: slide.vAlign !== "end" ? "100%" : undefined,
+                          marginTop: slide.vAlign === "end" ? "auto" : undefined,
+                        }}
+                      >
+                        {slide.showFooter ? (
+                          <span className="text-[10px] font-normal" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                            {slide.footerText || ""}
+                          </span>
+                        ) : <span />}
+                        {slide.showArrow !== false && index < slides.length - 1 ? (
+                          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>→</span>
+                        ) : <span />}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

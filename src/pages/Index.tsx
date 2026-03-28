@@ -42,7 +42,6 @@ const Index = () => {
   const [slides, setSlides] = useState<Slide[]>(initialSlides);
   const [slideFormat, setSlideFormat] = useState<SlideFormat>("carousel");
 
-  // Snapshots for revert on cancel
   const slideSnapshotRef = useRef<Slide | null>(null);
   const formatSnapshotRef = useRef<SlideFormat | null>(null);
 
@@ -83,7 +82,21 @@ const Index = () => {
     );
   }, [currentSlide]);
 
-  // Open panel = take snapshot
+  const handleApplyInfoToAll = useCallback(() => {
+    if (!currentSlide) return;
+    setSlides(prev =>
+      prev.map(s => ({
+        ...s,
+        showUsername: currentSlide.showUsername,
+        username: currentSlide.username,
+        showSlideCount: currentSlide.showSlideCount,
+        showArrow: currentSlide.showArrow,
+        showFooter: currentSlide.showFooter,
+        footerText: currentSlide.footerText,
+      }))
+    );
+  }, [currentSlide]);
+
   const handleTabChange = useCallback((tab: MenuId | null) => {
     if (tab && currentSlide) {
       slideSnapshotRef.current = { ...currentSlide };
@@ -92,14 +105,12 @@ const Index = () => {
     setActiveTab(tab);
   }, [currentSlide, slideFormat]);
 
-  // Save = confirm changes, clear snapshot, close
   const handleSaveClose = useCallback(() => {
     slideSnapshotRef.current = null;
     formatSnapshotRef.current = null;
     setActiveTab(null);
   }, []);
 
-  // Cancel = revert to snapshot, close
   const handleCancelClose = useCallback(() => {
     if (slideSnapshotRef.current && currentSlide) {
       const snap = slideSnapshotRef.current;
@@ -181,6 +192,7 @@ const Index = () => {
         onUpdateSlide={handleUpdateSlide}
         onApplyBgToAll={handleApplyBgToAll}
         onApplyTextToAll={handleApplyTextToAll}
+        onApplyInfoToAll={handleApplyInfoToAll}
         slideFormat={slideFormat}
         onSlideFormatChange={setSlideFormat}
       />
