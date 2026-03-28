@@ -2,7 +2,7 @@ import { Palette, Image, Type, Maximize, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const menuItems = [
-  { id: "design", icon: Palette, label: "Дизайн" },
+  { id: "design", icon: Palette, label: "Шаблоны" },
   { id: "background", icon: Image, label: "Фон" },
   { id: "text", icon: Type, label: "Текст" },
   { id: "size", icon: Maximize, label: "Размер" },
