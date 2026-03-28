@@ -1,73 +1,75 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import FontSection, { type FontSettings } from "./FontSection";
 import { Switch } from "@/components/ui/switch";
 import type { Slide } from "./SlideCarousel";
 
 interface TextPanelProps {
   currentSlide: Slide;
-  onUpdateSlide: (id: number, updates: Partial<Slide>) => void;
-  onApplyTextToAll: () => void;
+  onSave: (updates: Partial<Slide>) => void;
+  onApplyTextToAll: (updates: Partial<Slide>) => void;
   onClose: () => void;
 }
 
-const TextPanel = ({ currentSlide, onUpdateSlide, onApplyTextToAll, onClose }: TextPanelProps) => {
+const TextPanel = ({ currentSlide, onSave, onApplyTextToAll, onClose }: TextPanelProps) => {
   const [applyAll, setApplyAll] = useState(false);
-  const [snapshot] = useState<Partial<Slide>>(() => ({
-    titleFont: currentSlide.titleFont,
-    titleSize: currentSlide.titleSize,
-    titleCase: currentSlide.titleCase,
-    titleLineHeight: currentSlide.titleLineHeight,
-    titleLetterSpacing: currentSlide.titleLetterSpacing,
-    bodyFont: currentSlide.bodyFont,
-    bodySize: currentSlide.bodySize,
-    bodyCase: currentSlide.bodyCase,
-    bodyLineHeight: currentSlide.bodyLineHeight,
-    bodyLetterSpacing: currentSlide.bodyLetterSpacing,
-  }));
+
+  // Local draft state
+  const [draft, setDraft] = useState({
+    titleFont: currentSlide.titleFont || "'Inter', sans-serif",
+    titleSize: currentSlide.titleSize ?? 28,
+    titleCase: currentSlide.titleCase || "none",
+    titleLineHeight: currentSlide.titleLineHeight ?? 1.1,
+    titleLetterSpacing: currentSlide.titleLetterSpacing ?? 0,
+    bodyFont: currentSlide.bodyFont || "'Inter', sans-serif",
+    bodySize: currentSlide.bodySize ?? 16,
+    bodyCase: currentSlide.bodyCase || "none",
+    bodyLineHeight: currentSlide.bodyLineHeight ?? 1.5,
+    bodyLetterSpacing: currentSlide.bodyLetterSpacing ?? 0,
+  });
 
   const titleSettings: FontSettings = {
-    font: currentSlide.titleFont || "'Inter', sans-serif",
-    size: currentSlide.titleSize ?? 28,
-    case: (currentSlide.titleCase as FontSettings["case"]) || "none",
-    lineHeight: currentSlide.titleLineHeight ?? 1.1,
-    letterSpacing: currentSlide.titleLetterSpacing ?? 0,
+    font: draft.titleFont,
+    size: draft.titleSize,
+    case: draft.titleCase as FontSettings["case"],
+    lineHeight: draft.titleLineHeight,
+    letterSpacing: draft.titleLetterSpacing,
   };
 
   const bodySettings: FontSettings = {
-    font: currentSlide.bodyFont || "'Inter', sans-serif",
-    size: currentSlide.bodySize ?? 16,
-    case: (currentSlide.bodyCase as FontSettings["case"]) || "none",
-    lineHeight: currentSlide.bodyLineHeight ?? 1.5,
-    letterSpacing: currentSlide.bodyLetterSpacing ?? 0,
+    font: draft.bodyFont,
+    size: draft.bodySize,
+    case: draft.bodyCase as FontSettings["case"],
+    lineHeight: draft.bodyLineHeight,
+    letterSpacing: draft.bodyLetterSpacing,
   };
 
   const handleTitleChange = useCallback((updates: Partial<FontSettings>) => {
-    const mapped: Partial<Slide> = {};
-    if (updates.font !== undefined) mapped.titleFont = updates.font;
-    if (updates.size !== undefined) mapped.titleSize = updates.size;
-    if (updates.case !== undefined) mapped.titleCase = updates.case;
-    if (updates.lineHeight !== undefined) mapped.titleLineHeight = updates.lineHeight;
-    if (updates.letterSpacing !== undefined) mapped.titleLetterSpacing = updates.letterSpacing;
-    onUpdateSlide(currentSlide.id, mapped);
-  }, [currentSlide.id, onUpdateSlide]);
+    setDraft(prev => {
+      const next = { ...prev };
+      if (updates.font !== undefined) next.titleFont = updates.font;
+      if (updates.size !== undefined) next.titleSize = updates.size;
+      if (updates.case !== undefined) next.titleCase = updates.case;
+      if (updates.lineHeight !== undefined) next.titleLineHeight = updates.lineHeight;
+      if (updates.letterSpacing !== undefined) next.titleLetterSpacing = updates.letterSpacing;
+      return next;
+    });
+  }, []);
 
   const handleBodyChange = useCallback((updates: Partial<FontSettings>) => {
-    const mapped: Partial<Slide> = {};
-    if (updates.font !== undefined) mapped.bodyFont = updates.font;
-    if (updates.size !== undefined) mapped.bodySize = updates.size;
-    if (updates.case !== undefined) mapped.bodyCase = updates.case;
-    if (updates.lineHeight !== undefined) mapped.bodyLineHeight = updates.lineHeight;
-    if (updates.letterSpacing !== undefined) mapped.bodyLetterSpacing = updates.letterSpacing;
-    onUpdateSlide(currentSlide.id, mapped);
-  }, [currentSlide.id, onUpdateSlide]);
-
-  const handleCancel = () => {
-    onUpdateSlide(currentSlide.id, snapshot);
-    onClose();
-  };
+    setDraft(prev => {
+      const next = { ...prev };
+      if (updates.font !== undefined) next.bodyFont = updates.font;
+      if (updates.size !== undefined) next.bodySize = updates.size;
+      if (updates.case !== undefined) next.bodyCase = updates.case;
+      if (updates.lineHeight !== undefined) next.bodyLineHeight = updates.lineHeight;
+      if (updates.letterSpacing !== undefined) next.bodyLetterSpacing = updates.letterSpacing;
+      return next;
+    });
+  }, []);
 
   const handleSave = () => {
-    if (applyAll) onApplyTextToAll();
+    onSave(draft);
+    if (applyAll) onApplyTextToAll(draft);
     onClose();
   };
 
@@ -86,10 +88,9 @@ const TextPanel = ({ currentSlide, onUpdateSlide, onApplyTextToAll, onClose }: T
         <Switch checked={applyAll} onCheckedChange={setApplyAll} />
       </div>
 
-      <div className="flex gap-2">
-        <button onClick={handleCancel} className="flex-1 py-2 rounded-xl text-sm font-medium transition-all active:scale-[0.97]" style={{ background: 'rgba(26,26,46,0.06)', color: '#1a1a2e' }}>Отменить</button>
-        <button onClick={handleSave} className="flex-1 py-2 rounded-xl text-sm font-medium transition-all active:scale-[0.97]" style={{ background: 'rgba(26,26,46,0.9)', color: '#ffffff' }}>Сохранить</button>
-      </div>
+      <button onClick={handleSave} className="w-full py-2 rounded-xl text-sm font-medium transition-all active:scale-[0.97]" style={{ background: 'rgba(26,26,46,0.9)', color: '#ffffff' }}>
+        Сохранить
+      </button>
     </div>
   );
 };
