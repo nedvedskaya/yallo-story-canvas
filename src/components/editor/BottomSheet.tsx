@@ -100,6 +100,7 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
                   onOverlayTypeChange={(type) => onUpdateSlide?.(currentSlide.id, { overlayType: type })}
                   onOverlayOpacityChange={(opacity) => onUpdateSlide?.(currentSlide.id, { overlayOpacity: opacity })}
                   onApplyToAll={() => onApplyBgToAll?.()}
+                  onClose={onClose}
                 />
               ) : content && (
                 <>

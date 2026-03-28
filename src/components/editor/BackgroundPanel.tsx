@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Upload } from "lucide-react";
@@ -25,6 +25,7 @@ interface BackgroundPanelProps {
   onOverlayTypeChange: (type: OverlayType) => void;
   onOverlayOpacityChange: (opacity: number) => void;
   onApplyToAll: () => void;
+  onClose?: () => void;
 }
 
 const BackgroundPanel = ({
@@ -35,11 +36,25 @@ const BackgroundPanel = ({
   onOverlayTypeChange,
   onOverlayOpacityChange,
   onApplyToAll,
+  onClose,
 }: BackgroundPanelProps) => {
   const [bgTab, setBgTab] = useState<BgTab>("color");
   const [applyToAll, setApplyToAll] = useState(false);
   const [hexInput, setHexInput] = useState(bgColor.startsWith("#") ? bgColor : "#667eea");
   const colorRef = useRef<HTMLInputElement>(null);
+
+  // Snapshot initial values for cancel
+  const initial = useMemo(() => ({
+    bgColor, overlayType, overlayOpacity,
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), []);
+
+  const handleCancel = () => {
+    onBgColorChange(initial.bgColor);
+    onOverlayTypeChange(initial.overlayType);
+    onOverlayOpacityChange(initial.overlayOpacity);
+    onClose?.();
+  };
 
   const handleColorPickerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const color = e.target.value;
@@ -201,6 +216,31 @@ const BackgroundPanel = ({
             Применить ко всем слайдам
           </span>
           <Switch checked={applyToAll} onCheckedChange={handleApplyToggle} />
+        </div>
+
+        {/* Cancel / Save buttons */}
+        <div className="mt-3 flex gap-2">
+          <button
+            onClick={handleCancel}
+            className="flex-1 rounded-xl py-2 text-[11px] font-medium transition-all active:scale-[0.97]"
+            style={{
+              background: "rgba(255,255,255,0.5)",
+              border: "1px solid rgba(200,200,220,0.5)",
+              color: "rgba(26,26,46,0.6)",
+            }}
+          >
+            Отменить
+          </button>
+          <button
+            onClick={() => onClose?.()}
+            className="flex-1 rounded-xl py-2 text-[11px] font-medium transition-all active:scale-[0.97]"
+            style={{
+              background: "rgba(26,26,46,0.85)",
+              color: "#fff",
+            }}
+          >
+            Сохранить
+          </button>
         </div>
       </div>
     </div>
