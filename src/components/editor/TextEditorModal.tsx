@@ -15,7 +15,7 @@ const ACCENT_COLORS = [
   "#FF922B", "#CC5DE8", "#20C997", "#F06595",
 ];
 
-const TextEditorModal = ({ open, field, initialHtml, accentColor: _ac, onSave, onClose }: TextEditorModalProps) => {
+const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEditorModalProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const [selectedAccent, setSelectedAccent] = useState(ACCENT_COLORS[3]);
 
@@ -46,9 +46,7 @@ const TextEditorModal = ({ open, field, initialHtml, accentColor: _ac, onSave, o
     editorRef.current?.focus();
   };
 
-  const handleFontColor = () => {
-    exec("foreColor", selectedAccent);
-  };
+  const handleFontColor = () => exec("foreColor", selectedAccent);
 
   const handleHighlight = () => {
     const sel = window.getSelection();
@@ -71,73 +69,124 @@ const TextEditorModal = ({ open, field, initialHtml, accentColor: _ac, onSave, o
 
   if (!open) return null;
 
+  const glassPanel: React.CSSProperties = {
+    background: 'rgba(255, 255, 255, 0.45)',
+    backdropFilter: 'blur(24px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+    border: '1.5px solid rgba(200, 200, 220, 0.5)',
+    borderRadius: '20px',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9)',
+  };
+
+  const toolBtnStyle: React.CSSProperties = {
+    background: 'rgba(255, 255, 255, 0.5)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    border: '1px solid rgba(255, 255, 255, 0.7)',
+    borderRadius: '14px',
+    boxShadow: '0 2px 6px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)',
+    color: '#4a4a6a',
+  };
+
   return (
     <div className="fixed inset-0 z-[100] flex items-end justify-center" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+      {/* Backdrop */}
+      <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.15)', backdropFilter: 'blur(4px)' }} />
+
+      {/* Modal panel */}
       <div
-        className="relative w-full max-w-md mx-2 mb-2 animate-in slide-in-from-bottom-4 duration-200"
+        className="relative w-full max-w-md mx-3 mb-[calc(80px+env(safe-area-inset-bottom))] animate-in slide-in-from-bottom-4 duration-200"
         onClick={(e) => e.stopPropagation()}
-        style={{
-          background: "rgba(255,255,255,0.92)",
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
-          border: "1px solid rgba(200,200,220,0.5)",
-          borderRadius: "20px",
-          boxShadow: "0 -4px 32px rgba(0,0,0,0.12)",
-        }}
+        style={glassPanel}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-4 pb-2">
-          <span className="text-sm font-semibold" style={{ color: "#1a1a2e" }}>
+        <div className="flex items-center justify-between px-5 pt-5 pb-3">
+          <span className="text-base font-semibold" style={{ color: '#1a1a2e' }}>
             {field === "title" ? "Заголовок" : "Основной текст"}
           </span>
-          <button onClick={onClose} className="p-1 rounded-full" style={{ color: "rgba(26,26,46,0.5)" }}>
-            <X size={18} />
+          <button
+            onClick={onClose}
+            className="flex items-center justify-center transition-all active:scale-90"
+            style={{
+              ...toolBtnStyle,
+              width: 32,
+              height: 32,
+              borderRadius: '10px',
+            }}
+          >
+            <X size={16} />
           </button>
         </div>
 
         {/* Editor area */}
-        <div className="px-5 pb-3">
+        <div className="px-5 pb-4">
           <div
             ref={editorRef}
             contentEditable
             suppressContentEditableWarning
-            className="w-full min-h-[100px] max-h-[200px] overflow-y-auto outline-none text-sm p-3 rounded-xl"
+            className="w-full min-h-[110px] max-h-[200px] overflow-y-auto outline-none text-base p-4"
             style={{
-              background: "rgba(26,26,46,0.04)",
-              border: "1px solid rgba(26,26,46,0.1)",
-              color: "#1a1a2e",
+              background: 'rgba(255, 255, 255, 0.6)',
+              border: '1.5px solid rgba(200, 200, 220, 0.5)',
+              borderRadius: '16px',
+              color: '#1a1a2e',
               lineHeight: 1.6,
+              boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.03)',
+              fontWeight: 300,
             }}
           />
         </div>
 
         {/* Formatting toolbar */}
-        <div className="px-5 pb-3">
-          <div className="flex items-center gap-1 mb-3">
-            <ToolBtn icon={<Bold size={16} />} label="Жирный" onClick={handleBold} />
-            <ToolBtn icon={<Italic size={16} />} label="Курсив" onClick={handleItalic} />
-            <ToolBtn icon={<Type size={16} strokeWidth={1.2} />} label="Тонкий" onClick={handleLight} />
-            <ToolBtn icon={<Underline size={16} />} label="Подчёркнутый" onClick={handleUnderline} />
-            <div className="w-px h-6 mx-1" style={{ background: "rgba(26,26,46,0.1)" }} />
-            <ToolBtn icon={<Palette size={16} />} label="Цвет текста" onClick={handleFontColor} activeColor={selectedAccent} />
-            <ToolBtn icon={<Highlighter size={16} />} label="Фон текста" onClick={handleHighlight} activeColor={selectedAccent} />
+        <div className="px-5 pb-4">
+          <div className="flex items-center gap-2 mb-4">
+            {/* Text formatting group */}
+            <div className="flex items-center gap-1.5">
+              <ToolBtn icon={<Bold size={18} strokeWidth={2.5} />} label="Жирный" onClick={handleBold} style={toolBtnStyle} />
+              <ToolBtn icon={<Italic size={18} />} label="Курсив" onClick={handleItalic} style={toolBtnStyle} />
+              <ToolBtn icon={<Type size={18} strokeWidth={1} />} label="Тонкий" onClick={handleLight} style={toolBtnStyle} />
+              <ToolBtn icon={<Underline size={18} />} label="Подчёркнутый" onClick={handleUnderline} style={toolBtnStyle} />
+            </div>
+
+            {/* Separator */}
+            <div className="w-px h-10 mx-0.5" style={{ background: 'rgba(200, 200, 220, 0.5)' }} />
+
+            {/* Color tools */}
+            <div className="flex items-center gap-1.5">
+              <ToolBtn
+                icon={<Palette size={18} />}
+                label="Цвет текста"
+                onClick={handleFontColor}
+                style={{ ...toolBtnStyle, color: selectedAccent }}
+              />
+              <ToolBtn
+                icon={<Highlighter size={18} />}
+                label="Фон текста"
+                onClick={handleHighlight}
+                style={{ ...toolBtnStyle, color: selectedAccent }}
+              />
+            </div>
           </div>
 
           {/* Accent color picker */}
-          <div className="flex items-center gap-2">
-            <span className="text-[11px]" style={{ color: "rgba(26,26,46,0.5)" }}>Акцент</span>
-            <div className="flex gap-1.5">
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-medium" style={{ color: 'rgba(26,26,46,0.5)' }}>Акцент</span>
+            <div className="flex gap-2">
               {ACCENT_COLORS.map((c) => (
                 <button
                   key={c}
                   onClick={() => setSelectedAccent(c)}
-                  className="w-6 h-6 rounded-full transition-all"
+                  className="rounded-full transition-all duration-200"
                   style={{
+                    width: selectedAccent === c ? 30 : 26,
+                    height: selectedAccent === c ? 30 : 26,
                     background: c,
-                    border: selectedAccent === c ? "2.5px solid #1a1a2e" : "2px solid rgba(255,255,255,0.8)",
-                    boxShadow: selectedAccent === c ? "0 0 0 1px rgba(26,26,46,0.2)" : "0 1px 3px rgba(0,0,0,0.1)",
-                    transform: selectedAccent === c ? "scale(1.15)" : "scale(1)",
+                    border: selectedAccent === c
+                      ? '3px solid rgba(26,26,46,0.7)'
+                      : '2px solid rgba(255,255,255,0.8)',
+                    boxShadow: selectedAccent === c
+                      ? '0 0 0 2px rgba(255,255,255,0.6), 0 2px 8px rgba(0,0,0,0.15)'
+                      : '0 1px 4px rgba(0,0,0,0.08)',
                   }}
                 />
               ))}
@@ -146,15 +195,18 @@ const TextEditorModal = ({ open, field, initialHtml, accentColor: _ac, onSave, o
         </div>
 
         {/* Save button */}
-        <div className="px-5 pb-5 pt-2">
+        <div className="px-5 pb-5 pt-1">
           <button
             onClick={handleSave}
-            className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-[0.98]"
+            className="w-full py-3 rounded-xl text-sm font-semibold transition-all active:scale-[0.98]"
             style={{
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: "#fff",
-              border: "none",
-              boxShadow: "0 4px 12px rgba(102,126,234,0.3)",
+              background: 'rgba(255, 255, 255, 0.5)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255, 255, 255, 0.7)',
+              borderRadius: '14px',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)',
+              color: '#4a4a6a',
             }}
           >
             Сохранить
@@ -165,19 +217,27 @@ const TextEditorModal = ({ open, field, initialHtml, accentColor: _ac, onSave, o
   );
 };
 
-const ToolBtn = ({ icon, label, onClick, activeColor }: { icon: React.ReactNode; label: string; onClick: () => void; activeColor?: string }) => (
+const ToolBtn = ({
+  icon, label, onClick, style,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+  style: React.CSSProperties;
+}) => (
   <button
     onClick={onClick}
     title={label}
-    className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition-all active:scale-95"
+    className="flex flex-col items-center justify-center gap-1 transition-all active:scale-90"
     style={{
-      background: "rgba(26,26,46,0.05)",
-      border: "1px solid rgba(26,26,46,0.08)",
-      color: activeColor || "#1a1a2e",
+      ...style,
+      width: 52,
+      height: 52,
+      padding: '6px 2px',
     }}
   >
     {icon}
-    <span className="text-[9px]" style={{ color: "rgba(26,26,46,0.5)" }}>{label}</span>
+    <span className="text-[8px] font-medium leading-none" style={{ color: 'rgba(26,26,46,0.5)' }}>{label}</span>
   </button>
 );
 
