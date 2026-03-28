@@ -5,6 +5,7 @@ import SlideToolbar, { type HAlign, type VAlign, type BgType } from "./SlideTool
 import SlideOverlay from "./SlideOverlay";
 import type { OverlayType } from "./BackgroundPanel";
 import TextEditorModal from "./TextEditorModal";
+import { FORMAT_OPTIONS, type SlideFormat } from "./SizePanel";
 
 export interface Slide {
   id: number;
@@ -53,6 +54,7 @@ interface SlideCarouselProps {
   activeSlide: number;
   onSlideChange: (index: number) => void;
   isSheetOpen?: boolean;
+  slideFormat?: SlideFormat;
   onUpdateSlide: (id: number, updates: Partial<Slide>) => void;
   onAddSlide: (atIndex: number) => void;
   onMoveSlide: (fromIdx: number, dir: -1 | 1) => void;
@@ -61,13 +63,18 @@ interface SlideCarouselProps {
 }
 
 const SlideCarousel = ({
-  slides, activeSlide, onSlideChange, isSheetOpen = false,
+  slides, activeSlide, onSlideChange, isSheetOpen = false, slideFormat = "carousel",
   onUpdateSlide, onAddSlide, onMoveSlide, onDuplicateSlide, onDeleteSlide,
 }: SlideCarouselProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const currentSlide = slides[activeSlide];
   const [editorOpen, setEditorOpen] = useState(false);
   const [editorField, setEditorField] = useState<"title" | "body">("title");
+
+  const formatInfo = FORMAT_OPTIONS.find(f => f.id === slideFormat) || FORMAT_OPTIONS[0];
+  const slideAspectRatio = `${formatInfo.width}/${formatInfo.height}`;
+  // For landscape formats, use height-based sizing
+  const isLandscape = formatInfo.width > formatInfo.height;
 
   const openEditor = (field: "title" | "body") => {
     setEditorField(field);
@@ -141,7 +148,10 @@ const SlideCarousel = ({
                 "flex-shrink-0 snap-center transition-all duration-300 overflow-hidden",
                 index === activeSlide ? "scale-100" : "scale-[0.92] opacity-60"
               )}
-              style={{ width: "min(78vw, 320px)", aspectRatio: "1080/1440" }}
+              style={{
+                width: isLandscape ? "min(90vw, 420px)" : "min(78vw, 320px)",
+                aspectRatio: slideAspectRatio,
+              }}
             >
               <div
                 className="h-full w-full p-[5px]"
