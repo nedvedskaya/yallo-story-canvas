@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from "react";
-import { Bold, Italic, Underline, Type, Palette, Highlighter, X } from "lucide-react";
+import { Bold, Italic, Underline, Type, Palette, Highlighter, X, RotateCcw } from "lucide-react";
 
 interface TextEditorModalProps {
   open: boolean;
@@ -10,14 +10,16 @@ interface TextEditorModalProps {
   onClose: () => void;
 }
 
-const ACCENT_COLORS = [
+const ACCENT_PRESETS = [
   "#FF6B6B", "#FFD93D", "#6BCB77", "#4D96FF",
   "#FF922B", "#CC5DE8", "#20C997", "#F06595",
+  "#ffffff", "#000000",
 ];
 
 const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEditorModalProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
-  const [selectedAccent, setSelectedAccent] = useState(ACCENT_COLORS[3]);
+  const colorInputRef = useRef<HTMLInputElement>(null);
+  const [selectedAccent, setSelectedAccent] = useState(ACCENT_PRESETS[3]);
 
   useEffect(() => {
     if (open && editorRef.current) {
@@ -31,10 +33,6 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
     editorRef.current?.focus();
   }, []);
 
-  const handleBold = () => exec("bold");
-  const handleItalic = () => exec("italic");
-  const handleUnderline = () => exec("underline");
-
   const handleLight = () => {
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
@@ -45,8 +43,6 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
     sel.removeAllRanges();
     editorRef.current?.focus();
   };
-
-  const handleFontColor = () => exec("foreColor", selectedAccent);
 
   const handleHighlight = () => {
     const sel = window.getSelection();
@@ -61,152 +57,153 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
     editorRef.current?.focus();
   };
 
+  const handleResetFormatting = () => {
+    exec("removeFormat");
+    // Also remove background highlights
+    const sel = window.getSelection();
+    if (editorRef.current) {
+      const spans = editorRef.current.querySelectorAll("span[style]");
+      spans.forEach((span) => {
+        const parent = span.parentNode;
+        if (parent) {
+          while (span.firstChild) parent.insertBefore(span.firstChild, span);
+          parent.removeChild(span);
+        }
+      });
+    }
+    editorRef.current?.focus();
+  };
+
   const handleSave = () => {
-    const html = editorRef.current?.innerHTML || "";
-    onSave(html);
+    onSave(editorRef.current?.innerHTML || "");
     onClose();
   };
 
   if (!open) return null;
 
-  const glassPanel: React.CSSProperties = {
-    background: 'rgba(255, 255, 255, 0.45)',
-    backdropFilter: 'blur(24px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-    border: '1.5px solid rgba(200, 200, 220, 0.5)',
-    borderRadius: '20px',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9)',
-  };
-
-  const toolBtnStyle: React.CSSProperties = {
-    background: 'rgba(255, 255, 255, 0.5)',
-    backdropFilter: 'blur(12px)',
-    WebkitBackdropFilter: 'blur(12px)',
-    border: '1px solid rgba(255, 255, 255, 0.7)',
-    borderRadius: '14px',
+  const labelStyle: React.CSSProperties = { color: "rgba(26,26,46,0.5)" };
+  const btnBase: React.CSSProperties = {
+    background: 'rgba(255,255,255,0.5)',
+    border: '1px solid rgba(255,255,255,0.7)',
+    borderRadius: '10px',
     boxShadow: '0 2px 6px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)',
     color: '#4a4a6a',
   };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-end justify-center" onClick={onClose}>
-      {/* Backdrop */}
-      <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.15)', backdropFilter: 'blur(4px)' }} />
+      <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.1)', backdropFilter: 'blur(2px)' }} />
 
-      {/* Modal panel */}
       <div
-        className="relative w-full max-w-md mx-3 mb-[calc(80px+env(safe-area-inset-bottom))] animate-in slide-in-from-bottom-4 duration-200"
+        className="relative w-full max-w-md mx-3 mb-[calc(76px+env(safe-area-inset-bottom))] animate-in slide-in-from-bottom-4 duration-200"
         onClick={(e) => e.stopPropagation()}
-        style={glassPanel}
+        style={{
+          background: 'rgba(255, 255, 255, 0.45)',
+          backdropFilter: 'blur(24px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+          border: '1.5px solid rgba(200, 200, 220, 0.5)',
+          borderRadius: '20px',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9)',
+        }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-3">
-          <span className="text-base font-semibold" style={{ color: '#1a1a2e' }}>
+        <div className="flex items-center justify-between px-4 pt-4 pb-2">
+          <span className="text-sm font-semibold" style={{ color: '#1a1a2e' }}>
             {field === "title" ? "Заголовок" : "Основной текст"}
           </span>
-          <button
-            onClick={onClose}
-            className="flex items-center justify-center transition-all active:scale-90"
-            style={{
-              ...toolBtnStyle,
-              width: 32,
-              height: 32,
-              borderRadius: '10px',
-            }}
-          >
-            <X size={16} />
+          <button onClick={onClose} className="flex items-center justify-center transition-all active:scale-90"
+            style={{ ...btnBase, width: 30, height: 30 }}>
+            <X size={14} />
           </button>
         </div>
 
-        {/* Editor area */}
-        <div className="px-5 pb-4">
+        {/* Editor */}
+        <div className="px-4 pb-3">
           <div
             ref={editorRef}
             contentEditable
             suppressContentEditableWarning
-            className="w-full min-h-[110px] max-h-[200px] overflow-y-auto outline-none text-base p-4"
+            className="w-full min-h-[80px] max-h-[160px] overflow-y-auto outline-none text-sm p-3"
             style={{
-              background: 'rgba(255, 255, 255, 0.6)',
-              border: '1.5px solid rgba(200, 200, 220, 0.5)',
-              borderRadius: '16px',
+              background: 'rgba(255,255,255,0.6)',
+              border: '1.5px solid rgba(200,200,220,0.5)',
+              borderRadius: '14px',
               color: '#1a1a2e',
               lineHeight: 1.6,
               boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.03)',
-              fontWeight: 300,
             }}
           />
         </div>
 
-        {/* Formatting toolbar */}
-        <div className="px-5 pb-4">
-          <div className="flex items-center gap-2 mb-4">
-            {/* Text formatting group */}
-            <div className="flex items-center gap-1.5">
-              <ToolBtn icon={<Bold size={18} strokeWidth={2.5} />} label="Жирный" onClick={handleBold} style={toolBtnStyle} />
-              <ToolBtn icon={<Italic size={18} />} label="Курсив" onClick={handleItalic} style={toolBtnStyle} />
-              <ToolBtn icon={<Type size={18} strokeWidth={1} />} label="Тонкий" onClick={handleLight} style={toolBtnStyle} />
-              <ToolBtn icon={<Underline size={18} />} label="Подчёркнутый" onClick={handleUnderline} style={toolBtnStyle} />
-            </div>
+        {/* Toolbar — compact */}
+        <div className="px-4 pb-3 flex flex-col gap-2.5">
+          {/* Format buttons row */}
+          <div className="flex items-center gap-1.5">
+            <ToolBtn icon={<Bold size={15} strokeWidth={2.5} />} label="Жирный" onClick={() => exec("bold")} style={btnBase} />
+            <ToolBtn icon={<Italic size={15} />} label="Курсив" onClick={() => exec("italic")} style={btnBase} />
+            <ToolBtn icon={<Type size={15} strokeWidth={1} />} label="Тонкий" onClick={handleLight} style={btnBase} />
+            <ToolBtn icon={<Underline size={15} />} label="Подчёрк." onClick={() => exec("underline")} style={btnBase} />
 
-            {/* Separator */}
-            <div className="w-px h-10 mx-0.5" style={{ background: 'rgba(200, 200, 220, 0.5)' }} />
+            <div className="w-px h-8 mx-0.5" style={{ background: 'rgba(200,200,220,0.5)' }} />
 
-            {/* Color tools */}
-            <div className="flex items-center gap-1.5">
-              <ToolBtn
-                icon={<Palette size={18} />}
-                label="Цвет текста"
-                onClick={handleFontColor}
-                style={{ ...toolBtnStyle, color: selectedAccent }}
-              />
-              <ToolBtn
-                icon={<Highlighter size={18} />}
-                label="Фон текста"
-                onClick={handleHighlight}
-                style={{ ...toolBtnStyle, color: selectedAccent }}
-              />
-            </div>
+            <ToolBtn icon={<Palette size={15} />} label="Цвет" onClick={() => exec("foreColor", selectedAccent)} style={{ ...btnBase, color: selectedAccent }} />
+            <ToolBtn icon={<Highlighter size={15} />} label="Фон" onClick={handleHighlight} style={{ ...btnBase, color: selectedAccent }} />
+
+            <div className="w-px h-8 mx-0.5" style={{ background: 'rgba(200,200,220,0.5)' }} />
+
+            <ToolBtn icon={<RotateCcw size={14} />} label="Сброс" onClick={handleResetFormatting} style={btnBase} />
           </div>
 
-          {/* Accent color picker */}
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-medium" style={{ color: 'rgba(26,26,46,0.5)' }}>Акцент</span>
-            <div className="flex gap-2">
-              {ACCENT_COLORS.map((c) => (
+          {/* Color picker row */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-medium flex-shrink-0" style={labelStyle}>Акцент</span>
+            <div className="flex items-center gap-1.5 flex-1 overflow-x-auto scrollbar-hide">
+              {ACCENT_PRESETS.map((c) => (
                 <button
                   key={c}
                   onClick={() => setSelectedAccent(c)}
-                  className="rounded-full transition-all duration-200"
+                  className="flex-shrink-0 rounded-full transition-all"
                   style={{
-                    width: selectedAccent === c ? 30 : 26,
-                    height: selectedAccent === c ? 30 : 26,
+                    width: 22, height: 22,
                     background: c,
-                    border: selectedAccent === c
-                      ? '3px solid rgba(26,26,46,0.7)'
-                      : '2px solid rgba(255,255,255,0.8)',
-                    boxShadow: selectedAccent === c
-                      ? '0 0 0 2px rgba(255,255,255,0.6), 0 2px 8px rgba(0,0,0,0.15)'
-                      : '0 1px 4px rgba(0,0,0,0.08)',
+                    border: selectedAccent === c ? '2.5px solid rgba(26,26,46,0.7)' : c === '#ffffff' ? '1.5px solid rgba(200,200,220,0.6)' : '1.5px solid rgba(255,255,255,0.7)',
+                    boxShadow: selectedAccent === c ? '0 0 0 1.5px rgba(255,255,255,0.6)' : '0 1px 3px rgba(0,0,0,0.08)',
+                    transform: selectedAccent === c ? 'scale(1.2)' : 'scale(1)',
                   }}
                 />
               ))}
+              {/* Custom color picker */}
+              <button
+                onClick={() => colorInputRef.current?.click()}
+                className="flex-shrink-0 rounded-full transition-all active:scale-90 flex items-center justify-center"
+                style={{
+                  width: 22, height: 22,
+                  background: 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)',
+                  border: '1.5px solid rgba(255,255,255,0.7)',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                }}
+              />
+              <input
+                ref={colorInputRef}
+                type="color"
+                value={selectedAccent}
+                onChange={(e) => setSelectedAccent(e.target.value)}
+                className="sr-only"
+              />
             </div>
           </div>
         </div>
 
-        {/* Save button */}
-        <div className="px-5 pb-5 pt-1">
+        {/* Save */}
+        <div className="px-4 pb-4 pt-1">
           <button
             onClick={handleSave}
-            className="w-full py-3 rounded-xl text-sm font-semibold transition-all active:scale-[0.98]"
+            className="w-full py-2.5 text-[11px] font-medium transition-all active:scale-[0.97]"
             style={{
-              background: 'rgba(255, 255, 255, 0.5)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              border: '1px solid rgba(255, 255, 255, 0.7)',
-              borderRadius: '14px',
-              boxShadow: '0 2px 6px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)',
-              color: '#4a4a6a',
+              background: 'rgba(26,26,46,0.85)',
+              color: '#fff',
+              borderRadius: '12px',
+              border: 'none',
             }}
           >
             Сохранить
@@ -228,16 +225,11 @@ const ToolBtn = ({
   <button
     onClick={onClick}
     title={label}
-    className="flex flex-col items-center justify-center gap-1 transition-all active:scale-90"
-    style={{
-      ...style,
-      width: 52,
-      height: 52,
-      padding: '6px 2px',
-    }}
+    className="flex flex-col items-center justify-center gap-0.5 transition-all active:scale-90"
+    style={{ ...style, width: 40, height: 40, padding: '4px 2px' }}
   >
     {icon}
-    <span className="text-[8px] font-medium leading-none" style={{ color: 'rgba(26,26,46,0.5)' }}>{label}</span>
+    <span className="text-[7px] font-medium leading-none" style={{ color: 'rgba(26,26,46,0.45)' }}>{label}</span>
   </button>
 );
 
