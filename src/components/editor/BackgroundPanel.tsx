@@ -1,7 +1,7 @@
 import { useState, useRef, useMemo } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { Upload } from "lucide-react";
+import { Upload, Move, ZoomIn } from "lucide-react";
 
 export type OverlayType = "none" | "dots" | "lines" | "grid" | "cells" | "blobs" | "noise";
 type BgTab = "color" | "photo" | "video";
@@ -20,24 +20,29 @@ interface BackgroundPanelProps {
   bgColor: string;
   overlayType: OverlayType;
   overlayOpacity: number;
+  bgImage?: string;
+  bgScale: number;
+  bgPosX: number;
+  bgPosY: number;
   onBgColorChange: (color: string) => void;
   onOverlayTypeChange: (type: OverlayType) => void;
   onOverlayOpacityChange: (opacity: number) => void;
+  onBgImageChange: (url: string | undefined) => void;
+  onBgScaleChange: (scale: number) => void;
+  onBgPosXChange: (x: number) => void;
+  onBgPosYChange: (y: number) => void;
   onApplyToAll: () => void;
   onClose?: () => void;
 }
 
 const BackgroundPanel = ({
-  bgColor,
-  overlayType,
-  overlayOpacity,
-  onBgColorChange,
-  onOverlayTypeChange,
-  onOverlayOpacityChange,
-  onApplyToAll,
-  onClose,
+  bgColor, overlayType, overlayOpacity,
+  bgImage, bgScale, bgPosX, bgPosY,
+  onBgColorChange, onOverlayTypeChange, onOverlayOpacityChange,
+  onBgImageChange, onBgScaleChange, onBgPosXChange, onBgPosYChange,
+  onApplyToAll, onClose,
 }: BackgroundPanelProps) => {
-  const [bgTab, setBgTab] = useState<BgTab>("color");
+  const [bgTab, setBgTab] = useState<BgTab>(bgImage ? "photo" : "color");
   const [applyToAll, setApplyToAll] = useState(false);
   const [hexInput, setHexInput] = useState(bgColor.startsWith("#") ? bgColor : "#667eea");
   const colorRef = useRef<HTMLInputElement>(null);
@@ -45,7 +50,7 @@ const BackgroundPanel = ({
   const videoRef = useRef<HTMLInputElement>(null);
 
   const initial = useMemo(() => ({
-    bgColor, overlayType, overlayOpacity,
+    bgColor, overlayType, overlayOpacity, bgImage, bgScale, bgPosX, bgPosY,
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }), []);
 
@@ -53,6 +58,10 @@ const BackgroundPanel = ({
     onBgColorChange(initial.bgColor);
     onOverlayTypeChange(initial.overlayType);
     onOverlayOpacityChange(initial.overlayOpacity);
+    onBgImageChange(initial.bgImage);
+    onBgScaleChange(initial.bgScale);
+    onBgPosXChange(initial.bgPosX);
+    onBgPosYChange(initial.bgPosY);
     onClose?.();
   };
 
@@ -64,14 +73,23 @@ const BackgroundPanel = ({
 
   const handleHexInput = (val: string) => {
     setHexInput(val);
-    if (/^#[0-9a-fA-F]{6}$/.test(val)) {
-      onBgColorChange(val);
-    }
+    if (/^#[0-9a-fA-F]{6}$/.test(val)) onBgColorChange(val);
   };
 
   const handleApplyToggle = (checked: boolean) => {
     setApplyToAll(checked);
     if (checked) onApplyToAll();
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      onBgImageChange(url);
+      onBgScaleChange(100);
+      onBgPosXChange(50);
+      onBgPosYChange(50);
+    }
   };
 
   const tabItems: { id: BgTab; label: string }[] = [
@@ -80,41 +98,62 @@ const BackgroundPanel = ({
     { id: "video", label: "Видео" },
   ];
 
+  const labelStyle = { color: "rgba(26,26,46,0.5)" };
+  const valStyle = { color: "rgba(26,26,46,0.6)" };
+
   return (
     <div className="flex flex-col gap-3 overflow-y-auto max-h-[28vh] scrollbar-hide">
       {/* Tabs */}
       <div>
         <div className="flex gap-1 mb-2">
           {tabItems.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setBgTab(t.id)}
+            <button key={t.id} onClick={() => setBgTab(t.id)}
               className="flex-1 rounded-lg py-1.5 text-[11px] font-medium transition-all"
               style={{
                 background: bgTab === t.id ? "rgba(255,255,255,0.7)" : "transparent",
                 color: bgTab === t.id ? "#1a1a2e" : "rgba(26,26,46,0.45)",
                 boxShadow: bgTab === t.id ? "0 2px 8px rgba(0,0,0,0.04)" : "none",
               }}
-            >
-              {t.label}
-            </button>
+            >{t.label}</button>
           ))}
         </div>
 
         {bgTab === "photo" && (
           <>
-            <input ref={photoRef} type="file" accept="image/*" className="sr-only"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) onBgColorChange(`url(${URL.createObjectURL(file)})`);
-              }}
-            />
+            <input ref={photoRef} type="file" accept="image/*" className="sr-only" onChange={handlePhotoUpload} />
             <button onClick={() => photoRef.current?.click()}
-              className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-xs font-medium transition-all active:scale-[0.98]"
+              className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-medium transition-all active:scale-[0.98]"
               style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(200,200,220,0.5)", color: "#1a1a2e" }}
             >
-              <Upload size={14} /> Загрузить фото
+              <Upload size={14} /> {bgImage ? "Заменить фото" : "Загрузить фото"}
             </button>
+
+            {bgImage && (
+              <div className="flex flex-col gap-2 mt-2">
+                <div className="flex items-center gap-2">
+                  <ZoomIn size={12} style={labelStyle} />
+                  <span className="text-[10px] flex-shrink-0" style={labelStyle}>Масштаб</span>
+                  <Slider value={[bgScale]} onValueChange={([v]) => onBgScaleChange(v)} min={50} max={300} step={1} className="flex-1" />
+                  <span className="text-[10px] w-8 text-right" style={valStyle}>{bgScale}%</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Move size={12} style={labelStyle} />
+                  <span className="text-[10px] flex-shrink-0" style={labelStyle}>X</span>
+                  <Slider value={[bgPosX]} onValueChange={([v]) => onBgPosXChange(v)} min={0} max={100} step={1} className="flex-1" />
+                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgPosX}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Move size={12} style={labelStyle} />
+                  <span className="text-[10px] flex-shrink-0" style={labelStyle}>Y</span>
+                  <Slider value={[bgPosY]} onValueChange={([v]) => onBgPosYChange(v)} min={0} max={100} step={1} className="flex-1" />
+                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgPosY}</span>
+                </div>
+                <button onClick={() => onBgImageChange(undefined)}
+                  className="w-full rounded-xl py-1.5 text-[10px] font-medium transition-all active:scale-[0.98]"
+                  style={{ background: "rgba(255,255,255,0.4)", border: "1px solid rgba(200,200,220,0.4)", color: "rgba(26,26,46,0.5)" }}
+                >Удалить фото</button>
+              </div>
+            )}
           </>
         )}
 
@@ -127,7 +166,7 @@ const BackgroundPanel = ({
               }}
             />
             <button onClick={() => videoRef.current?.click()}
-              className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-xs font-medium transition-all active:scale-[0.98]"
+              className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-medium transition-all active:scale-[0.98]"
               style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(200,200,220,0.5)", color: "#1a1a2e" }}
             >
               <Upload size={14} /> Загрузить видео (до 1 мин)
@@ -140,7 +179,7 @@ const BackgroundPanel = ({
       {bgTab === "color" && (
         <>
           <div>
-            <p className="text-[11px] font-medium mb-1.5" style={{ color: "rgba(26,26,46,0.5)" }}>Акцентный цвет</p>
+            <p className="text-[11px] font-medium mb-1.5" style={labelStyle}>Акцентный цвет</p>
             <div className="flex items-center gap-2">
               <button onClick={() => colorRef.current?.click()} className="w-7 h-7 rounded-full flex-shrink-0 transition-all active:scale-90"
                 style={{ background: hexInput, border: "2px solid rgba(255,255,255,0.8)", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }} />
@@ -152,7 +191,7 @@ const BackgroundPanel = ({
           </div>
 
           <div>
-            <p className="text-[11px] font-medium mb-1.5" style={{ color: "rgba(26,26,46,0.5)" }}>Элементы</p>
+            <p className="text-[11px] font-medium mb-1.5" style={labelStyle}>Элементы</p>
             <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
               {overlayOptions.map((opt) => (
                 <button key={opt.id} onClick={() => onOverlayTypeChange(opt.id)}
@@ -170,11 +209,11 @@ const BackgroundPanel = ({
             <div className="mt-2 flex items-center gap-2">
               <span className="text-[10px] flex-shrink-0" style={{ color: "rgba(26,26,46,0.45)" }}>Прозрачность</span>
               <Slider value={[overlayOpacity]} onValueChange={([v]) => onOverlayOpacityChange(v)} max={100} min={0} step={1} className="flex-1" />
-              <span className="text-[10px] w-6 text-right" style={{ color: "rgba(26,26,46,0.6)" }}>{overlayOpacity}</span>
+              <span className="text-[10px] w-6 text-right" style={valStyle}>{overlayOpacity}</span>
             </div>
 
             <div className="mt-2 flex items-center justify-between">
-              <span className="text-[11px]" style={{ color: "rgba(26,26,46,0.6)" }}>Применить ко всем слайдам</span>
+              <span className="text-[11px]" style={valStyle}>Применить ко всем слайдам</span>
               <Switch checked={applyToAll} onCheckedChange={handleApplyToggle} />
             </div>
 

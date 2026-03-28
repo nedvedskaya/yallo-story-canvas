@@ -16,6 +16,7 @@ const initialSlides: Slide[] = [
     bgColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
     bgType: "color", hAlign: "center", vAlign: "center",
     overlayType: "none", overlayOpacity: 50,
+    bgScale: 100, bgPosX: 50, bgPosY: 50,
   },
   {
     id: 2, username: "@username", title: "Расскажите историю",
@@ -23,6 +24,7 @@ const initialSlides: Slide[] = [
     bgColor: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
     bgType: "color", hAlign: "center", vAlign: "center",
     overlayType: "none", overlayOpacity: 50,
+    bgScale: 100, bgPosX: 50, bgPosY: 50,
   },
   {
     id: 3, username: "@username", title: "Призыв к действию",
@@ -30,6 +32,7 @@ const initialSlides: Slide[] = [
     bgColor: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
     bgType: "color", hAlign: "center", vAlign: "center",
     overlayType: "none", overlayOpacity: 50,
+    bgScale: 100, bgPosX: 50, bgPosY: 50,
   },
 ];
 
@@ -62,6 +65,7 @@ const Index = () => {
       bgColor: "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)",
       bgType: "color", hAlign: "center", vAlign: "center",
       overlayType: "none", overlayOpacity: 50,
+      bgScale: 100, bgPosX: 50, bgPosY: 50,
     };
     setSlides(prev => { const next = [...prev]; next.splice(atIndex, 0, newSlide); return next; });
     setActiveSlide(atIndex);
