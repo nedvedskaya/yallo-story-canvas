@@ -36,11 +36,25 @@ const BackgroundPanel = ({
   onOverlayTypeChange,
   onOverlayOpacityChange,
   onApplyToAll,
+  onClose,
 }: BackgroundPanelProps) => {
   const [bgTab, setBgTab] = useState<BgTab>("color");
   const [applyToAll, setApplyToAll] = useState(false);
   const [hexInput, setHexInput] = useState(bgColor.startsWith("#") ? bgColor : "#667eea");
   const colorRef = useRef<HTMLInputElement>(null);
+
+  // Snapshot initial values for cancel
+  const initial = useMemo(() => ({
+    bgColor, overlayType, overlayOpacity,
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), []);
+
+  const handleCancel = () => {
+    onBgColorChange(initial.bgColor);
+    onOverlayTypeChange(initial.overlayType);
+    onOverlayOpacityChange(initial.overlayOpacity);
+    onClose?.();
+  };
 
   const handleColorPickerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const color = e.target.value;
