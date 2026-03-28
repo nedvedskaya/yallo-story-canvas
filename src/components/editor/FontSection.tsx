@@ -9,26 +9,13 @@ export interface FontSettings {
 }
 
 export const FONT_LIST = [
-  { name: "Inter", family: "Inter, sans-serif" },
-  { name: "Playfair Display", family: "'Playfair Display', serif" },
-  { name: "Syne", family: "'Syne', sans-serif" },
-  { name: "Unbounded", family: "'Unbounded', sans-serif" },
-  { name: "DM Serif Display", family: "'DM Serif Display', serif" },
-  { name: "Clash Display", family: "'Clash Display', sans-serif" },
-  { name: "Cabinet Grotesk", family: "'Cabinet Grotesk', sans-serif" },
-  { name: "Satoshi", family: "'Satoshi', sans-serif" },
-  { name: "General Sans", family: "'General Sans', sans-serif" },
-  { name: "Boska", family: "'Boska', serif" },
-  { name: "Chillax", family: "'Chillax', sans-serif" },
-  { name: "Melodrama", family: "'Melodrama', serif" },
-  { name: "Swear Display", family: "'Swear Display', serif" },
-  { name: "Neue Montreal", family: "'Neue Montreal', sans-serif" },
-  { name: "Coolvetica", family: "'Coolvetica', sans-serif" },
-  { name: "Postertoaster", family: "'Postertoaster', sans-serif" },
   { name: "Abraxas", family: "'Abraxas', serif" },
   { name: "HeadingNow", family: "'HeadingNow Trial', sans-serif" },
+  { name: "Postertoaster", family: "'Postertoaster', sans-serif" },
   { name: "SouthGhetto", family: "'SouthGhetto', sans-serif" },
   { name: "Marvin Visions", family: "'Marvin Visions', sans-serif" },
+  { name: "SONGER", family: "'SONGER Grotesque', sans-serif" },
+  { name: "Coolvetica", family: "'Coolvetica', sans-serif" },
 ];
 
 interface FontSectionProps {
