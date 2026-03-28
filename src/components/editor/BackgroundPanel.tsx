@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { Upload, Move, ZoomIn } from "lucide-react";
+import { Upload, Move, ZoomIn, Volume2, VolumeX } from "lucide-react";
 
 export type OverlayType = "none" | "dots" | "lines" | "grid" | "cells" | "blobs" | "noise";
 type BgTab = "color" | "photo" | "video";
@@ -26,6 +26,7 @@ export interface BgDraft {
   bgPosX: number;
   bgPosY: number;
   bgDarken: number;
+  bgMuted?: boolean;
 }
 
 interface BackgroundPanelProps {
@@ -38,6 +39,7 @@ interface BackgroundPanelProps {
   bgPosX: number;
   bgPosY: number;
   bgDarken: number;
+  bgMuted?: boolean;
   onSave: (draft: Partial<BgDraft>) => void;
   onApplyToAll: () => void;
   onClose: () => void;
@@ -45,7 +47,7 @@ interface BackgroundPanelProps {
 
 const BackgroundPanel = ({
   bgColor, overlayType, overlayOpacity,
-  bgImage, bgVideo, bgScale, bgPosX, bgPosY, bgDarken,
+  bgImage, bgVideo, bgScale, bgPosX, bgPosY, bgDarken, bgMuted,
   onSave, onApplyToAll, onClose,
 }: BackgroundPanelProps) => {
   const [bgTab, setBgTab] = useState<BgTab>(bgVideo ? "video" : bgImage ? "photo" : "color");
@@ -82,7 +84,7 @@ const BackgroundPanel = ({
     const file = e.target.files?.[0];
     if (file) {
       const url = URL.createObjectURL(file);
-      update({ bgImage: undefined, bgVideo: url, bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0 });
+      update({ bgImage: undefined, bgVideo: url, bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0, bgMuted: false });
     }
   };
 
@@ -194,6 +196,21 @@ const BackgroundPanel = ({
                   <span className="text-[10px] flex-shrink-0" style={labelStyle}>Затемнение</span>
                   <Slider value={[bgDarken]} onValueChange={([v]) => update({ bgDarken: v })} min={0} max={100} step={1} className="flex-1" />
                   <span className="text-[10px] w-6 text-right" style={valStyle}>{bgDarken}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {bgMuted !== false ? <VolumeX size={12} style={labelStyle} /> : <Volume2 size={12} style={labelStyle} />}
+                  <span className="text-[10px] flex-shrink-0" style={labelStyle}>Звук</span>
+                  <button
+                    onClick={() => update({ bgMuted: bgMuted !== false ? false : true })}
+                    className="flex-1 rounded-lg py-1 text-[10px] font-medium transition-all active:scale-[0.97]"
+                    style={{
+                      background: bgMuted === false ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.35)",
+                      border: "1px solid rgba(200,200,220,0.5)",
+                      color: "#1a1a2e",
+                    }}
+                  >
+                    {bgMuted === false ? "Вкл" : "Выкл"}
+                  </button>
                 </div>
                 <button onClick={() => update({ bgVideo: undefined })}
                   className="w-full rounded-xl py-1.5 text-[10px] font-medium transition-all active:scale-[0.98]"
