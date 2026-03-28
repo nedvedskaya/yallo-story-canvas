@@ -100,6 +100,7 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
                   bgScale={currentSlide.bgScale}
                   bgPosX={currentSlide.bgPosX}
                   bgPosY={currentSlide.bgPosY}
+                  bgDarken={currentSlide.bgDarken}
                   onBgColorChange={(color) => onUpdateSlide?.(currentSlide.id, { bgColor: color })}
                   onOverlayTypeChange={(type) => onUpdateSlide?.(currentSlide.id, { overlayType: type })}
                   onOverlayOpacityChange={(opacity) => onUpdateSlide?.(currentSlide.id, { overlayOpacity: opacity })}
@@ -107,6 +108,7 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
                   onBgScaleChange={(scale) => onUpdateSlide?.(currentSlide.id, { bgScale: scale })}
                   onBgPosXChange={(x) => onUpdateSlide?.(currentSlide.id, { bgPosX: x })}
                   onBgPosYChange={(y) => onUpdateSlide?.(currentSlide.id, { bgPosY: y })}
+                  onBgDarkenChange={(v) => onUpdateSlide?.(currentSlide.id, { bgDarken: v })}
                   onApplyToAll={() => onApplyBgToAll?.()}
                   onClose={onClose}
                 />
