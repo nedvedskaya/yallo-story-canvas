@@ -82,7 +82,7 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
   }, []);
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-0 py-4">
+    <div className="flex flex-1 flex-col items-center justify-center px-0 py-2 min-h-0">
       <div
         ref={scrollRef}
         onScroll={handleScroll}
