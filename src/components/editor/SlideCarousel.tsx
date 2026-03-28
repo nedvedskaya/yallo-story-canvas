@@ -75,9 +75,10 @@ const addBtnStyle: React.CSSProperties = {
 interface SlideCarouselProps {
   activeSlide: number;
   onSlideChange: (index: number) => void;
+  isSheetOpen?: boolean;
 }
 
-const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
+const SlideCarousel = ({ activeSlide, onSlideChange, isSheetOpen = false }: SlideCarouselProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [slides, setSlides] = useState(initialSlides);
   const [bgModalOpen, setBgModalOpen] = useState(false);
@@ -166,7 +167,7 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-0 py-2 min-h-0">
       {/* Top actions for active slide */}
-      {currentSlide && (
+      {currentSlide && !isSheetOpen && (
         <div className="flex items-center justify-center gap-2 mb-2">
           <button
             onClick={() => moveSlide(activeSlide, -1)}
@@ -205,8 +206,12 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="flex w-full items-center gap-3 overflow-x-auto px-8 snap-x-mandatory scrollbar-hide"
-        style={{ scrollBehavior: "smooth" }}
+        className="flex w-full items-center gap-3 overflow-x-auto px-8 snap-x-mandatory scrollbar-hide transition-all duration-300"
+        style={{
+          scrollBehavior: "smooth",
+          transform: isSheetOpen ? 'scale(0.65) translateY(-15%)' : 'scale(1) translateY(0)',
+          transformOrigin: 'center center',
+        }}
       >
         {slides.map((slide, index) => (
           <div key={slide.id} className="flex items-center gap-3 flex-shrink-0">
@@ -310,7 +315,7 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
       </div>
 
       {/* Toolbar */}
-      {currentSlide && (
+      {currentSlide && !isSheetOpen && (
         <SlideToolbar
           hAlign={currentSlide.hAlign}
           vAlign={currentSlide.vAlign}

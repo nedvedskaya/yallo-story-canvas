@@ -57,7 +57,7 @@ const BottomSheet = ({ activeTab, onClose }: BottomSheetProps) => {
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
             className="fixed bottom-20 left-2 right-2 z-40 overflow-hidden"
             style={{
-              maxHeight: "50vh",
+              maxHeight: "35vh",
               background: 'rgba(255, 255, 255, 0.55)',
               backdropFilter: 'blur(32px) saturate(200%)',
               WebkitBackdropFilter: 'blur(32px) saturate(200%)',
@@ -66,12 +66,7 @@ const BottomSheet = ({ activeTab, onClose }: BottomSheetProps) => {
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9)',
             }}
           >
-            {/* Handle */}
-            <div className="flex justify-center pt-3">
-              <div className="h-1 w-10 rounded-full" style={{ background: 'rgba(26, 26, 46, 0.15)' }} />
-            </div>
-
-            <div className="flex items-center justify-between px-5 pb-2 pt-3">
+            <div className="flex items-center justify-between px-4 pb-1 pt-2">
               <div className="flex items-center gap-2">
                 <content.icon size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} />
                 <h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>{content.title}</h3>
@@ -85,13 +80,13 @@ const BottomSheet = ({ activeTab, onClose }: BottomSheetProps) => {
               </button>
             </div>
 
-            <div className="px-5 pb-6 pt-2">
+            <div className="px-4 pb-4 pt-1">
               {activeTab === "size" || activeTab === "info" ? (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-1.5">
                   {content.items.map((item) => (
                     <button
                       key={item}
-                      className="glass-pill px-4 py-3 text-left text-sm transition-all active:scale-[0.98]"
+                      className="glass-pill px-3 py-2 text-left text-sm transition-all active:scale-[0.98]"
                       style={{ color: '#1a1a2e' }}
                     >
                       {item}
@@ -99,15 +94,15 @@ const BottomSheet = ({ activeTab, onClose }: BottomSheetProps) => {
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-3 gap-3">
+                <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-1">
                   {content.items.map((item) => (
                     <button
                       key={item}
-                      className="flex flex-col items-center gap-2 glass-pill p-4 text-xs transition-all active:scale-95"
-                      style={{ color: '#1a1a2e' }}
+                      className="flex flex-col items-center gap-1.5 glass-pill p-3 text-xs transition-all active:scale-95 flex-shrink-0"
+                      style={{ color: '#1a1a2e', minWidth: '72px' }}
                     >
-                      <div className="h-10 w-10 rounded-xl" style={{ background: 'rgba(26, 26, 46, 0.06)' }} />
-                      <span>{item}</span>
+                      <div className="h-8 w-8 rounded-lg" style={{ background: 'rgba(26, 26, 46, 0.06)' }} />
+                      <span className="text-[10px]">{item}</span>
                     </button>
                   ))}
                 </div>
