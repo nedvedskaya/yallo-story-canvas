@@ -97,7 +97,7 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
               index === activeSlide ? "scale-100" : "scale-[0.92] opacity-60"
             )}
             style={{
-              width: "min(85vw, 360px)",
+              width: "min(78vw, 320px)",
               aspectRatio: "1080/1440",
             }}
           >
