@@ -150,9 +150,9 @@ const SlideCarousel = ({
                         alt=""
                         className="absolute"
                         style={{
-                          width: `${slide.bgScale}%`,
-                          height: `${slide.bgScale}%`,
-                          objectFit: 'cover',
+                          width: slide.bgScale === 100 ? '100%' : `${slide.bgScale}%`,
+                          height: slide.bgScale === 100 ? '100%' : `${slide.bgScale}%`,
+                          objectFit: 'contain',
                           left: `${slide.bgPosX}%`,
                           top: `${slide.bgPosY}%`,
                           transform: 'translate(-50%, -50%)',
