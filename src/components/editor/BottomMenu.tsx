@@ -19,7 +19,16 @@ interface BottomMenuProps {
 const BottomMenu = ({ activeTab, onTabChange }: BottomMenuProps) => {
   return (
     <nav className="fixed bottom-4 left-4 right-4 z-50">
-      <div className="glass-pill mx-auto max-w-md rounded-[2rem] px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+      <div
+        className="mx-auto max-w-md rounded-[2rem] px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+        style={{
+          background: 'rgba(255, 255, 255, 0.12)',
+          backdropFilter: 'blur(60px) saturate(200%)',
+          WebkitBackdropFilter: 'blur(60px) saturate(200%)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: '0 4px 30px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.25)',
+        }}
+      >
         <div className="flex items-center justify-around">
           {menuItems.map((item) => {
             const isActive = activeTab === item.id;
@@ -30,25 +39,43 @@ const BottomMenu = ({ activeTab, onTabChange }: BottomMenuProps) => {
                 className={cn(
                   "relative flex flex-col items-center gap-1 rounded-2xl px-3 py-2 transition-all duration-300",
                   isActive
-                    ? "text-foreground"
+                    ? "text-primary-foreground"
                     : "text-muted-foreground"
                 )}
               >
-                {/* Glow behind active icon */}
+                {/* Glow beam above active icon */}
                 {isActive && (
-                  <div className="absolute -top-1 left-1/2 h-8 w-8 -translate-x-1/2 rounded-full bg-primary/60 blur-lg" />
+                  <>
+                    <div
+                      className="absolute -top-3 left-1/2 -translate-x-1/2 h-1 w-8 rounded-full"
+                      style={{
+                        background: '#FFF1B6',
+                        boxShadow: '0 0 12px 4px rgba(255, 241, 182, 0.6), 0 0 24px 8px rgba(255, 241, 182, 0.3)',
+                      }}
+                    />
+                    <div
+                      className="absolute -top-1 left-1/2 -translate-x-1/2 h-10 w-12 rounded-full"
+                      style={{
+                        background: 'radial-gradient(ellipse at center, rgba(255, 241, 182, 0.35) 0%, transparent 70%)',
+                      }}
+                    />
+                  </>
                 )}
                 <item.icon
                   size={22}
                   className={cn(
                     "relative z-10 transition-all duration-300",
-                    isActive && "text-foreground scale-110"
+                    isActive && "scale-110"
                   )}
+                  style={isActive ? { color: '#FFF1B6', filter: 'drop-shadow(0 0 6px rgba(255, 241, 182, 0.5))' } : undefined}
                 />
-                <span className={cn(
-                  "relative z-10 text-[10px] font-medium transition-colors",
-                  isActive ? "text-foreground" : "text-muted-foreground"
-                )}>
+                <span
+                  className={cn(
+                    "relative z-10 text-[10px] font-medium transition-colors",
+                    !isActive && "text-muted-foreground"
+                  )}
+                  style={isActive ? { color: '#FFF1B6' } : undefined}
+                >
                   {item.label}
                 </span>
               </button>
