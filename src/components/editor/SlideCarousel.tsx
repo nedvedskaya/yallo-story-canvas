@@ -66,6 +66,13 @@ const SlideCarousel = ({
 }: SlideCarouselProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const currentSlide = slides[activeSlide];
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editorField, setEditorField] = useState<"title" | "body">("title");
+
+  const openEditor = (field: "title" | "body") => {
+    setEditorField(field);
+    setEditorOpen(true);
+  };
 
   const scrollToIndex = (index: number) => {
     setTimeout(() => {
