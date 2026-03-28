@@ -20,11 +20,6 @@ const sheetContent: Record<string, { title: string; icon: React.ElementType; ite
     icon: Palette,
     items: ["Минимализм", "Градиент", "Ретро", "Неон", "Пастель", "Тёмный"],
   },
-  text: {
-    title: "Текст",
-    icon: Type,
-    items: ["Заголовок", "Подзаголовок", "Основной", "Цитата", "Подпись", "Маркер"],
-  },
   size: {
     title: "Размер",
     icon: Maximize,
