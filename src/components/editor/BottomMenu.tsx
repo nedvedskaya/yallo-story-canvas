@@ -51,7 +51,7 @@ const BottomMenu = ({ activeTab, onTabChange }: BottomMenuProps) => {
                     "relative z-10 transition-all duration-300",
                     isActive && "scale-110"
                   )}
-                  style={{ color: isActive ? '#D4748A' : 'rgba(180, 100, 110, 0.6)' }}
+                  style={{ color: isActive ? 'rgba(60, 60, 67, 0.9)' : 'rgba(60, 60, 67, 0.45)' }}
                 />
                 <span
                   className="relative z-10 text-[10px] transition-colors font-normal"
