@@ -3,13 +3,13 @@ import { X, Palette, Image, Type, Maximize, Info } from "lucide-react";
 import type { MenuId } from "./BottomMenu";
 import type { Slide } from "./SlideCarousel";
 import BackgroundPanel from "./BackgroundPanel";
-import type { BgDraft } from "./BackgroundPanel";
 import TextPanel from "./TextPanel";
 import SizePanel, { type SlideFormat } from "./SizePanel";
 
 interface BottomSheetProps {
   activeTab: MenuId | null;
-  onClose: () => void;
+  onClose: () => void;        // Cancel — reverts changes
+  onSaveClose: () => void;    // Save — confirms changes
   currentSlide?: Slide;
   onUpdateSlide?: (id: number, updates: Partial<Slide>) => void;
   onApplyBgToAll?: () => void;
@@ -23,33 +23,12 @@ const sheetContent: Record<string, { title: string; icon: React.ElementType; ite
   info: { title: "Инфо", icon: Info, items: ["Название проекта", "3 слайда", "Формат: карусель", "Статус: черновик"] },
 };
 
-const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyBgToAll, onApplyTextToAll, slideFormat, onSlideFormatChange }: BottomSheetProps) => {
+const BottomSheet = ({ activeTab, onClose, onSaveClose, currentSlide, onUpdateSlide, onApplyBgToAll, onApplyTextToAll, slideFormat, onSlideFormatChange }: BottomSheetProps) => {
   const isBackground = activeTab === "background";
   const isText = activeTab === "text";
   const isSize = activeTab === "size";
   const isCustomPanel = isBackground || isText || isSize;
   const content = activeTab && !isCustomPanel ? sheetContent[activeTab] : null;
-
-  // Revert handlers for cancel (X button)
-  const handleBgRevert = (snapshot: BgDraft) => {
-    if (currentSlide && onUpdateSlide) {
-      onUpdateSlide(currentSlide.id, snapshot);
-    }
-  };
-
-  const handleTextRevert = (snapshot: Partial<Slide>) => {
-    if (currentSlide && onUpdateSlide) {
-      onUpdateSlide(currentSlide.id, snapshot);
-    }
-  };
-
-  const handleSizeRevert = (format: SlideFormat) => {
-    onSlideFormatChange?.(format);
-  };
-
-  // Close with revert is handled by each panel's onCancel
-  // The X button in header should trigger panel cancel, not just close
-  // We'll let panels handle their own cancel logic
 
   return (
     <AnimatePresence>
@@ -97,11 +76,8 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
                 <TextPanel
                   currentSlide={currentSlide}
                   onSave={(updates) => onUpdateSlide(currentSlide.id, updates)}
-                  onApplyTextToAll={(updates) => {
-                    onApplyTextToAll?.();
-                  }}
-                  onClose={onClose}
-                  onRevert={(snapshot) => handleTextRevert(snapshot)}
+                  onApplyTextToAll={() => onApplyTextToAll?.()}
+                  onClose={onSaveClose}
                 />
               ) : isBackground && currentSlide && onUpdateSlide ? (
                 <BackgroundPanel
@@ -115,18 +91,14 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
                   bgPosY={currentSlide.bgPosY}
                   bgDarken={currentSlide.bgDarken}
                   onSave={(partial) => onUpdateSlide(currentSlide.id, partial)}
-                  onApplyToAll={() => {
-                    onApplyBgToAll?.();
-                  }}
-                  onClose={onClose}
-                  onRevert={(snapshot) => handleBgRevert(snapshot)}
+                  onApplyToAll={() => onApplyBgToAll?.()}
+                  onClose={onSaveClose}
                 />
               ) : isSize && slideFormat && onSlideFormatChange ? (
                 <SizePanel
                   currentFormat={slideFormat}
                   onSave={onSlideFormatChange}
-                  onClose={onClose}
-                  onRevert={handleSizeRevert}
+                  onClose={onSaveClose}
                 />
               ) : content && (
                 <>

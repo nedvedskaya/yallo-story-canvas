@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import TopBar from "@/components/editor/TopBar";
 import SlideCarousel from "@/components/editor/SlideCarousel";
 import type { Slide } from "@/components/editor/SlideCarousel";
@@ -42,6 +42,10 @@ const Index = () => {
   const [slides, setSlides] = useState<Slide[]>(initialSlides);
   const [slideFormat, setSlideFormat] = useState<SlideFormat>("carousel");
 
+  // Snapshots for revert on cancel
+  const slideSnapshotRef = useRef<Slide | null>(null);
+  const formatSnapshotRef = useRef<SlideFormat | null>(null);
+
   const currentSlide = slides[activeSlide];
 
   const handleUpdateSlide = useCallback((id: number, updates: Partial<Slide>) => {
@@ -77,6 +81,36 @@ const Index = () => {
         bodyLetterSpacing: currentSlide.bodyLetterSpacing,
       }))
     );
+  }, [currentSlide]);
+
+  // Open panel = take snapshot
+  const handleTabChange = useCallback((tab: MenuId | null) => {
+    if (tab && currentSlide) {
+      slideSnapshotRef.current = { ...currentSlide };
+      formatSnapshotRef.current = slideFormat;
+    }
+    setActiveTab(tab);
+  }, [currentSlide, slideFormat]);
+
+  // Save = confirm changes, clear snapshot, close
+  const handleSaveClose = useCallback(() => {
+    slideSnapshotRef.current = null;
+    formatSnapshotRef.current = null;
+    setActiveTab(null);
+  }, []);
+
+  // Cancel = revert to snapshot, close
+  const handleCancelClose = useCallback(() => {
+    if (slideSnapshotRef.current && currentSlide) {
+      const snap = slideSnapshotRef.current;
+      setSlides(prev => prev.map(s => s.id === snap.id ? snap : s));
+    }
+    if (formatSnapshotRef.current !== null) {
+      setSlideFormat(formatSnapshotRef.current);
+    }
+    slideSnapshotRef.current = null;
+    formatSnapshotRef.current = null;
+    setActiveTab(null);
   }, [currentSlide]);
 
   const handleAddSlide = useCallback((atIndex: number) => {
@@ -141,7 +175,8 @@ const Index = () => {
 
       <BottomSheet
         activeTab={activeTab}
-        onClose={() => setActiveTab(null)}
+        onClose={handleCancelClose}
+        onSaveClose={handleSaveClose}
         currentSlide={currentSlide}
         onUpdateSlide={handleUpdateSlide}
         onApplyBgToAll={handleApplyBgToAll}
@@ -149,7 +184,7 @@ const Index = () => {
         slideFormat={slideFormat}
         onSlideFormatChange={setSlideFormat}
       />
-      <BottomMenu activeTab={activeTab} onTabChange={setActiveTab} />
+      <BottomMenu activeTab={activeTab} onTabChange={handleTabChange} />
     </div>
   );
 };

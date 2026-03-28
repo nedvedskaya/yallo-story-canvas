@@ -39,21 +39,15 @@ interface BackgroundPanelProps {
   bgPosY: number;
   bgDarken: number;
   onSave: (draft: Partial<BgDraft>) => void;
-  onApplyToAll: (draft: Partial<BgDraft>) => void;
+  onApplyToAll: () => void;
   onClose: () => void;
-  onRevert: (snapshot: BgDraft) => void;
 }
 
 const BackgroundPanel = ({
   bgColor, overlayType, overlayOpacity,
   bgImage, bgVideo, bgScale, bgPosX, bgPosY, bgDarken,
-  onSave, onApplyToAll, onClose, onRevert,
+  onSave, onApplyToAll, onClose,
 }: BackgroundPanelProps) => {
-  // Snapshot of initial state for revert on cancel
-  const [snapshot] = useState<BgDraft>({
-    bgColor, overlayType, overlayOpacity, bgImage, bgVideo, bgScale, bgPosX, bgPosY, bgDarken,
-  });
-
   const [bgTab, setBgTab] = useState<BgTab>(bgVideo ? "video" : bgImage ? "photo" : "color");
   const [applyToAll, setApplyToAll] = useState(false);
   const [hexInput, setHexInput] = useState(bgColor.startsWith("#") ? bgColor : "#667eea");
@@ -61,7 +55,6 @@ const BackgroundPanel = ({
   const photoRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
 
-  // Live update — immediately applies to slide
   const update = useCallback((partial: Partial<BgDraft>) => {
     onSave(partial);
   }, [onSave]);
@@ -93,15 +86,8 @@ const BackgroundPanel = ({
     }
   };
 
-  // Save = confirm + close
   const handleSave = () => {
-    if (applyToAll) onApplyToAll({});
-    onClose();
-  };
-
-  // Cancel = revert to snapshot + close
-  const handleCancel = () => {
-    onRevert(snapshot);
+    if (applyToAll) onApplyToAll();
     onClose();
   };
 

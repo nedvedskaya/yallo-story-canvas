@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 export type SlideFormat = "carousel" | "square" | "stories" | "presentation";
 
 export interface FormatOption {
@@ -22,33 +20,16 @@ interface SizePanelProps {
   currentFormat: SlideFormat;
   onSave: (format: SlideFormat) => void;
   onClose: () => void;
-  onRevert: (format: SlideFormat) => void;
 }
 
-const SizePanel = ({ currentFormat, onSave, onClose, onRevert }: SizePanelProps) => {
-  // Snapshot for revert
-  const [snapshot] = useState<SlideFormat>(currentFormat);
-
-  const handleSelect = (format: SlideFormat) => {
-    onSave(format); // Live update
-  };
-
-  const handleSave = () => {
-    onClose();
-  };
-
-  const handleCancel = () => {
-    onRevert(snapshot);
-    onClose();
-  };
-
+const SizePanel = ({ currentFormat, onSave, onClose }: SizePanelProps) => {
   return (
     <div className="flex flex-col gap-3 overflow-y-auto max-h-[28vh] scrollbar-hide">
       <div className="flex flex-col gap-1.5">
         {FORMAT_OPTIONS.map((opt) => (
           <button
             key={opt.id}
-            onClick={() => handleSelect(opt.id)}
+            onClick={() => onSave(opt.id)}
             className="flex items-center justify-between rounded-xl px-4 py-2.5 transition-all active:scale-[0.97]"
             style={{
               background: currentFormat === opt.id ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.35)",
@@ -65,7 +46,7 @@ const SizePanel = ({ currentFormat, onSave, onClose, onRevert }: SizePanelProps)
       </div>
 
       <button
-        onClick={handleSave}
+        onClick={onClose}
         className="w-full rounded-xl py-2 text-[11px] font-medium transition-all active:scale-[0.97]"
         style={{ background: "rgba(26,26,46,0.85)", color: "#fff" }}
       >
