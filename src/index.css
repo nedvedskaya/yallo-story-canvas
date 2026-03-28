@@ -9,19 +9,19 @@
     --background: 215 30% 92%;
     --foreground: 220 25% 10%;
 
-    --card: 0 0% 100% / 0.35;
+    --card: 0 0% 100% / 0.2;
     --card-foreground: 220 25% 10%;
 
-    --popover: 0 0% 100% / 0.4;
+    --popover: 0 0% 100% / 0.25;
     --popover-foreground: 220 25% 10%;
 
     --primary: 47 100% 85%;
     --primary-foreground: 220 25% 10%;
 
-    --secondary: 220 15% 92% / 0.5;
+    --secondary: 220 15% 92% / 0.3;
     --secondary-foreground: 220 25% 20%;
 
-    --muted: 220 15% 94% / 0.4;
+    --muted: 220 15% 94% / 0.3;
     --muted-foreground: 220 10% 45%;
 
     --accent: 47 100% 85%;
@@ -30,20 +30,16 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 100% / 0.45;
-    --input: 0 0% 100% / 0.35;
+    --border: 0 0% 100% / 0.35;
+    --input: 0 0% 100% / 0.25;
     --ring: 47 100% 85%;
 
     --radius: 1.25rem;
 
-    --glass-bg: 0 0% 100% / 0.25;
-    --glass-border: 0 0% 100% / 0.4;
-    --glass-blur: 40px;
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.06);
-
-    --gradient-start: 210 40% 85%;
-    --gradient-mid: 30 30% 88%;
-    --gradient-end: 45 50% 88%;
+    --glass-bg: 0 0% 100% / 0.12;
+    --glass-border: 0 0% 100% / 0.25;
+    --glass-blur: 50px;
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.04);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -59,19 +55,19 @@
     --background: 220 25% 6%;
     --foreground: 220 15% 90%;
 
-    --card: 220 25% 12% / 0.4;
+    --card: 220 25% 12% / 0.3;
     --card-foreground: 220 15% 90%;
 
-    --popover: 220 25% 10% / 0.5;
+    --popover: 220 25% 10% / 0.35;
     --popover-foreground: 220 15% 90%;
 
     --primary: 47 100% 85%;
     --primary-foreground: 220 25% 10%;
 
-    --secondary: 220 20% 15% / 0.5;
+    --secondary: 220 20% 15% / 0.4;
     --secondary-foreground: 220 15% 85%;
 
-    --muted: 220 20% 15% / 0.4;
+    --muted: 220 20% 15% / 0.3;
     --muted-foreground: 220 10% 55%;
 
     --accent: 47 100% 85%;
@@ -80,13 +76,13 @@
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 20% 25% / 0.4;
-    --input: 220 20% 20% / 0.4;
+    --border: 220 20% 25% / 0.3;
+    --input: 220 20% 20% / 0.3;
     --ring: 47 100% 85%;
 
-    --glass-bg: 220 25% 10% / 0.3;
-    --glass-border: 220 20% 25% / 0.3;
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+    --glass-bg: 220 25% 10% / 0.2;
+    --glass-border: 220 20% 25% / 0.2;
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
@@ -112,39 +108,45 @@
 @layer utilities {
   .glass {
     background: hsla(var(--glass-bg));
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
     border: 1px solid hsla(var(--glass-border));
     box-shadow: var(--glass-shadow);
   }
 
   .glass-strong {
-    background: hsla(0, 0%, 100%, 0.45);
-    backdrop-filter: blur(50px) saturate(180%);
-    -webkit-backdrop-filter: blur(50px) saturate(180%);
-    border: 1px solid hsla(0, 0%, 100%, 0.5);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+    background: hsla(0, 0%, 100%, 0.18);
+    backdrop-filter: blur(60px) saturate(200%);
+    -webkit-backdrop-filter: blur(60px) saturate(200%);
+    border: 1px solid hsla(0, 0%, 100%, 0.25);
+    box-shadow: 0 1px 20px rgba(0, 0, 0, 0.03);
   }
 
   .glass-pill {
-    background: hsla(0, 0%, 100%, 0.35);
-    backdrop-filter: blur(50px) saturate(200%);
-    -webkit-backdrop-filter: blur(50px) saturate(200%);
-    border: 1px solid hsla(0, 0%, 100%, 0.45);
+    background: hsla(0, 0%, 100%, 0.15);
+    backdrop-filter: blur(60px) saturate(200%);
+    -webkit-backdrop-filter: blur(60px) saturate(200%);
+    border: 1px solid hsla(0, 0%, 100%, 0.3);
     box-shadow: 
-      0 2px 20px rgba(0, 0, 0, 0.06),
-      inset 0 1px 0 hsla(0, 0%, 100%, 0.5);
+      0 2px 24px rgba(0, 0, 0, 0.04),
+      inset 0 1px 0 hsla(0, 0%, 100%, 0.3);
   }
 
   .bg-gradient-main {
-    background: linear-gradient(
-      170deg,
-      hsl(210 35% 88%) 0%,
-      hsl(220 25% 90%) 25%,
-      hsl(30 25% 90%) 55%,
-      hsl(45 40% 87%) 80%,
-      hsl(35 35% 85%) 100%
-    );
+    background:
+      radial-gradient(ellipse 120% 80% at 20% 10%, hsla(280, 30%, 85%, 0.5) 0%, transparent 50%),
+      radial-gradient(ellipse 100% 70% at 80% 20%, hsla(210, 40%, 88%, 0.6) 0%, transparent 50%),
+      radial-gradient(ellipse 90% 60% at 50% 80%, hsla(35, 50%, 88%, 0.5) 0%, transparent 50%),
+      radial-gradient(ellipse 80% 50% at 10% 60%, hsla(190, 30%, 90%, 0.4) 0%, transparent 50%),
+      linear-gradient(
+        160deg,
+        hsl(240 20% 95%) 0%,
+        hsl(220 25% 93%) 20%,
+        hsl(200 20% 92%) 40%,
+        hsl(30 25% 92%) 65%,
+        hsl(45 35% 91%) 85%,
+        hsl(280 15% 92%) 100%
+      );
     min-height: 100dvh;
   }
 
@@ -161,5 +163,23 @@
   }
   .snap-center {
     scroll-snap-align: center;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+
+  .btn-accent-shimmer {
+    background: linear-gradient(
+      110deg,
+      hsl(47 100% 85%) 0%,
+      hsl(47 100% 92%) 40%,
+      hsl(47 100% 98%) 50%,
+      hsl(47 100% 92%) 60%,
+      hsl(47 100% 85%) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
   }
 }
