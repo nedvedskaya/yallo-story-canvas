@@ -70,7 +70,7 @@ const BottomMenu = ({ activeTab, onTabChange }: BottomMenuProps) => {
                 />
                 <span
                   className={cn(
-                    "relative z-10 text-[10px] transition-colors font-normal text-left text-primary-foreground",
+                    "relative z-10 text-[10px] transition-colors font-normal text-primary-foreground",
                     !isActive && "text-muted-foreground"
                   )}
                   style={isActive ? { color: '#FFF1B6' } : undefined}
