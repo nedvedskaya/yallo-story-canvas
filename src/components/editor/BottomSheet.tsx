@@ -66,12 +66,7 @@ const BottomSheet = ({ activeTab, onClose }: BottomSheetProps) => {
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9)',
             }}
           >
-            {/* Handle */}
-            <div className="flex justify-center pt-3">
-              <div className="h-1 w-10 rounded-full" style={{ background: 'rgba(26, 26, 46, 0.15)' }} />
-            </div>
-
-            <div className="flex items-center justify-between px-5 pb-2 pt-3">
+            <div className="flex items-center justify-between px-4 pb-1 pt-2">
               <div className="flex items-center gap-2">
                 <content.icon size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} />
                 <h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>{content.title}</h3>
