@@ -41,9 +41,9 @@ interface BackgroundPanelProps {
 
 const BackgroundPanel = ({
   bgColor, overlayType, overlayOpacity,
-  bgImage, bgScale, bgPosX, bgPosY, bgDarken,
+  bgImage, bgVideo, bgScale, bgPosX, bgPosY, bgDarken,
   onBgColorChange, onOverlayTypeChange, onOverlayOpacityChange,
-  onBgImageChange, onBgScaleChange, onBgPosXChange, onBgPosYChange, onBgDarkenChange,
+  onBgImageChange, onBgVideoChange, onBgScaleChange, onBgPosXChange, onBgPosYChange, onBgDarkenChange,
   onApplyToAll, onClose,
 }: BackgroundPanelProps) => {
   const [bgTab, setBgTab] = useState<BgTab>(bgImage ? "photo" : "color");
