@@ -150,16 +150,20 @@ const SlideCarousel = ({
                       <img
                         src={slide.bgImage}
                         alt=""
-                        className="absolute"
                         style={{
-                          width: `${slide.bgScale}%`,
-                          height: `${slide.bgScale}%`,
-                          objectFit: 'cover',
+                          position: 'absolute',
                           left: `${slide.bgPosX}%`,
                           top: `${slide.bgPosY}%`,
-                          transform: 'translate(-50%, -50%)',
+                          transform: `translate(-50%, -50%) scale(${slide.bgScale / 100})`,
+                          transformOrigin: 'center center',
+                          minWidth: '100%',
+                          minHeight: '100%',
+                          objectFit: 'contain',
                         }}
                       />
+                      {slide.bgDarken > 0 && (
+                        <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${slide.bgDarken / 100})` }} />
+                      )}
                     </div>
                   )}
                   {/* Overlay layer */}
