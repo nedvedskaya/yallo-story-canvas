@@ -176,6 +176,7 @@ const BackgroundPanel = ({
                 const file = e.target.files?.[0];
                 if (file) {
                   const url = URL.createObjectURL(file);
+                  onBgImageChange(undefined); // auto-clear photo
                   onBgVideoChange(url);
                   onBgScaleChange(100);
                   onBgPosXChange(50);
