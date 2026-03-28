@@ -24,6 +24,7 @@ interface BackgroundPanelProps {
   bgScale: number;
   bgPosX: number;
   bgPosY: number;
+  bgDarken: number;
   onBgColorChange: (color: string) => void;
   onOverlayTypeChange: (type: OverlayType) => void;
   onOverlayOpacityChange: (opacity: number) => void;
@@ -31,15 +32,16 @@ interface BackgroundPanelProps {
   onBgScaleChange: (scale: number) => void;
   onBgPosXChange: (x: number) => void;
   onBgPosYChange: (y: number) => void;
+  onBgDarkenChange: (v: number) => void;
   onApplyToAll: () => void;
   onClose?: () => void;
 }
 
 const BackgroundPanel = ({
   bgColor, overlayType, overlayOpacity,
-  bgImage, bgScale, bgPosX, bgPosY,
+  bgImage, bgScale, bgPosX, bgPosY, bgDarken,
   onBgColorChange, onOverlayTypeChange, onOverlayOpacityChange,
-  onBgImageChange, onBgScaleChange, onBgPosXChange, onBgPosYChange,
+  onBgImageChange, onBgScaleChange, onBgPosXChange, onBgPosYChange, onBgDarkenChange,
   onApplyToAll, onClose,
 }: BackgroundPanelProps) => {
   const [bgTab, setBgTab] = useState<BgTab>(bgImage ? "photo" : "color");
@@ -50,7 +52,7 @@ const BackgroundPanel = ({
   const videoRef = useRef<HTMLInputElement>(null);
 
   const initial = useMemo(() => ({
-    bgColor, overlayType, overlayOpacity, bgImage, bgScale, bgPosX, bgPosY,
+    bgColor, overlayType, overlayOpacity, bgImage, bgScale, bgPosX, bgPosY, bgDarken,
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }), []);
 
@@ -62,6 +64,7 @@ const BackgroundPanel = ({
     onBgScaleChange(initial.bgScale);
     onBgPosXChange(initial.bgPosX);
     onBgPosYChange(initial.bgPosY);
+    onBgDarkenChange(initial.bgDarken);
     onClose?.();
   };
 
@@ -147,6 +150,11 @@ const BackgroundPanel = ({
                   <span className="text-[10px] flex-shrink-0" style={labelStyle}>Y</span>
                   <Slider value={[bgPosY]} onValueChange={([v]) => onBgPosYChange(v)} min={0} max={100} step={1} className="flex-1" />
                   <span className="text-[10px] w-6 text-right" style={valStyle}>{bgPosY}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] flex-shrink-0" style={labelStyle}>Затемнение</span>
+                  <Slider value={[bgDarken]} onValueChange={([v]) => onBgDarkenChange(v)} min={0} max={100} step={1} className="flex-1" />
+                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgDarken}</span>
                 </div>
                 <button onClick={() => onBgImageChange(undefined)}
                   className="w-full rounded-xl py-1.5 text-[10px] font-medium transition-all active:scale-[0.98]"
