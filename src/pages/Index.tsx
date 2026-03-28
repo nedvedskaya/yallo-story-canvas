@@ -23,9 +23,10 @@ const initialSlides: Slide[] = [
     id: 2, username: "@username", title: "Расскажите историю",
     body: "Каждый слайд — это возможность передать вашу идею красиво и лаконично.",
     bgColor: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-    bgType: "color", hAlign: "center", vAlign: "center",
+    bgType: "color", hAlign: "left", vAlign: "center",
     overlayType: "none", overlayOpacity: 50,
     bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0,
+    titleSize: 24, bodySize: 14,
   },
   {
     id: 3, username: "@username", title: "Призыв к действию",
