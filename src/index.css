@@ -106,33 +106,37 @@
 
 @layer utilities {
   .glass {
-    background: hsla(50, 10%, 89%, 0.45);
-    backdrop-filter: blur(var(--glass-blur)) saturate(180%);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
-    border: 1px solid hsla(50, 10%, 95%, 0.5);
-    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.04);
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1.5px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7);
   }
 
   .glass-strong {
-    background: hsla(50, 10%, 89%, 0.5);
-    backdrop-filter: blur(50px) saturate(180%);
-    -webkit-backdrop-filter: blur(50px) saturate(180%);
-    border: 1px solid hsla(50, 10%, 95%, 0.4);
-    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(50px) saturate(200%);
+    -webkit-backdrop-filter: blur(50px) saturate(200%);
+    border: 1.5px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
   }
 
   .glass-pill {
-    background: hsla(50, 10%, 89%, 0.35);
-    backdrop-filter: blur(50px) saturate(180%);
-    -webkit-backdrop-filter: blur(50px) saturate(180%);
-    border: 1px solid hsla(50, 10%, 95%, 0.45);
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.45);
     box-shadow: 
-      0 2px 16px rgba(0, 0, 0, 0.04),
-      inset 0 1px 0 hsla(50, 10%, 98%, 0.3);
+      0 2px 12px rgba(0, 0, 0, 0.04),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
   }
 
   .bg-gradient-main {
-    background: #FDF6F0;
+    background: hsl(220 10% 92%);
     min-height: 100dvh;
   }
 
