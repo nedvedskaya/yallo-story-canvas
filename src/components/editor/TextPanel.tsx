@@ -15,7 +15,7 @@ const TextPanel = ({ currentSlide, onSave, onApplyTextToAll, onClose }: TextPane
 
   const titleSettings: FontSettings = {
     font: currentSlide.titleFont || "'Coolvetica', sans-serif",
-    size: currentSlide.titleSize ?? 28,
+    size: currentSlide.titleSize ?? 24,
     case: (currentSlide.titleCase || "none") as FontSettings["case"],
     lineHeight: currentSlide.titleLineHeight ?? 1.1,
     letterSpacing: currentSlide.titleLetterSpacing ?? 0,
@@ -23,7 +23,7 @@ const TextPanel = ({ currentSlide, onSave, onApplyTextToAll, onClose }: TextPane
 
   const bodySettings: FontSettings = {
     font: currentSlide.bodyFont || "'Inter', sans-serif",
-    size: currentSlide.bodySize ?? 16,
+    size: currentSlide.bodySize ?? 14,
     case: (currentSlide.bodyCase || "none") as FontSettings["case"],
     lineHeight: currentSlide.bodyLineHeight ?? 1.5,
     letterSpacing: currentSlide.bodyLetterSpacing ?? 0,

@@ -14,25 +14,28 @@ const initialSlides: Slide[] = [
     id: 1, username: "@username", title: "Заголовок слайда",
     body: "Основной текст слайда. Начните редактирование прямо сейчас.",
     bgColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-    bgType: "color", hAlign: "center", vAlign: "center",
+    bgType: "color", hAlign: "left", vAlign: "center",
     overlayType: "none", overlayOpacity: 50,
     bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0,
+    titleSize: 24, bodySize: 14,
   },
   {
     id: 2, username: "@username", title: "Расскажите историю",
     body: "Каждый слайд — это возможность передать вашу идею красиво и лаконично.",
     bgColor: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-    bgType: "color", hAlign: "center", vAlign: "center",
+    bgType: "color", hAlign: "left", vAlign: "center",
     overlayType: "none", overlayOpacity: 50,
     bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0,
+    titleSize: 24, bodySize: 14,
   },
   {
     id: 3, username: "@username", title: "Призыв к действию",
     body: "Подписывайтесь, ставьте лайк и делитесь с друзьями ✨",
     bgColor: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-    bgType: "color", hAlign: "center", vAlign: "center",
+    bgType: "color", hAlign: "left", vAlign: "center",
     overlayType: "none", overlayOpacity: 50,
     bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0,
+    titleSize: 24, bodySize: 14,
   },
 ];
 
@@ -128,9 +131,10 @@ const Index = () => {
     const newSlide: Slide = {
       id: nextId++, username: "@username", title: "Новый слайд", body: "Введите текст...",
       bgColor: "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)",
-      bgType: "color", hAlign: "center", vAlign: "center",
+      bgType: "color", hAlign: "left", vAlign: "center",
       overlayType: "none", overlayOpacity: 50,
       bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0,
+      titleSize: 24, bodySize: 14,
     };
     setSlides(prev => { const next = [...prev]; next.splice(atIndex, 0, newSlide); return next; });
     setActiveSlide(atIndex);
