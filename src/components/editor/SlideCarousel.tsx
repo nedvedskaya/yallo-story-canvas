@@ -211,7 +211,7 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
       )}
 
       {/* Dots indicator */}
-      <div className="mt-4 flex items-center gap-2">
+      <div className="mt-2 flex items-center gap-2">
         {slides.map((_, index) => (
           <button
             key={index}
