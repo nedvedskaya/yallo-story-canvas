@@ -1,28 +1,59 @@
+# Вкладка "Фон" — полная переработка
 
+## Что сейчас
 
-# Адаптация: слайд видим при открытой панели
+BottomSheet для вкладки "background" показывает простой горизонтальный скролл с текстовыми кнопками . Также есть отдельный BackgroundModal — его логику нужно интегрировать в BottomSheet.
 
-## Проблема
-На экране 390x656px BottomSheet с `maxHeight: 50vh` (~328px) + нижнее меню (~72px) перекрывают почти весь слайд.
+## Что нужно сделать
 
-## Решение — оба подхода
+Когда пользователь нажимает "Фон" в нижнем меню, BottomSheet показывает специальный контент с 3 секциями:
 
-### 1. Компактная панель (BottomSheet)
-- Уменьшить `maxHeight` с `50vh` до `35vh`
-- Сетку 3x2 заменить на горизонтальный скролл (1 ряд) — `flex overflow-x-auto`
-- Убрать handle-полоску и уменьшить внутренние отступы (`px-4 pb-4 pt-2`)
-- Список (size/info) — тоже компактнее: `py-2` вместо `py-3`
+### Секция 1 — Тип фона
 
-### 2. Уменьшение слайда при открытой панели (Index + SlideCarousel)
-- Передать `isSheetOpen` (boolean) из Index в SlideCarousel
-- Когда `isSheetOpen === true`:
-  - Слайд уменьшается: `scale(0.65)` и сдвигается вверх `translateY(-15%)`
-  - Верхние кнопки управления скрываются
-  - Toolbar под слайдом скрывается
-- Анимация через `transition-all duration-300`
+Три tab-кнопки: **Цвет** / **Фото** / **Видео**
 
-## Файлы
-- **`src/components/editor/BottomSheet.tsx`** — компактная высота, горизонтальный скролл
-- **`src/pages/Index.tsx`** — передать `isSheetOpen={!!activeTab}` в SlideCarousel
-- **`src/components/editor/SlideCarousel.tsx`** — принять `isSheetOpen`, применить scale/translate при открытой панели
+- Цвет: показывает сетку градиентных/цветовых пресетов (из BackgroundModal)
+- Фото: кнопка загрузки фото (загрузка фото из галереи)
+- Видео: кнопка загрузки видео (загрузка видео из галереи до 1 минуты)
 
+### Секция 2 — Акцентный цвет
+
+Круглый превью выбранного цвета (28px). По нажатию — открывается color picker (native `<input type="color">`) + текстовое поле для ввода HEX-кода. Цвет применяется к фону слайда.
+
+### Секция 3 — Элементы
+
+Горизонтальный скролл кнопок-чипов:
+
+- Без элементов, Точки, Линии, Сетка, Ячейки, Блики, Шум
+
+Под ними — слайдер прозрачности (0–100) с подписью "Прозрачность".
+
+Под слайдером — Switch "Применить ко всем слайдам".
+
+## Технические изменения
+
+### Файл: `src/components/editor/BottomSheet.tsx`
+
+- Для `activeTab === "background"` рендерить специальный компонент `BackgroundPanel` вместо дефолтного контента
+- Передать props: `currentSlide`, `onUpdateSlide`, `slides`, `onUpdateAllSlides`
+
+### Новый файл: `src/components/editor/BackgroundPanel.tsx`
+
+- State: `bgTab` (color/photo/video), `accentColor`, `overlayType`, `overlayOpacity`, `applyToAll`
+- Использует Slider из `@/components/ui/slider` и Switch из `@/components/ui/switch`
+- Color picker: скрытый `<input type="color">` + HEX input
+- Все в компактном вертикальном layout со scroll
+
+### Файл: `src/components/editor/SlideCarousel.tsx`
+
+- Добавить в Slide интерфейс: `overlayType`, `overlayOpacity` (string, number)
+- Рендерить overlay поверх фона слайда (SVG-паттерны или CSS для точек/линий/сетки/ячеек/бликов/шума)
+- Передать `slides`, `updateSlide`, `currentSlide` через props в BottomSheet → BackgroundPanel
+
+### Файл: `src/pages/Index.tsx`
+
+- Пробросить slide-данные и callbacks из SlideCarousel в BottomSheet
+
+### Файл: `src/components/editor/BackgroundModal.tsx`
+
+- Удалить (логика переедет в BackgroundPanel)
