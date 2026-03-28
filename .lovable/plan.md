@@ -1,59 +1,22 @@
-# Вкладка "Фон" — полная переработка
 
-## Что сейчас
 
-BottomSheet для вкладки "background" показывает простой горизонтальный скролл с текстовыми кнопками . Также есть отдельный BackgroundModal — его логику нужно интегрировать в BottomSheet.
+# Проблема: два отдельных состояния слайдов
 
-## Что нужно сделать
+SlideCarousel хранит свой собственный `useState(initialSlides)` (строка 69), а Index хранит отдельный `useState<Slide[]>([])`. Когда BackgroundPanel меняет overlay/цвет, он обновляет `slides` в Index через `handleUpdateSlide`, но SlideCarousel рендерит свою копию — изменения не доходят до отображения.
 
-Когда пользователь нажимает "Фон" в нижнем меню, BottomSheet показывает специальный контент с 3 секциями:
+# Решение: единый источник данных
 
-### Секция 1 — Тип фона
+Убрать внутренний state из SlideCarousel. Сделать `slides` и `updateSlide` props, управляемые из Index.
 
-Три tab-кнопки: **Цвет** / **Фото** / **Видео**
+## Файл: `src/pages/Index.tsx`
+- Инициализировать `slides` значением `initialSlides` (перенести массив сюда или импортировать)
+- Передать `slides` и `handleUpdateSlide` в SlideCarousel как props
+- Передать функции добавления/удаления/перемещения слайдов тоже через props (или оставить в carousel, но slides приходят сверху)
 
-- Цвет: показывает сетку градиентных/цветовых пресетов (из BackgroundModal)
-- Фото: кнопка загрузки фото (загрузка фото из галереи)
-- Видео: кнопка загрузки видео (загрузка видео из галереи до 1 минуты)
+## Файл: `src/components/editor/SlideCarousel.tsx`
+- Убрать `useState(initialSlides)` и `setSlidesAndNotify`
+- Принимать `slides` и `onUpdateSlide` как props
+- Все мутации (`addSlide`, `moveSlide`, `duplicateSlide`, `deleteSlide`) вызывают `onSlidesChange` с новым массивом вместо локального setState
 
-### Секция 2 — Акцентный цвет
+Это простое поднятие состояния — после этого любые изменения из BackgroundPanel (цвет, overlay, opacity) сразу отразятся на слайде.
 
-Круглый превью выбранного цвета (28px). По нажатию — открывается color picker (native `<input type="color">`) + текстовое поле для ввода HEX-кода. Цвет применяется к фону слайда.
-
-### Секция 3 — Элементы
-
-Горизонтальный скролл кнопок-чипов:
-
-- Без элементов, Точки, Линии, Сетка, Ячейки, Блики, Шум
-
-Под ними — слайдер прозрачности (0–100) с подписью "Прозрачность".
-
-Под слайдером — Switch "Применить ко всем слайдам".
-
-## Технические изменения
-
-### Файл: `src/components/editor/BottomSheet.tsx`
-
-- Для `activeTab === "background"` рендерить специальный компонент `BackgroundPanel` вместо дефолтного контента
-- Передать props: `currentSlide`, `onUpdateSlide`, `slides`, `onUpdateAllSlides`
-
-### Новый файл: `src/components/editor/BackgroundPanel.tsx`
-
-- State: `bgTab` (color/photo/video), `accentColor`, `overlayType`, `overlayOpacity`, `applyToAll`
-- Использует Slider из `@/components/ui/slider` и Switch из `@/components/ui/switch`
-- Color picker: скрытый `<input type="color">` + HEX input
-- Все в компактном вертикальном layout со scroll
-
-### Файл: `src/components/editor/SlideCarousel.tsx`
-
-- Добавить в Slide интерфейс: `overlayType`, `overlayOpacity` (string, number)
-- Рендерить overlay поверх фона слайда (SVG-паттерны или CSS для точек/линий/сетки/ячеек/бликов/шума)
-- Передать `slides`, `updateSlide`, `currentSlide` через props в BottomSheet → BackgroundPanel
-
-### Файл: `src/pages/Index.tsx`
-
-- Пробросить slide-данные и callbacks из SlideCarousel в BottomSheet
-
-### Файл: `src/components/editor/BackgroundModal.tsx`
-
-- Удалить (логика переедет в BackgroundPanel)
