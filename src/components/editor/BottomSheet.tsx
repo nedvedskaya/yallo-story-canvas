@@ -97,6 +97,7 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
                   overlayType={currentSlide.overlayType}
                   overlayOpacity={currentSlide.overlayOpacity}
                   bgImage={currentSlide.bgImage}
+                  bgVideo={currentSlide.bgVideo}
                   bgScale={currentSlide.bgScale}
                   bgPosX={currentSlide.bgPosX}
                   bgPosY={currentSlide.bgPosY}
@@ -105,6 +106,7 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
                   onOverlayTypeChange={(type) => onUpdateSlide?.(currentSlide.id, { overlayType: type })}
                   onOverlayOpacityChange={(opacity) => onUpdateSlide?.(currentSlide.id, { overlayOpacity: opacity })}
                   onBgImageChange={(url) => onUpdateSlide?.(currentSlide.id, { bgImage: url })}
+                  onBgVideoChange={(url) => onUpdateSlide?.(currentSlide.id, { bgVideo: url })}
                   onBgScaleChange={(scale) => onUpdateSlide?.(currentSlide.id, { bgScale: scale })}
                   onBgPosXChange={(x) => onUpdateSlide?.(currentSlide.id, { bgPosX: x })}
                   onBgPosYChange={(y) => onUpdateSlide?.(currentSlide.id, { bgPosY: y })}
