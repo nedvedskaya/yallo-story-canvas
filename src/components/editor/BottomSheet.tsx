@@ -101,6 +101,7 @@ const BottomSheet = ({ activeTab, onClose, onSaveClose, currentSlide, onUpdateSl
                   bgPosX={currentSlide.bgPosX}
                   bgPosY={currentSlide.bgPosY}
                   bgDarken={currentSlide.bgDarken}
+                  bgMuted={currentSlide.bgMuted}
                   onSave={(partial) => onUpdateSlide(currentSlide.id, partial)}
                   onApplyToAll={() => onApplyBgToAll?.()}
                   onClose={onSaveClose}
