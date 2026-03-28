@@ -42,6 +42,8 @@ const BackgroundPanel = ({
   const [applyToAll, setApplyToAll] = useState(false);
   const [hexInput, setHexInput] = useState(bgColor.startsWith("#") ? bgColor : "#667eea");
   const colorRef = useRef<HTMLInputElement>(null);
+  const photoRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLInputElement>(null);
 
   // Snapshot initial values for cancel
   const initial = useMemo(() => ({
@@ -104,31 +106,63 @@ const BackgroundPanel = ({
         {bgTab === "color" && null}
 
         {bgTab === "photo" && (
-          <button
-            className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-xs font-medium transition-all active:scale-[0.98]"
-            style={{
-              background: "rgba(255,255,255,0.6)",
-              border: "1px solid rgba(200,200,220,0.5)",
-              color: "#1a1a2e",
-            }}
-          >
-            <Upload size={14} />
-            Загрузить фото
-          </button>
+          <>
+            <input
+              ref={photoRef}
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const url = URL.createObjectURL(file);
+                  onBgColorChange(`url(${url})`);
+                }
+              }}
+            />
+            <button
+              onClick={() => photoRef.current?.click()}
+              className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-xs font-medium transition-all active:scale-[0.98]"
+              style={{
+                background: "rgba(255,255,255,0.6)",
+                border: "1px solid rgba(200,200,220,0.5)",
+                color: "#1a1a2e",
+              }}
+            >
+              <Upload size={14} />
+              Загрузить фото
+            </button>
+          </>
         )}
 
         {bgTab === "video" && (
-          <button
-            className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-xs font-medium transition-all active:scale-[0.98]"
-            style={{
-              background: "rgba(255,255,255,0.6)",
-              border: "1px solid rgba(200,200,220,0.5)",
-              color: "#1a1a2e",
-            }}
-          >
-            <Upload size={14} />
-            Загрузить видео (до 1 мин)
-          </button>
+          <>
+            <input
+              ref={videoRef}
+              type="file"
+              accept="video/*"
+              className="sr-only"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const url = URL.createObjectURL(file);
+                  onBgColorChange(`video(${url})`);
+                }
+              }}
+            />
+            <button
+              onClick={() => videoRef.current?.click()}
+              className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-xs font-medium transition-all active:scale-[0.98]"
+              style={{
+                background: "rgba(255,255,255,0.6)",
+                border: "1px solid rgba(200,200,220,0.5)",
+                color: "#1a1a2e",
+              }}
+            >
+              <Upload size={14} />
+              Загрузить видео (до 1 мин)
+            </button>
+          </>
         )}
       </div>
 
