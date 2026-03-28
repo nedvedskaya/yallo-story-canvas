@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Upload, Move, ZoomIn } from "lucide-react";
@@ -16,6 +16,18 @@ const overlayOptions: { id: OverlayType; label: string }[] = [
   { id: "noise", label: "Шум" },
 ];
 
+interface BgDraft {
+  bgColor: string;
+  overlayType: OverlayType;
+  overlayOpacity: number;
+  bgImage?: string;
+  bgVideo?: string;
+  bgScale: number;
+  bgPosX: number;
+  bgPosY: number;
+  bgDarken: number;
+}
+
 interface BackgroundPanelProps {
   bgColor: string;
   overlayType: OverlayType;
@@ -26,26 +38,20 @@ interface BackgroundPanelProps {
   bgPosX: number;
   bgPosY: number;
   bgDarken: number;
-  onBgColorChange: (color: string) => void;
-  onOverlayTypeChange: (type: OverlayType) => void;
-  onOverlayOpacityChange: (opacity: number) => void;
-  onBgImageChange: (url: string | undefined) => void;
-  onBgVideoChange: (url: string | undefined) => void;
-  onBgScaleChange: (scale: number) => void;
-  onBgPosXChange: (x: number) => void;
-  onBgPosYChange: (y: number) => void;
-  onBgDarkenChange: (v: number) => void;
-  onApplyToAll: () => void;
-  onClose?: () => void;
+  onSave: (draft: BgDraft) => void;
+  onApplyToAll: (draft: BgDraft) => void;
+  onClose: () => void;
 }
 
 const BackgroundPanel = ({
   bgColor, overlayType, overlayOpacity,
   bgImage, bgVideo, bgScale, bgPosX, bgPosY, bgDarken,
-  onBgColorChange, onOverlayTypeChange, onOverlayOpacityChange,
-  onBgImageChange, onBgVideoChange, onBgScaleChange, onBgPosXChange, onBgPosYChange, onBgDarkenChange,
-  onApplyToAll, onClose,
+  onSave, onApplyToAll, onClose,
 }: BackgroundPanelProps) => {
+  // Local draft state — changes here don't affect the slide until Save
+  const [draft, setDraft] = useState<BgDraft>({
+    bgColor, overlayType, overlayOpacity, bgImage, bgVideo, bgScale, bgPosX, bgPosY, bgDarken,
+  });
   const [bgTab, setBgTab] = useState<BgTab>(bgVideo ? "video" : bgImage ? "photo" : "color");
   const [applyToAll, setApplyToAll] = useState(false);
   const [hexInput, setHexInput] = useState(bgColor.startsWith("#") ? bgColor : "#667eea");
@@ -53,50 +59,39 @@ const BackgroundPanel = ({
   const photoRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
 
-  const initial = useMemo(() => ({
-    bgColor, overlayType, overlayOpacity, bgImage, bgScale, bgPosX, bgPosY, bgDarken,
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), []);
-
-  const handleCancel = () => {
-    onBgColorChange(initial.bgColor);
-    onOverlayTypeChange(initial.overlayType);
-    onOverlayOpacityChange(initial.overlayOpacity);
-    onBgImageChange(initial.bgImage);
-    onBgScaleChange(initial.bgScale);
-    onBgPosXChange(initial.bgPosX);
-    onBgPosYChange(initial.bgPosY);
-    onBgDarkenChange(initial.bgDarken);
-    onClose?.();
-  };
+  const update = (partial: Partial<BgDraft>) => setDraft(prev => ({ ...prev, ...partial }));
 
   const handleColorPickerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const color = e.target.value;
     setHexInput(color);
-    onBgColorChange(color);
+    update({ bgColor: color });
   };
 
   const handleHexInput = (val: string) => {
     setHexInput(val);
-    if (/^#[0-9a-fA-F]{6}$/.test(val)) onBgColorChange(val);
-  };
-
-  const handleApplyToggle = (checked: boolean) => {
-    setApplyToAll(checked);
-    if (checked) onApplyToAll();
+    if (/^#[0-9a-fA-F]{6}$/.test(val)) update({ bgColor: val });
   };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const url = URL.createObjectURL(file);
-      onBgVideoChange(undefined); // auto-clear video
-      onBgImageChange(url);
-      onBgScaleChange(100);
-      onBgPosXChange(50);
-      onBgPosYChange(50);
-      onBgDarkenChange(0);
+      update({ bgVideo: undefined, bgImage: url, bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0 });
     }
+  };
+
+  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      update({ bgImage: undefined, bgVideo: url, bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0 });
+    }
+  };
+
+  const handleSave = () => {
+    onSave(draft);
+    if (applyToAll) onApplyToAll(draft);
+    onClose();
   };
 
   const tabItems: { id: BgTab; label: string }[] = [
@@ -132,35 +127,35 @@ const BackgroundPanel = ({
               className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-medium transition-all active:scale-[0.98]"
               style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(200,200,220,0.5)", color: "#1a1a2e" }}
             >
-              <Upload size={14} /> {bgImage ? "Заменить фото" : "Загрузить фото"}
+              <Upload size={14} /> {draft.bgImage ? "Заменить фото" : "Загрузить фото"}
             </button>
 
-            {bgImage && (
+            {draft.bgImage && (
               <div className="flex flex-col gap-2 mt-2">
                 <div className="flex items-center gap-2">
                   <ZoomIn size={12} style={labelStyle} />
                   <span className="text-[10px] flex-shrink-0" style={labelStyle}>Масштаб</span>
-                  <Slider value={[bgScale]} onValueChange={([v]) => onBgScaleChange(v)} min={50} max={300} step={1} className="flex-1" />
-                  <span className="text-[10px] w-8 text-right" style={valStyle}>{bgScale}%</span>
+                  <Slider value={[draft.bgScale]} onValueChange={([v]) => update({ bgScale: v })} min={50} max={300} step={1} className="flex-1" />
+                  <span className="text-[10px] w-8 text-right" style={valStyle}>{draft.bgScale}%</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Move size={12} style={labelStyle} />
                   <span className="text-[10px] flex-shrink-0" style={labelStyle}>X</span>
-                  <Slider value={[bgPosX]} onValueChange={([v]) => onBgPosXChange(v)} min={0} max={100} step={1} className="flex-1" />
-                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgPosX}</span>
+                  <Slider value={[draft.bgPosX]} onValueChange={([v]) => update({ bgPosX: v })} min={0} max={100} step={1} className="flex-1" />
+                  <span className="text-[10px] w-6 text-right" style={valStyle}>{draft.bgPosX}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Move size={12} style={labelStyle} />
                   <span className="text-[10px] flex-shrink-0" style={labelStyle}>Y</span>
-                  <Slider value={[bgPosY]} onValueChange={([v]) => onBgPosYChange(v)} min={0} max={100} step={1} className="flex-1" />
-                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgPosY}</span>
+                  <Slider value={[draft.bgPosY]} onValueChange={([v]) => update({ bgPosY: v })} min={0} max={100} step={1} className="flex-1" />
+                  <span className="text-[10px] w-6 text-right" style={valStyle}>{draft.bgPosY}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] flex-shrink-0" style={labelStyle}>Затемнение</span>
-                  <Slider value={[bgDarken]} onValueChange={([v]) => onBgDarkenChange(v)} min={0} max={100} step={1} className="flex-1" />
-                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgDarken}</span>
+                  <Slider value={[draft.bgDarken]} onValueChange={([v]) => update({ bgDarken: v })} min={0} max={100} step={1} className="flex-1" />
+                  <span className="text-[10px] w-6 text-right" style={valStyle}>{draft.bgDarken}</span>
                 </div>
-                <button onClick={() => onBgImageChange(undefined)}
+                <button onClick={() => update({ bgImage: undefined })}
                   className="w-full rounded-xl py-1.5 text-[10px] font-medium transition-all active:scale-[0.98]"
                   style={{ background: "rgba(255,255,255,0.4)", border: "1px solid rgba(200,200,220,0.4)", color: "rgba(26,26,46,0.5)" }}
                 >Удалить фото</button>
@@ -171,53 +166,40 @@ const BackgroundPanel = ({
 
         {bgTab === "video" && (
           <>
-            <input ref={videoRef} type="file" accept="video/*" className="sr-only"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  const url = URL.createObjectURL(file);
-                  onBgImageChange(undefined); // auto-clear photo
-                  onBgVideoChange(url);
-                  onBgScaleChange(100);
-                  onBgPosXChange(50);
-                  onBgPosYChange(50);
-                  onBgDarkenChange(0);
-                }
-              }}
-            />
+            <input ref={videoRef} type="file" accept="video/*" className="sr-only" onChange={handleVideoUpload} />
             <button onClick={() => videoRef.current?.click()}
               className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-medium transition-all active:scale-[0.98]"
               style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(200,200,220,0.5)", color: "#1a1a2e" }}
             >
-              <Upload size={14} /> {bgVideo ? "Заменить видео" : "Загрузить видео (до 1 мин)"}
+              <Upload size={14} /> {draft.bgVideo ? "Заменить видео" : "Загрузить видео (до 1 мин)"}
             </button>
 
-            {bgVideo && (
+            {draft.bgVideo && (
               <div className="flex flex-col gap-2 mt-2">
                 <div className="flex items-center gap-2">
                   <ZoomIn size={12} style={labelStyle} />
                   <span className="text-[10px] flex-shrink-0" style={labelStyle}>Масштаб</span>
-                  <Slider value={[bgScale]} onValueChange={([v]) => onBgScaleChange(v)} min={50} max={300} step={1} className="flex-1" />
-                  <span className="text-[10px] w-8 text-right" style={valStyle}>{bgScale}%</span>
+                  <Slider value={[draft.bgScale]} onValueChange={([v]) => update({ bgScale: v })} min={50} max={300} step={1} className="flex-1" />
+                  <span className="text-[10px] w-8 text-right" style={valStyle}>{draft.bgScale}%</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Move size={12} style={labelStyle} />
                   <span className="text-[10px] flex-shrink-0" style={labelStyle}>X</span>
-                  <Slider value={[bgPosX]} onValueChange={([v]) => onBgPosXChange(v)} min={0} max={100} step={1} className="flex-1" />
-                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgPosX}</span>
+                  <Slider value={[draft.bgPosX]} onValueChange={([v]) => update({ bgPosX: v })} min={0} max={100} step={1} className="flex-1" />
+                  <span className="text-[10px] w-6 text-right" style={valStyle}>{draft.bgPosX}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Move size={12} style={labelStyle} />
                   <span className="text-[10px] flex-shrink-0" style={labelStyle}>Y</span>
-                  <Slider value={[bgPosY]} onValueChange={([v]) => onBgPosYChange(v)} min={0} max={100} step={1} className="flex-1" />
-                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgPosY}</span>
+                  <Slider value={[draft.bgPosY]} onValueChange={([v]) => update({ bgPosY: v })} min={0} max={100} step={1} className="flex-1" />
+                  <span className="text-[10px] w-6 text-right" style={valStyle}>{draft.bgPosY}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] flex-shrink-0" style={labelStyle}>Затемнение</span>
-                  <Slider value={[bgDarken]} onValueChange={([v]) => onBgDarkenChange(v)} min={0} max={100} step={1} className="flex-1" />
-                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgDarken}</span>
+                  <Slider value={[draft.bgDarken]} onValueChange={([v]) => update({ bgDarken: v })} min={0} max={100} step={1} className="flex-1" />
+                  <span className="text-[10px] w-6 text-right" style={valStyle}>{draft.bgDarken}</span>
                 </div>
-                <button onClick={() => onBgVideoChange(undefined)}
+                <button onClick={() => update({ bgVideo: undefined })}
                   className="w-full rounded-xl py-1.5 text-[10px] font-medium transition-all active:scale-[0.98]"
                   style={{ background: "rgba(255,255,255,0.4)", border: "1px solid rgba(200,200,220,0.4)", color: "rgba(26,26,46,0.5)" }}
                 >Удалить видео</button>
@@ -246,13 +228,13 @@ const BackgroundPanel = ({
             <p className="text-[11px] font-medium mb-1.5" style={labelStyle}>Элементы</p>
             <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
               {overlayOptions.map((opt) => (
-                <button key={opt.id} onClick={() => onOverlayTypeChange(opt.id)}
+                <button key={opt.id} onClick={() => update({ overlayType: opt.id })}
                   className="flex-shrink-0 rounded-lg px-2.5 py-1.5 text-[10px] font-medium transition-all active:scale-95"
                   style={{
-                    background: overlayType === opt.id ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.3)",
-                    color: overlayType === opt.id ? "#1a1a2e" : "rgba(26,26,46,0.5)",
-                    border: overlayType === opt.id ? "1px solid rgba(200,200,220,0.6)" : "1px solid transparent",
-                    boxShadow: overlayType === opt.id ? "0 2px 6px rgba(0,0,0,0.05)" : "none",
+                    background: draft.overlayType === opt.id ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.3)",
+                    color: draft.overlayType === opt.id ? "#1a1a2e" : "rgba(26,26,46,0.5)",
+                    border: draft.overlayType === opt.id ? "1px solid rgba(200,200,220,0.6)" : "1px solid transparent",
+                    boxShadow: draft.overlayType === opt.id ? "0 2px 6px rgba(0,0,0,0.05)" : "none",
                   }}
                 >{opt.label}</button>
               ))}
@@ -260,28 +242,25 @@ const BackgroundPanel = ({
 
             <div className="mt-2 flex items-center gap-2">
               <span className="text-[10px] flex-shrink-0" style={{ color: "rgba(26,26,46,0.45)" }}>Прозрачность</span>
-              <Slider value={[overlayOpacity]} onValueChange={([v]) => onOverlayOpacityChange(v)} max={100} min={0} step={1} className="flex-1" />
-              <span className="text-[10px] w-6 text-right" style={valStyle}>{overlayOpacity}</span>
+              <Slider value={[draft.overlayOpacity]} onValueChange={([v]) => update({ overlayOpacity: v })} max={100} min={0} step={1} className="flex-1" />
+              <span className="text-[10px] w-6 text-right" style={valStyle}>{draft.overlayOpacity}</span>
             </div>
 
             <div className="mt-2 flex items-center justify-between">
               <span className="text-[11px]" style={valStyle}>Применить ко всем слайдам</span>
-              <Switch checked={applyToAll} onCheckedChange={handleApplyToggle} />
-            </div>
-
-            <div className="mt-3 flex gap-2">
-              <button onClick={handleCancel} className="flex-1 rounded-xl py-2 text-[11px] font-medium transition-all active:scale-[0.97]"
-                style={{ background: "rgba(255,255,255,0.5)", border: "1px solid rgba(200,200,220,0.5)", color: "rgba(26,26,46,0.6)" }}>
-                Отменить
-              </button>
-              <button onClick={() => onClose?.()} className="flex-1 rounded-xl py-2 text-[11px] font-medium transition-all active:scale-[0.97]"
-                style={{ background: "rgba(26,26,46,0.85)", color: "#fff" }}>
-                Сохранить
-              </button>
+              <Switch checked={applyToAll} onCheckedChange={setApplyToAll} />
             </div>
           </div>
         </>
       )}
+
+      {/* Save button only */}
+      <div>
+        <button onClick={handleSave} className="w-full rounded-xl py-2 text-[11px] font-medium transition-all active:scale-[0.97]"
+          style={{ background: "rgba(26,26,46,0.85)", color: "#fff" }}>
+          Сохранить
+        </button>
+      </div>
     </div>
   );
 };
