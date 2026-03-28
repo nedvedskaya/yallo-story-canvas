@@ -17,6 +17,7 @@ export interface Slide {
   overlayType: OverlayType;
   overlayOpacity: number;
   bgImage?: string;
+  bgVideo?: string;
   bgScale: number;
   bgPosX: number;
   bgPosY: number;
