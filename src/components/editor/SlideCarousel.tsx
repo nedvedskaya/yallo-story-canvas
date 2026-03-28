@@ -1,6 +1,8 @@
 import { useRef, useState, useCallback } from "react";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import SlideToolbar, { type HAlign, type VAlign, type BgType } from "./SlideToolbar";
+import BackgroundModal from "./BackgroundModal";
 
 interface Slide {
   id: number;
@@ -8,6 +10,9 @@ interface Slide {
   title: string;
   body: string;
   bgColor: string;
+  bgType: BgType;
+  hAlign: HAlign;
+  vAlign: VAlign;
 }
 
 const initialSlides: Slide[] = [
@@ -17,6 +22,9 @@ const initialSlides: Slide[] = [
     title: "Заголовок слайда",
     body: "Основной текст слайда. Начните редактирование прямо сейчас.",
     bgColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    bgType: "color",
+    hAlign: "center",
+    vAlign: "center",
   },
   {
     id: 2,
@@ -24,6 +32,9 @@ const initialSlides: Slide[] = [
     title: "Расскажите историю",
     body: "Каждый слайд — это возможность передать вашу идею красиво и лаконично.",
     bgColor: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+    bgType: "color",
+    hAlign: "center",
+    vAlign: "center",
   },
   {
     id: 3,
@@ -31,8 +42,14 @@ const initialSlides: Slide[] = [
     title: "Призыв к действию",
     body: "Подписывайтесь, ставьте лайк и делитесь с друзьями ✨",
     bgColor: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+    bgType: "color",
+    hAlign: "center",
+    vAlign: "center",
   },
 ];
+
+const hAlignToText: Record<HAlign, string> = { left: "left", center: "center", right: "right" };
+const vAlignToJustify: Record<VAlign, string> = { start: "flex-start", center: "center", end: "flex-end" };
 
 interface SlideCarouselProps {
   activeSlide: number;
@@ -42,6 +59,9 @@ interface SlideCarouselProps {
 const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [slides, setSlides] = useState(initialSlides);
+  const [bgModalOpen, setBgModalOpen] = useState(false);
+
+  const currentSlide = slides[activeSlide];
 
   const handleScroll = () => {
     if (!scrollRef.current) return;
@@ -57,8 +77,8 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
     }
   };
 
-  const updateSlide = useCallback((id: number, field: keyof Pick<Slide, 'username' | 'title' | 'body'>, value: string) => {
-    setSlides(prev => prev.map(s => s.id === id ? { ...s, [field]: value } : s));
+  const updateSlide = useCallback((id: number, updates: Partial<Slide>) => {
+    setSlides(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
   }, []);
 
   return (
@@ -99,14 +119,25 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
                 style={{
                   background: slide.bgColor,
                   borderRadius: '16px',
+                  justifyContent: vAlignToJustify[slide.vAlign],
+                  textAlign: hAlignToText[slide.hAlign] as React.CSSProperties['textAlign'],
                 }}
               >
-                {/* Top row: username + counter */}
-                <div className="flex items-center justify-between">
+                {/* Top row: username + counter — always at top */}
+                <div
+                  className="flex items-center justify-between w-full"
+                  style={{
+                    position: slide.vAlign !== "start" ? "absolute" : "relative",
+                    top: slide.vAlign !== "start" ? "24px" : undefined,
+                    left: slide.vAlign !== "start" ? "24px" : undefined,
+                    right: slide.vAlign !== "start" ? "24px" : undefined,
+                    width: slide.vAlign !== "start" ? "calc(100% - 48px)" : undefined,
+                  }}
+                >
                   <span
                     contentEditable
                     suppressContentEditableWarning
-                    onBlur={(e) => updateSlide(slide.id, 'username', e.currentTarget.textContent || '')}
+                    onBlur={(e) => updateSlide(slide.id, { username: e.currentTarget.textContent || '' })}
                     className="outline-none text-xs font-normal"
                     style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '12px' }}
                   >
@@ -120,27 +151,32 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
                   </span>
                 </div>
 
-                {/* Headline */}
-                <h2
-                  contentEditable
-                  suppressContentEditableWarning
-                  onBlur={(e) => updateSlide(slide.id, 'title', e.currentTarget.textContent || '')}
-                  className="outline-none mt-8 font-bold leading-tight"
-                  style={{ color: '#ffffff', fontSize: '28px' }}
-                >
-                  {slide.title}
-                </h2>
+                {/* Text content block */}
+                <div>
+                  <h2
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={(e) => updateSlide(slide.id, { title: e.currentTarget.textContent || '' })}
+                    className="outline-none font-bold leading-tight"
+                    style={{
+                      color: '#ffffff',
+                      fontSize: '28px',
+                      marginTop: slide.vAlign === "start" ? "32px" : "0",
+                    }}
+                  >
+                    {slide.title}
+                  </h2>
 
-                {/* Body text */}
-                <p
-                  contentEditable
-                  suppressContentEditableWarning
-                  onBlur={(e) => updateSlide(slide.id, 'body', e.currentTarget.textContent || '')}
-                  className="outline-none mt-3 font-normal"
-                  style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '16px', lineHeight: 1.5 }}
-                >
-                  {slide.body}
-                </p>
+                  <p
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={(e) => updateSlide(slide.id, { body: e.currentTarget.textContent || '' })}
+                    className="outline-none mt-3 font-normal"
+                    style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '16px', lineHeight: 1.5 }}
+                  >
+                    {slide.body}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -161,8 +197,21 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
         </div>
       </div>
 
+      {/* Toolbar */}
+      {currentSlide && (
+        <SlideToolbar
+          hAlign={currentSlide.hAlign}
+          vAlign={currentSlide.vAlign}
+          bgType={currentSlide.bgType}
+          onHAlignChange={(v) => updateSlide(currentSlide.id, { hAlign: v })}
+          onVAlignChange={(v) => updateSlide(currentSlide.id, { vAlign: v })}
+          onBgClick={() => setBgModalOpen(true)}
+          onCropClick={() => {/* TODO: crop overlay */}}
+        />
+      )}
+
       {/* Dots indicator */}
-      <div className="mt-6 flex items-center gap-2">
+      <div className="mt-4 flex items-center gap-2">
         {slides.map((_, index) => (
           <button
             key={index}
@@ -175,9 +224,7 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
             }}
             className={cn(
               "h-2 rounded-full transition-all duration-300",
-              index === activeSlide
-                ? "w-6"
-                : "w-2"
+              index === activeSlide ? "w-6" : "w-2"
             )}
             style={{
               background: index === activeSlide ? 'rgba(26, 26, 46, 0.3)' : 'rgba(26, 26, 46, 0.1)',
@@ -185,6 +232,22 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
           />
         ))}
       </div>
+
+      {/* Background modal */}
+      <BackgroundModal
+        open={bgModalOpen}
+        onClose={() => setBgModalOpen(false)}
+        onSelectColor={(bg) => {
+          if (currentSlide) {
+            updateSlide(currentSlide.id, { bgColor: bg, bgType: "color" });
+          }
+        }}
+        onSelectType={(type) => {
+          if (currentSlide) {
+            updateSlide(currentSlide.id, { bgType: type });
+          }
+        }}
+      />
     </div>
   );
 };
