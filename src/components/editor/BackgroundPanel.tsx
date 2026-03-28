@@ -42,6 +42,8 @@ const BackgroundPanel = ({
   const [applyToAll, setApplyToAll] = useState(false);
   const [hexInput, setHexInput] = useState(bgColor.startsWith("#") ? bgColor : "#667eea");
   const colorRef = useRef<HTMLInputElement>(null);
+  const photoRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLInputElement>(null);
 
   // Snapshot initial values for cancel
   const initial = useMemo(() => ({
