@@ -5,7 +5,7 @@ import type { Slide } from "@/components/editor/SlideCarousel";
 import BottomMenu from "@/components/editor/BottomMenu";
 import BottomSheet from "@/components/editor/BottomSheet";
 import type { MenuId } from "@/components/editor/BottomMenu";
-import type { OverlayType } from "@/components/editor/BackgroundPanel";
+import type { SlideFormat } from "@/components/editor/SizePanel";
 
 let nextId = 4;
 
@@ -40,6 +40,7 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState<MenuId | null>(null);
   const [activeSlide, setActiveSlide] = useState(0);
   const [slides, setSlides] = useState<Slide[]>(initialSlides);
+  const [slideFormat, setSlideFormat] = useState<SlideFormat>("carousel");
 
   const currentSlide = slides[activeSlide];
 
@@ -128,6 +129,7 @@ const Index = () => {
             activeSlide={activeSlide}
             onSlideChange={setActiveSlide}
             isSheetOpen={!!activeTab}
+            slideFormat={slideFormat}
             onUpdateSlide={handleUpdateSlide}
             onAddSlide={handleAddSlide}
             onMoveSlide={handleMoveSlide}
@@ -144,6 +146,8 @@ const Index = () => {
         onUpdateSlide={handleUpdateSlide}
         onApplyBgToAll={handleApplyBgToAll}
         onApplyTextToAll={handleApplyTextToAll}
+        slideFormat={slideFormat}
+        onSlideFormatChange={setSlideFormat}
       />
       <BottomMenu activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
