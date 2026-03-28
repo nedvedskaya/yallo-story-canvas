@@ -77,6 +77,11 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
                     <Image size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} />
                     <h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>Фон</h3>
                   </>
+                ) : isText ? (
+                  <>
+                    <Type size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} />
+                    <h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>Текст</h3>
+                  </>
                 ) : content && (
                   <>
                     <content.icon size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} />
