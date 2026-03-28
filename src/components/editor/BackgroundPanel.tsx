@@ -97,24 +97,7 @@ const BackgroundPanel = ({
           ))}
         </div>
 
-        {bgTab === "color" && (
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-            {colorPresets.map((bg, i) => (
-              <button
-                key={i}
-                onClick={() => {
-                  onBgColorChange(bg);
-                  if (bg.startsWith("#")) setHexInput(bg);
-                }}
-                className="h-10 w-10 rounded-lg flex-shrink-0 transition-all active:scale-90"
-                style={{
-                  background: bg,
-                  border: "1.5px solid rgba(200,200,220,0.4)",
-                }}
-              />
-            ))}
-          </div>
-        )}
+        {bgTab === "color" && null}
 
         {bgTab === "photo" && (
           <button
