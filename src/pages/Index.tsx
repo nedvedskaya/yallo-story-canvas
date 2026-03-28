@@ -203,6 +203,7 @@ const Index = () => {
         onSlideFormatChange={setSlideFormat}
       />
       <BottomMenu activeTab={activeTab} onTabChange={handleTabChange} />
+      <DownloadModal open={downloadOpen} onClose={() => setDownloadOpen(false)} slides={slides} slideFormat={slideFormat} />
     </div>
   );
 };
