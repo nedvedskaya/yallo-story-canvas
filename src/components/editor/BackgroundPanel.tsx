@@ -198,6 +198,18 @@ const BackgroundPanel = ({
                   <span className="text-[10px] w-8 text-right" style={valStyle}>{bgScale}%</span>
                 </div>
                 <div className="flex items-center gap-2">
+                  <Move size={12} style={labelStyle} />
+                  <span className="text-[10px] flex-shrink-0" style={labelStyle}>X</span>
+                  <Slider value={[bgPosX]} onValueChange={([v]) => onBgPosXChange(v)} min={0} max={100} step={1} className="flex-1" />
+                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgPosX}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Move size={12} style={labelStyle} />
+                  <span className="text-[10px] flex-shrink-0" style={labelStyle}>Y</span>
+                  <Slider value={[bgPosY]} onValueChange={([v]) => onBgPosYChange(v)} min={0} max={100} step={1} className="flex-1" />
+                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgPosY}</span>
+                </div>
+                <div className="flex items-center gap-2">
                   <span className="text-[10px] flex-shrink-0" style={labelStyle}>Затемнение</span>
                   <Slider value={[bgDarken]} onValueChange={([v]) => onBgDarkenChange(v)} min={0} max={100} step={1} className="flex-1" />
                   <span className="text-[10px] w-6 text-right" style={valStyle}>{bgDarken}</span>
