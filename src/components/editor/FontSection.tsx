@@ -9,26 +9,13 @@ export interface FontSettings {
 }
 
 export const FONT_LIST = [
-  { name: "Inter", family: "Inter, sans-serif" },
-  { name: "Playfair Display", family: "'Playfair Display', serif" },
-  { name: "Syne", family: "'Syne', sans-serif" },
-  { name: "Unbounded", family: "'Unbounded', sans-serif" },
-  { name: "DM Serif Display", family: "'DM Serif Display', serif" },
-  { name: "Clash Display", family: "'Clash Display', sans-serif" },
-  { name: "Cabinet Grotesk", family: "'Cabinet Grotesk', sans-serif" },
-  { name: "Satoshi", family: "'Satoshi', sans-serif" },
-  { name: "General Sans", family: "'General Sans', sans-serif" },
-  { name: "Boska", family: "'Boska', serif" },
-  { name: "Chillax", family: "'Chillax', sans-serif" },
-  { name: "Melodrama", family: "'Melodrama', serif" },
-  { name: "Swear Display", family: "'Swear Display', serif" },
-  { name: "Neue Montreal", family: "'Neue Montreal', sans-serif" },
-  { name: "Coolvetica", family: "'Coolvetica', sans-serif" },
-  { name: "Postertoaster", family: "'Postertoaster', sans-serif" },
   { name: "Abraxas", family: "'Abraxas', serif" },
   { name: "HeadingNow", family: "'HeadingNow Trial', sans-serif" },
+  { name: "Postertoaster", family: "'Postertoaster', sans-serif" },
   { name: "SouthGhetto", family: "'SouthGhetto', sans-serif" },
   { name: "Marvin Visions", family: "'Marvin Visions', sans-serif" },
+  { name: "SONGER", family: "'SONGER Grotesque', sans-serif" },
+  { name: "Coolvetica", family: "'Coolvetica', sans-serif" },
 ];
 
 interface FontSectionProps {
@@ -94,14 +81,20 @@ const FontSection = ({ label, settings, onChange }: FontSectionProps) => {
 
       {/* Line height */}
       <div className="flex items-center gap-3">
-        <span className="text-[11px] w-16 flex-shrink-0" style={{ color: 'rgba(26,26,46,0.5)' }}>Интерлиньяж</span>
+        <span className="text-[11px] w-16 flex-shrink-0 flex items-center gap-1" style={{ color: 'rgba(26,26,46,0.5)' }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="3" y2="12"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
+          Интервал
+        </span>
         <Slider min={0.8} max={3} step={0.05} value={[settings.lineHeight]} onValueChange={([v]) => onChange({ lineHeight: v })} className="flex-1" />
         <span className="text-[11px] w-6 text-right" style={{ color: 'rgba(26,26,46,0.5)' }}>{settings.lineHeight.toFixed(1)}</span>
       </div>
 
       {/* Letter spacing */}
       <div className="flex items-center gap-3">
-        <span className="text-[11px] w-16 flex-shrink-0" style={{ color: 'rgba(26,26,46,0.5)' }}>Трекинг</span>
+        <span className="text-[11px] w-16 flex-shrink-0 flex items-center gap-1" style={{ color: 'rgba(26,26,46,0.5)' }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 20V4m10 16V4"/><path d="M3 8l4-4 4 4M13 8l4-4 4 4"/></svg>
+          Интервал
+        </span>
         <Slider min={-5} max={20} step={0.5} value={[settings.letterSpacing]} onValueChange={([v]) => onChange({ letterSpacing: v })} className="flex-1" />
         <span className="text-[11px] w-6 text-right" style={{ color: 'rgba(26,26,46,0.5)' }}>{settings.letterSpacing}</span>
       </div>
