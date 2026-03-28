@@ -110,7 +110,7 @@ const SlideCarousel = ({
         className="flex w-full items-center gap-3 overflow-x-auto px-8 snap-x-mandatory scrollbar-hide transition-all duration-300"
         style={{
           scrollBehavior: "smooth",
-          transform: isSheetOpen ? 'scale(0.65) translateY(-15%)' : 'scale(1) translateY(0)',
+          transform: isSheetOpen ? 'scale(0.5) translateY(-30%)' : 'scale(1) translateY(0)',
           transformOrigin: 'center center',
         }}
       >
