@@ -34,6 +34,11 @@ export interface Slide {
   bodyCase?: string;
   bodyLineHeight?: number;
   bodyLetterSpacing?: number;
+  showUsername?: boolean;
+  showSlideCount?: boolean;
+  showArrow?: boolean;
+  showFooter?: boolean;
+  footerText?: string;
 }
 
 const hAlignToText: Record<HAlign, string> = { left: "left", center: "center", right: "right" };
