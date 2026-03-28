@@ -47,27 +47,40 @@ const BottomSheet = ({ activeTab, onClose }: BottomSheetProps) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-40 bg-foreground/5"
+            className="fixed inset-0 z-40"
+            style={{ background: 'rgba(26, 26, 46, 0.05)' }}
           />
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed bottom-20 left-2 right-2 z-40 rounded-3xl glass-strong overflow-hidden"
-            style={{ maxHeight: "50vh" }}
+            className="fixed bottom-20 left-2 right-2 z-40 overflow-hidden"
+            style={{
+              maxHeight: "50vh",
+              background: 'rgba(255, 255, 255, 0.55)',
+              backdropFilter: 'blur(32px) saturate(200%)',
+              WebkitBackdropFilter: 'blur(32px) saturate(200%)',
+              border: '1px solid rgba(255, 255, 255, 0.75)',
+              borderRadius: '20px',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9)',
+            }}
           >
             {/* Handle */}
             <div className="flex justify-center pt-3">
-              <div className="h-1 w-10 rounded-full bg-muted-foreground/20" />
+              <div className="h-1 w-10 rounded-full" style={{ background: 'rgba(26, 26, 46, 0.15)' }} />
             </div>
 
             <div className="flex items-center justify-between px-5 pb-2 pt-3">
               <div className="flex items-center gap-2">
-                <content.icon size={18} className="text-muted-foreground" />
-                <h3 className="text-base font-semibold text-foreground">{content.title}</h3>
+                <content.icon size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} />
+                <h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>{content.title}</h3>
               </div>
-              <button onClick={onClose} className="rounded-full p-1.5 text-muted-foreground transition-colors hover:text-foreground glass-pill">
+              <button
+                onClick={onClose}
+                className="rounded-full p-1.5 transition-colors glass-pill"
+                style={{ color: 'rgba(26, 26, 46, 0.5)' }}
+              >
                 <X size={16} />
               </button>
             </div>
@@ -78,7 +91,8 @@ const BottomSheet = ({ activeTab, onClose }: BottomSheetProps) => {
                   {content.items.map((item) => (
                     <button
                       key={item}
-                      className="rounded-2xl glass-pill px-4 py-3 text-left text-sm text-foreground transition-all active:scale-[0.98]"
+                      className="glass-pill px-4 py-3 text-left text-sm transition-all active:scale-[0.98]"
+                      style={{ color: '#1a1a2e' }}
                     >
                       {item}
                     </button>
@@ -89,9 +103,10 @@ const BottomSheet = ({ activeTab, onClose }: BottomSheetProps) => {
                   {content.items.map((item) => (
                     <button
                       key={item}
-                      className="flex flex-col items-center gap-2 rounded-2xl glass-pill p-4 text-xs text-foreground transition-all active:scale-95"
+                      className="flex flex-col items-center gap-2 glass-pill p-4 text-xs transition-all active:scale-95"
+                      style={{ color: '#1a1a2e' }}
                     >
-                      <div className="h-10 w-10 rounded-xl bg-muted-foreground/10" />
+                      <div className="h-10 w-10 rounded-xl" style={{ background: 'rgba(26, 26, 46, 0.06)' }} />
                       <span>{item}</span>
                     </button>
                   ))}
