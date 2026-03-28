@@ -6,7 +6,10 @@ const TopBar = () => {
       <h1 className="tracking-tight text-lg font-thin text-muted-foreground">
         Яло
       </h1>
-      <button className="btn-accent-shimmer flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-accent-foreground transition-transform active:scale-95 shadow-md">
+      <button
+        className="btn-accent-shimmer flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-transform active:scale-95"
+        style={{ color: 'rgba(60, 60, 67, 0.8)' }}
+      >
         <Download size={16} />
         <span>Скачать</span>
       </button>
