@@ -149,8 +149,15 @@ const SlideCarousel = ({
                 index === activeSlide ? "scale-100" : "scale-[0.92] opacity-60"
               )}
               style={{
-                width: isLandscape ? "min(90vw, 420px)" : "min(78vw, 320px)",
+                width: isLandscape
+                  ? "min(90vw, 420px)"
+                  : formatInfo.id === "stories"
+                    ? "min(52vw, 240px)"
+                    : formatInfo.id === "square"
+                      ? "min(72vw, 300px)"
+                      : "min(78vw, 320px)",
                 aspectRatio: slideAspectRatio,
+                maxHeight: "calc(100vh - 220px)",
               }}
             >
               <div
