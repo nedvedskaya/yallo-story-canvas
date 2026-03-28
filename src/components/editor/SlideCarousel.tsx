@@ -135,14 +135,31 @@ const SlideCarousel = ({
                 }}
               >
                 <div
-                  className="relative flex h-full flex-col p-6"
+                  className="relative flex h-full flex-col p-6 overflow-hidden"
                   style={{
-                    background: slide.bgColor,
+                    background: slide.bgImage ? undefined : slide.bgColor,
                     borderRadius: '16px',
                     justifyContent: vAlignToJustify[slide.vAlign],
                     textAlign: hAlignToText[slide.hAlign] as React.CSSProperties['textAlign'],
                   }}
                 >
+                  {slide.bgImage && (
+                    <div className="absolute inset-0" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+                      <img
+                        src={slide.bgImage}
+                        alt=""
+                        className="absolute"
+                        style={{
+                          width: `${slide.bgScale}%`,
+                          height: `${slide.bgScale}%`,
+                          objectFit: 'cover',
+                          left: `${slide.bgPosX}%`,
+                          top: `${slide.bgPosY}%`,
+                          transform: 'translate(-50%, -50%)',
+                        }}
+                      />
+                    </div>
+                  )
                   <SlideOverlay type={slide.overlayType} opacity={slide.overlayOpacity} />
 
                   <div
