@@ -39,6 +39,7 @@ interface BackgroundPanelProps {
   bgPosX: number;
   bgPosY: number;
   bgDarken: number;
+  bgMuted?: boolean;
   onSave: (draft: Partial<BgDraft>) => void;
   onApplyToAll: () => void;
   onClose: () => void;
@@ -46,7 +47,7 @@ interface BackgroundPanelProps {
 
 const BackgroundPanel = ({
   bgColor, overlayType, overlayOpacity,
-  bgImage, bgVideo, bgScale, bgPosX, bgPosY, bgDarken,
+  bgImage, bgVideo, bgScale, bgPosX, bgPosY, bgDarken, bgMuted,
   onSave, onApplyToAll, onClose,
 }: BackgroundPanelProps) => {
   const [bgTab, setBgTab] = useState<BgTab>(bgVideo ? "video" : bgImage ? "photo" : "color");
