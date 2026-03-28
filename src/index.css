@@ -115,11 +115,11 @@
   }
 
   .glass-strong {
-    background: hsla(0, 0%, 100%, 0.18);
-    backdrop-filter: blur(60px) saturate(200%);
-    -webkit-backdrop-filter: blur(60px) saturate(200%);
-    border: 1px solid hsla(0, 0%, 100%, 0.25);
-    box-shadow: 0 1px 20px rgba(0, 0, 0, 0.03);
+    background: hsla(50, 10%, 89%, 0.5);
+    backdrop-filter: blur(50px) saturate(180%);
+    -webkit-backdrop-filter: blur(50px) saturate(180%);
+    border: 1px solid hsla(50, 10%, 95%, 0.4);
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
   }
 
   .glass-pill {
