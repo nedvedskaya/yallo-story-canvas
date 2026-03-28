@@ -81,7 +81,10 @@ const FontSection = ({ label, settings, onChange }: FontSectionProps) => {
 
       {/* Line height */}
       <div className="flex items-center gap-3">
-        <span className="text-[11px] w-16 flex-shrink-0" style={{ color: 'rgba(26,26,46,0.5)' }}>Интерлиньяж</span>
+        <span className="text-[11px] w-16 flex-shrink-0 flex items-center gap-1" style={{ color: 'rgba(26,26,46,0.5)' }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="3" y2="12"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
+          Интервал
+        </span>
         <Slider min={0.8} max={3} step={0.05} value={[settings.lineHeight]} onValueChange={([v]) => onChange({ lineHeight: v })} className="flex-1" />
         <span className="text-[11px] w-6 text-right" style={{ color: 'rgba(26,26,46,0.5)' }}>{settings.lineHeight.toFixed(1)}</span>
       </div>
