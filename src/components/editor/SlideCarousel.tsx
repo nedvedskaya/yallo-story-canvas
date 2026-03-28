@@ -5,6 +5,7 @@ import SlideToolbar, { type HAlign, type VAlign, type BgType } from "./SlideTool
 import SlideOverlay from "./SlideOverlay";
 import type { OverlayType } from "./BackgroundPanel";
 import TextEditorModal from "./TextEditorModal";
+import { FORMAT_OPTIONS, type SlideFormat } from "./SizePanel";
 
 export interface Slide {
   id: number;
