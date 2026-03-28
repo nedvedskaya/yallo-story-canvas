@@ -21,6 +21,7 @@ interface BackgroundPanelProps {
   overlayType: OverlayType;
   overlayOpacity: number;
   bgImage?: string;
+  bgVideo?: string;
   bgScale: number;
   bgPosX: number;
   bgPosY: number;
