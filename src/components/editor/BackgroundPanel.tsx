@@ -84,7 +84,7 @@ const BackgroundPanel = ({
     const file = e.target.files?.[0];
     if (file) {
       const url = URL.createObjectURL(file);
-      update({ bgImage: undefined, bgVideo: url, bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0 });
+      update({ bgImage: undefined, bgVideo: url, bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0, bgMuted: false });
     }
   };
 
