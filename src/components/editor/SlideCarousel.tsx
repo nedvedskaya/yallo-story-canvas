@@ -24,6 +24,7 @@ export interface Slide {
   bgPosX: number;
   bgPosY: number;
   bgDarken: number;
+  bgMuted?: boolean;
   titleFont?: string;
   titleSize?: number;
   titleCase?: string;
