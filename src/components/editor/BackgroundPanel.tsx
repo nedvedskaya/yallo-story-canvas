@@ -217,6 +217,31 @@ const BackgroundPanel = ({
           </span>
           <Switch checked={applyToAll} onCheckedChange={handleApplyToggle} />
         </div>
+
+        {/* Cancel / Save buttons */}
+        <div className="mt-3 flex gap-2">
+          <button
+            onClick={handleCancel}
+            className="flex-1 rounded-xl py-2 text-[11px] font-medium transition-all active:scale-[0.97]"
+            style={{
+              background: "rgba(255,255,255,0.5)",
+              border: "1px solid rgba(200,200,220,0.5)",
+              color: "rgba(26,26,46,0.6)",
+            }}
+          >
+            Отменить
+          </button>
+          <button
+            onClick={() => onClose?.()}
+            className="flex-1 rounded-xl py-2 text-[11px] font-medium transition-all active:scale-[0.97]"
+            style={{
+              background: "rgba(26,26,46,0.85)",
+              color: "#fff",
+            }}
+          >
+            Сохранить
+          </button>
+        </div>
       </div>
     </div>
   );
