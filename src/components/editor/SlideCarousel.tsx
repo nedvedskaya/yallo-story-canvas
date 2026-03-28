@@ -145,9 +145,11 @@ const SlideCarousel = ({
                     textAlign: hAlignToText[slide.hAlign] as React.CSSProperties['textAlign'],
                   }}
                 >
+                  {/* Overlay pattern - on bg color only, behind image/video */}
+                  <SlideOverlay type={slide.overlayType} opacity={slide.overlayOpacity} />
                   {/* Background image layer */}
                   {slide.bgImage && (
-                    <div className="absolute inset-0 z-0" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+                    <div className="absolute inset-0 z-[2]" style={{ borderRadius: '16px', overflow: 'hidden' }}>
                       <img
                         src={slide.bgImage}
                         alt=""
@@ -169,7 +171,7 @@ const SlideCarousel = ({
                   )}
                   {/* Background video layer */}
                   {slide.bgVideo && (
-                    <div className="absolute inset-0 z-0" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+                    <div className="absolute inset-0 z-[2]" style={{ borderRadius: '16px', overflow: 'hidden' }}>
                       <video
                         src={slide.bgVideo}
                         autoPlay
@@ -192,8 +194,6 @@ const SlideCarousel = ({
                       )}
                     </div>
                   )}
-                  {/* Overlay pattern - full bleed */}
-                  <SlideOverlay type={slide.overlayType} opacity={slide.overlayOpacity} />
                   {/* Content layer */}
                   <div className="relative z-10 flex flex-col h-full w-full" style={{ justifyContent: vAlignToJustify[slide.vAlign] }}>
 
