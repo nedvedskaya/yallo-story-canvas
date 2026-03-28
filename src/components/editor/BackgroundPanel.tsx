@@ -6,17 +6,6 @@ import { Upload } from "lucide-react";
 export type OverlayType = "none" | "dots" | "lines" | "grid" | "cells" | "blobs" | "noise";
 type BgTab = "color" | "photo" | "video";
 
-const colorPresets = [
-  "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-  "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-  "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-  "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
-  "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
-  "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)",
-  "#1a1a2e",
-  "#f5f5f5",
-  "#2d3436",
-];
 
 const overlayOptions: { id: OverlayType; label: string }[] = [
   { id: "none", label: "Без элементов" },
@@ -97,24 +86,7 @@ const BackgroundPanel = ({
           ))}
         </div>
 
-        {bgTab === "color" && (
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-            {colorPresets.map((bg, i) => (
-              <button
-                key={i}
-                onClick={() => {
-                  onBgColorChange(bg);
-                  if (bg.startsWith("#")) setHexInput(bg);
-                }}
-                className="h-10 w-10 rounded-lg flex-shrink-0 transition-all active:scale-90"
-                style={{
-                  background: bg,
-                  border: "1.5px solid rgba(200,200,220,0.4)",
-                }}
-              />
-            ))}
-          </div>
-        )}
+        {bgTab === "color" && null}
 
         {bgTab === "photo" && (
           <button
