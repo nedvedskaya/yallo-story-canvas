@@ -15,7 +15,7 @@ const Index = () => {
       <div className="relative z-10 flex h-[100dvh] flex-col pt-[env(safe-area-inset-top)]">
         <TopBar />
         <main className="flex flex-1 flex-col min-h-0 pb-[calc(72px+env(safe-area-inset-bottom))]">
-          <SlideCarousel activeSlide={activeSlide} onSlideChange={setActiveSlide} />
+          <SlideCarousel activeSlide={activeSlide} onSlideChange={setActiveSlide} isSheetOpen={!!activeTab} />
         </main>
       </div>
 

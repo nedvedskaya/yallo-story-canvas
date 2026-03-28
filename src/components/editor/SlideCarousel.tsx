@@ -315,7 +315,7 @@ const SlideCarousel = ({ activeSlide, onSlideChange, isSheetOpen = false }: Slid
       </div>
 
       {/* Toolbar */}
-      {currentSlide && (
+      {currentSlide && !isSheetOpen && (
         <SlideToolbar
           hAlign={currentSlide.hAlign}
           vAlign={currentSlide.vAlign}
