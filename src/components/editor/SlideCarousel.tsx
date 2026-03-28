@@ -139,7 +139,7 @@ const SlideCarousel = ({
                 <div
                   className="relative flex h-full flex-col p-6 overflow-hidden"
                   style={{
-                    background: slide.bgImage ? undefined : slide.bgColor,
+                    background: slide.bgColor,
                     borderRadius: '16px',
                     justifyContent: vAlignToJustify[slide.vAlign],
                     textAlign: hAlignToText[slide.hAlign] as React.CSSProperties['textAlign'],
