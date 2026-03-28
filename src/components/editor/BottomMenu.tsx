@@ -46,9 +46,8 @@ const BottomMenu = ({ activeTab, onTabChange }: BottomMenuProps) => {
                 {isActive && (
                   <>
                     <div
-                      className="absolute -top-3 left-1/2 -translate-x-1/2 h-1 w-8 rounded-full"
+                      className="absolute -top-3 left-1/2 -translate-x-1/2 h-1 w-8 rounded-full bg-[#fbf5b7]"
                       style={{
-                        background: '#FFF1B6',
                         boxShadow: '0 0 12px 4px rgba(255, 241, 182, 0.6), 0 0 24px 8px rgba(255, 241, 182, 0.3)',
                       }}
                     />
