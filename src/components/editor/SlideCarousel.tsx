@@ -206,8 +206,12 @@ const SlideCarousel = ({ activeSlide, onSlideChange, isSheetOpen = false }: Slid
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="flex w-full items-center gap-3 overflow-x-auto px-8 snap-x-mandatory scrollbar-hide"
-        style={{ scrollBehavior: "smooth" }}
+        className="flex w-full items-center gap-3 overflow-x-auto px-8 snap-x-mandatory scrollbar-hide transition-all duration-300"
+        style={{
+          scrollBehavior: "smooth",
+          transform: isSheetOpen ? 'scale(0.65) translateY(-15%)' : 'scale(1) translateY(0)',
+          transformOrigin: 'center center',
+        }}
       >
         {slides.map((slide, index) => (
           <div key={slide.id} className="flex items-center gap-3 flex-shrink-0">
