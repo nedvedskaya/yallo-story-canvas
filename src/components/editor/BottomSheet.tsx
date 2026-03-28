@@ -3,6 +3,7 @@ import { X, Palette, Image, Type, Maximize, Info } from "lucide-react";
 import type { MenuId } from "./BottomMenu";
 import type { Slide } from "./SlideCarousel";
 import BackgroundPanel, { type OverlayType } from "./BackgroundPanel";
+import TextPanel from "./TextPanel";
 
 interface BottomSheetProps {
   activeTab: MenuId | null;
@@ -10,6 +11,7 @@ interface BottomSheetProps {
   currentSlide?: Slide;
   onUpdateSlide?: (id: number, updates: Partial<Slide>) => void;
   onApplyBgToAll?: () => void;
+  onApplyTextToAll?: () => void;
 }
 
 const sheetContent: Record<string, { title: string; icon: React.ElementType; items: string[] }> = {
@@ -17,11 +19,6 @@ const sheetContent: Record<string, { title: string; icon: React.ElementType; ite
     title: "Шаблоны",
     icon: Palette,
     items: ["Минимализм", "Градиент", "Ретро", "Неон", "Пастель", "Тёмный"],
-  },
-  text: {
-    title: "Текст",
-    icon: Type,
-    items: ["Заголовок", "Подзаголовок", "Основной", "Цитата", "Подпись", "Маркер"],
   },
   size: {
     title: "Размер",
@@ -35,13 +32,14 @@ const sheetContent: Record<string, { title: string; icon: React.ElementType; ite
   },
 };
 
-const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyBgToAll }: BottomSheetProps) => {
+const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyBgToAll, onApplyTextToAll }: BottomSheetProps) => {
   const isBackground = activeTab === "background";
-  const content = activeTab && !isBackground ? sheetContent[activeTab] : null;
+  const isText = activeTab === "text";
+  const content = activeTab && !isBackground && !isText ? sheetContent[activeTab] : null;
 
   return (
     <AnimatePresence>
-      {(content || isBackground) && (
+      {(content || isBackground || isText) && (
         <>
           <motion.div
             initial={{ opacity: 0 }}
@@ -74,6 +72,11 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
                     <Image size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} />
                     <h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>Фон</h3>
                   </>
+                ) : isText ? (
+                  <>
+                    <Type size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} />
+                    <h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>Текст</h3>
+                  </>
                 ) : content && (
                   <>
                     <content.icon size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} />
@@ -91,7 +94,14 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
             </div>
 
             <div className="px-4 pb-4 pt-1">
-              {isBackground && currentSlide ? (
+              {isText && currentSlide && onUpdateSlide ? (
+                <TextPanel
+                  currentSlide={currentSlide}
+                  onUpdateSlide={onUpdateSlide}
+                  onApplyTextToAll={() => onApplyTextToAll?.()}
+                  onClose={onClose}
+                />
+              ) : isBackground && currentSlide ? (
                 <BackgroundPanel
                   bgColor={currentSlide.bgColor}
                   overlayType={currentSlide.overlayType}
