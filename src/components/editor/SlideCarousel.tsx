@@ -20,6 +20,7 @@ export interface Slide {
   bgScale: number;
   bgPosX: number;
   bgPosY: number;
+  bgDarken: number;
 }
 
 const hAlignToText: Record<HAlign, string> = { left: "left", center: "center", right: "right" };
