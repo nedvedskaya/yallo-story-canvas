@@ -37,9 +37,10 @@ const sheetContent: Record<string, { title: string; icon: React.ElementType; ite
   },
 };
 
-const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyBgToAll }: BottomSheetProps) => {
+const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyBgToAll, onApplyTextToAll }: BottomSheetProps) => {
   const isBackground = activeTab === "background";
-  const content = activeTab && !isBackground ? sheetContent[activeTab] : null;
+  const isText = activeTab === "text";
+  const content = activeTab && !isBackground && !isText ? sheetContent[activeTab] : null;
 
   return (
     <AnimatePresence>
