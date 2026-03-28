@@ -74,19 +74,18 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
             style={{
               width: "min(85vw, 360px)",
               aspectRatio: "4/5",
-              borderRadius: '24px',
             }}
           >
             {/* Glass outer shell */}
             <div
-              className="h-full w-full p-[6px]"
+              className="h-full w-full p-[5px]"
               style={{
-                background: 'rgba(255, 255, 255, 0.2)',
-                backdropFilter: 'blur(40px) saturate(180%)',
-                WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-                border: '1.5px solid rgba(255, 255, 255, 0.5)',
-                borderRadius: '24px',
-                boxShadow: '0 8px 40px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.7)',
+                background: 'rgba(255, 255, 255, 0.45)',
+                backdropFilter: 'blur(24px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+                border: '1px solid rgba(255, 255, 255, 0.7)',
+                borderRadius: '20px',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9)',
               }}
             >
               {/* Inner content plate */}
@@ -94,7 +93,7 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
                 className="flex h-full flex-col items-center justify-center px-8 text-center"
                 style={{
                   background: slide.bgColor,
-                  borderRadius: '18px',
+                  borderRadius: '16px',
                 }}
               >
                 <h2
@@ -116,19 +115,13 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
 
         {/* Add slide button */}
         <div
-          className="flex flex-shrink-0 snap-center items-center justify-center overflow-hidden"
+          className="flex flex-shrink-0 snap-center items-center justify-center overflow-hidden glass"
           style={{
             width: "min(85vw, 360px)",
             aspectRatio: "4/5",
-            background: 'rgba(255, 255, 255, 0.2)',
-            backdropFilter: 'blur(40px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-            border: '1.5px solid rgba(255, 255, 255, 0.5)',
-            borderRadius: '24px',
-            boxShadow: '0 8px 40px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.7)',
           }}
         >
-          <button className="flex flex-col items-center gap-2 text-muted-foreground transition-colors">
+          <button className="flex flex-col items-center gap-2 transition-colors" style={{ color: 'rgba(26, 26, 46, 0.4)' }}>
             <Plus size={32} />
             <span className="text-sm">Добавить слайд</span>
           </button>
@@ -150,9 +143,12 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
             className={cn(
               "h-2 rounded-full transition-all duration-300",
               index === activeSlide
-                ? "w-6 bg-foreground/30"
-                : "w-2 bg-foreground/10"
+                ? "w-6"
+                : "w-2"
             )}
+            style={{
+              background: index === activeSlide ? 'rgba(26, 26, 46, 0.3)' : 'rgba(26, 26, 46, 0.1)',
+            }}
           />
         ))}
       </div>
