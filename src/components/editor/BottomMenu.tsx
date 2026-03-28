@@ -36,9 +36,9 @@ const BottomMenu = ({ activeTab, onTabChange }: BottomMenuProps) => {
                 key={item.id}
                 onClick={() => onTabChange(isActive ? null : item.id)}
                 className={cn(
-                  "relative flex flex-col items-center gap-1 rounded-2xl px-3 py-2 transition-all duration-300",
+                  "relative flex flex-col items-center gap-1 rounded-2xl px-3 py-2 transition-all duration-300 text-[#676f7e] shadow-none",
                   isActive
-                    ? "text-primary-foreground"
+                    ? "text-primary"
                     : "text-muted-foreground"
                 )}
               >
@@ -62,14 +62,14 @@ const BottomMenu = ({ activeTab, onTabChange }: BottomMenuProps) => {
                 <item.icon
                   size={22}
                   className={cn(
-                    "relative z-10 transition-all duration-300",
+                    "relative z-10 transition-all duration-300 text-muted-foreground",
                     isActive && "scale-110"
                   )}
                   style={isActive ? { color: '#FFF1B6', filter: 'drop-shadow(0 0 6px rgba(255, 241, 182, 0.5))' } : undefined}
                 />
                 <span
                   className={cn(
-                    "relative z-10 text-[10px] transition-colors font-normal",
+                    "relative z-10 text-[10px] transition-colors font-normal text-secondary-foreground",
                     !isActive && "text-muted-foreground"
                   )}
                   style={isActive ? { color: '#FFF1B6' } : undefined}
