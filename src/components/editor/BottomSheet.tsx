@@ -15,21 +15,9 @@ interface BottomSheetProps {
 }
 
 const sheetContent: Record<string, { title: string; icon: React.ElementType; items: string[] }> = {
-  design: {
-    title: "Шаблоны",
-    icon: Palette,
-    items: ["Минимализм", "Градиент", "Ретро", "Неон", "Пастель", "Тёмный"],
-  },
-  size: {
-    title: "Размер",
-    icon: Maximize,
-    items: ["1:1 Пост", "4:5 Портрет", "9:16 Сторис", "16:9 Обложка"],
-  },
-  info: {
-    title: "Инфо",
-    icon: Info,
-    items: ["Название проекта", "3 слайда", "Формат: карусель", "Статус: черновик"],
-  },
+  design: { title: "Шаблоны", icon: Palette, items: ["Минимализм", "Градиент", "Ретро", "Неон", "Пастель", "Тёмный"] },
+  size: { title: "Размер", icon: Maximize, items: ["1:1 Пост", "4:5 Портрет", "9:16 Сторис", "16:9 Обложка"] },
+  info: { title: "Инфо", icon: Info, items: ["Название проекта", "3 слайда", "Формат: карусель", "Статус: черновик"] },
 };
 
 const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyBgToAll, onApplyTextToAll }: BottomSheetProps) => {
@@ -42,17 +30,13 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
       {(content || isBackground || isText) && (
         <>
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={onClose}
             className="fixed inset-0 z-40"
             style={{ background: 'rgba(26, 26, 46, 0.05)' }}
           />
           <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
+            initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
             className="fixed bottom-20 left-2 right-2 z-40 overflow-hidden"
             style={{
@@ -68,27 +52,14 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
             <div className="flex items-center justify-between px-4 pb-1 pt-2">
               <div className="flex items-center gap-2">
                 {isBackground ? (
-                  <>
-                    <Image size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} />
-                    <h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>Фон</h3>
-                  </>
+                  <><Image size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} /><h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>Фон</h3></>
                 ) : isText ? (
-                  <>
-                    <Type size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} />
-                    <h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>Текст</h3>
-                  </>
+                  <><Type size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} /><h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>Текст</h3></>
                 ) : content && (
-                  <>
-                    <content.icon size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} />
-                    <h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>{content.title}</h3>
-                  </>
+                  <><content.icon size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} /><h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>{content.title}</h3></>
                 )}
               </div>
-              <button
-                onClick={onClose}
-                className="rounded-full p-1.5 transition-colors glass-pill"
-                style={{ color: 'rgba(26, 26, 46, 0.5)' }}
-              >
+              <button onClick={onClose} className="rounded-full p-1.5 transition-colors glass-pill" style={{ color: 'rgba(26, 26, 46, 0.5)' }}>
                 <X size={16} />
               </button>
             </div>
@@ -97,11 +68,14 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
               {isText && currentSlide && onUpdateSlide ? (
                 <TextPanel
                   currentSlide={currentSlide}
-                  onUpdateSlide={onUpdateSlide}
-                  onApplyTextToAll={() => onApplyTextToAll?.()}
+                  onSave={(updates) => onUpdateSlide(currentSlide.id, updates)}
+                  onApplyTextToAll={(updates) => {
+                    onUpdateSlide(currentSlide.id, updates);
+                    onApplyTextToAll?.();
+                  }}
                   onClose={onClose}
                 />
-              ) : isBackground && currentSlide ? (
+              ) : isBackground && currentSlide && onUpdateSlide ? (
                 <BackgroundPanel
                   bgColor={currentSlide.bgColor}
                   overlayType={currentSlide.overlayType}
@@ -112,16 +86,13 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
                   bgPosX={currentSlide.bgPosX}
                   bgPosY={currentSlide.bgPosY}
                   bgDarken={currentSlide.bgDarken}
-                  onBgColorChange={(color) => onUpdateSlide?.(currentSlide.id, { bgColor: color })}
-                  onOverlayTypeChange={(type) => onUpdateSlide?.(currentSlide.id, { overlayType: type })}
-                  onOverlayOpacityChange={(opacity) => onUpdateSlide?.(currentSlide.id, { overlayOpacity: opacity })}
-                  onBgImageChange={(url) => onUpdateSlide?.(currentSlide.id, { bgImage: url })}
-                  onBgVideoChange={(url) => onUpdateSlide?.(currentSlide.id, { bgVideo: url })}
-                  onBgScaleChange={(scale) => onUpdateSlide?.(currentSlide.id, { bgScale: scale })}
-                  onBgPosXChange={(x) => onUpdateSlide?.(currentSlide.id, { bgPosX: x })}
-                  onBgPosYChange={(y) => onUpdateSlide?.(currentSlide.id, { bgPosY: y })}
-                  onBgDarkenChange={(v) => onUpdateSlide?.(currentSlide.id, { bgDarken: v })}
-                  onApplyToAll={() => onApplyBgToAll?.()}
+                  onSave={(draft) => {
+                    onUpdateSlide(currentSlide.id, draft);
+                  }}
+                  onApplyToAll={(draft) => {
+                    onUpdateSlide(currentSlide.id, draft);
+                    onApplyBgToAll?.();
+                  }}
                   onClose={onClose}
                 />
               ) : content && (
