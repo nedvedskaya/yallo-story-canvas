@@ -2,8 +2,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Palette, Image, Type, Maximize, Info } from "lucide-react";
 import type { MenuId } from "./BottomMenu";
 import type { Slide } from "./SlideCarousel";
-import BackgroundPanel, { type OverlayType } from "./BackgroundPanel";
+import BackgroundPanel from "./BackgroundPanel";
 import TextPanel from "./TextPanel";
+import SizePanel, { type SlideFormat } from "./SizePanel";
 
 interface BottomSheetProps {
   activeTab: MenuId | null;
@@ -12,22 +13,25 @@ interface BottomSheetProps {
   onUpdateSlide?: (id: number, updates: Partial<Slide>) => void;
   onApplyBgToAll?: () => void;
   onApplyTextToAll?: () => void;
+  slideFormat?: SlideFormat;
+  onSlideFormatChange?: (format: SlideFormat) => void;
 }
 
 const sheetContent: Record<string, { title: string; icon: React.ElementType; items: string[] }> = {
   design: { title: "Шаблоны", icon: Palette, items: ["Минимализм", "Градиент", "Ретро", "Неон", "Пастель", "Тёмный"] },
-  size: { title: "Размер", icon: Maximize, items: ["1:1 Пост", "4:5 Портрет", "9:16 Сторис", "16:9 Обложка"] },
   info: { title: "Инфо", icon: Info, items: ["Название проекта", "3 слайда", "Формат: карусель", "Статус: черновик"] },
 };
 
-const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyBgToAll, onApplyTextToAll }: BottomSheetProps) => {
+const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyBgToAll, onApplyTextToAll, slideFormat, onSlideFormatChange }: BottomSheetProps) => {
   const isBackground = activeTab === "background";
   const isText = activeTab === "text";
-  const content = activeTab && !isBackground && !isText ? sheetContent[activeTab] : null;
+  const isSize = activeTab === "size";
+  const isCustomPanel = isBackground || isText || isSize;
+  const content = activeTab && !isCustomPanel ? sheetContent[activeTab] : null;
 
   return (
     <AnimatePresence>
-      {(content || isBackground || isText) && (
+      {(content || isCustomPanel) && (
         <>
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -55,6 +59,8 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
                   <><Image size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} /><h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>Фон</h3></>
                 ) : isText ? (
                   <><Type size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} /><h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>Текст</h3></>
+                ) : isSize ? (
+                  <><Maximize size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} /><h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>Размер</h3></>
                 ) : content && (
                   <><content.icon size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} /><h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>{content.title}</h3></>
                 )}
@@ -86,18 +92,22 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
                   bgPosX={currentSlide.bgPosX}
                   bgPosY={currentSlide.bgPosY}
                   bgDarken={currentSlide.bgDarken}
-                  onSave={(draft) => {
-                    onUpdateSlide(currentSlide.id, draft);
-                  }}
+                  onSave={(draft) => onUpdateSlide(currentSlide.id, draft)}
                   onApplyToAll={(draft) => {
                     onUpdateSlide(currentSlide.id, draft);
                     onApplyBgToAll?.();
                   }}
                   onClose={onClose}
                 />
+              ) : isSize && slideFormat && onSlideFormatChange ? (
+                <SizePanel
+                  currentFormat={slideFormat}
+                  onSave={onSlideFormatChange}
+                  onClose={onClose}
+                />
               ) : content && (
                 <>
-                  {activeTab === "size" || activeTab === "info" ? (
+                  {activeTab === "info" ? (
                     <div className="flex flex-col gap-1.5">
                       {content.items.map((item) => (
                         <button key={item} className="glass-pill px-3 py-2 text-left text-sm transition-all active:scale-[0.98]" style={{ color: '#1a1a2e' }}>{item}</button>
