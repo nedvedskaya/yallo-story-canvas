@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { Upload, Move, ZoomIn } from "lucide-react";
+import { Upload, Move, ZoomIn, Volume2, VolumeX } from "lucide-react";
 
 export type OverlayType = "none" | "dots" | "lines" | "grid" | "cells" | "blobs" | "noise";
 type BgTab = "color" | "photo" | "video";

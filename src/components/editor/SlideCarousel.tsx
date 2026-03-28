@@ -217,7 +217,7 @@ const SlideCarousel = ({
                         src={slide.bgVideo}
                         autoPlay
                         loop
-                        muted
+                        muted={slide.bgMuted !== false || index !== activeSlide}
                         playsInline
                         style={{
                           position: 'absolute',
@@ -228,6 +228,15 @@ const SlideCarousel = ({
                           minWidth: '100%',
                           minHeight: '100%',
                           objectFit: 'cover',
+                        }}
+                        ref={(el) => {
+                          if (el) {
+                            if (index === activeSlide) {
+                              el.play().catch(() => {});
+                            } else {
+                              el.pause();
+                            }
+                          }
                         }}
                       />
                       {slide.bgDarken > 0 && (
