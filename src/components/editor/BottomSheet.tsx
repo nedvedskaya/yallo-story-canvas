@@ -1,22 +1,22 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Palette, Image, Type, Maximize, Info } from "lucide-react";
 import type { MenuId } from "./BottomMenu";
+import type { Slide } from "./SlideCarousel";
+import BackgroundPanel, { type OverlayType } from "./BackgroundPanel";
 
 interface BottomSheetProps {
   activeTab: MenuId | null;
   onClose: () => void;
+  currentSlide?: Slide;
+  onUpdateSlide?: (id: number, updates: Partial<Slide>) => void;
+  onApplyBgToAll?: () => void;
 }
 
 const sheetContent: Record<string, { title: string; icon: React.ElementType; items: string[] }> = {
   design: {
-    title: "Дизайн",
+    title: "Шаблоны",
     icon: Palette,
     items: ["Минимализм", "Градиент", "Ретро", "Неон", "Пастель", "Тёмный"],
-  },
-  background: {
-    title: "Фон",
-    icon: Image,
-    items: ["Белый", "Чёрный", "Градиент", "Фото", "Текстура", "Размытие"],
   },
   text: {
     title: "Текст",
@@ -35,12 +35,13 @@ const sheetContent: Record<string, { title: string; icon: React.ElementType; ite
   },
 };
 
-const BottomSheet = ({ activeTab, onClose }: BottomSheetProps) => {
-  const content = activeTab ? sheetContent[activeTab] : null;
+const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyBgToAll }: BottomSheetProps) => {
+  const isBackground = activeTab === "background";
+  const content = activeTab && !isBackground ? sheetContent[activeTab] : null;
 
   return (
     <AnimatePresence>
-      {content && (
+      {(content || isBackground) && (
         <>
           <motion.div
             initial={{ opacity: 0 }}
@@ -68,8 +69,17 @@ const BottomSheet = ({ activeTab, onClose }: BottomSheetProps) => {
           >
             <div className="flex items-center justify-between px-4 pb-1 pt-2">
               <div className="flex items-center gap-2">
-                <content.icon size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} />
-                <h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>{content.title}</h3>
+                {isBackground ? (
+                  <>
+                    <Image size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} />
+                    <h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>Фон</h3>
+                  </>
+                ) : content && (
+                  <>
+                    <content.icon size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} />
+                    <h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>{content.title}</h3>
+                  </>
+                )}
               </div>
               <button
                 onClick={onClose}
@@ -81,31 +91,35 @@ const BottomSheet = ({ activeTab, onClose }: BottomSheetProps) => {
             </div>
 
             <div className="px-4 pb-4 pt-1">
-              {activeTab === "size" || activeTab === "info" ? (
-                <div className="flex flex-col gap-1.5">
-                  {content.items.map((item) => (
-                    <button
-                      key={item}
-                      className="glass-pill px-3 py-2 text-left text-sm transition-all active:scale-[0.98]"
-                      style={{ color: '#1a1a2e' }}
-                    >
-                      {item}
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-1">
-                  {content.items.map((item) => (
-                    <button
-                      key={item}
-                      className="flex flex-col items-center gap-1.5 glass-pill p-3 text-xs transition-all active:scale-95 flex-shrink-0"
-                      style={{ color: '#1a1a2e', minWidth: '72px' }}
-                    >
-                      <div className="h-8 w-8 rounded-lg" style={{ background: 'rgba(26, 26, 46, 0.06)' }} />
-                      <span className="text-[10px]">{item}</span>
-                    </button>
-                  ))}
-                </div>
+              {isBackground && currentSlide ? (
+                <BackgroundPanel
+                  bgColor={currentSlide.bgColor}
+                  overlayType={currentSlide.overlayType}
+                  overlayOpacity={currentSlide.overlayOpacity}
+                  onBgColorChange={(color) => onUpdateSlide?.(currentSlide.id, { bgColor: color })}
+                  onOverlayTypeChange={(type) => onUpdateSlide?.(currentSlide.id, { overlayType: type })}
+                  onOverlayOpacityChange={(opacity) => onUpdateSlide?.(currentSlide.id, { overlayOpacity: opacity })}
+                  onApplyToAll={() => onApplyBgToAll?.()}
+                />
+              ) : content && (
+                <>
+                  {activeTab === "size" || activeTab === "info" ? (
+                    <div className="flex flex-col gap-1.5">
+                      {content.items.map((item) => (
+                        <button key={item} className="glass-pill px-3 py-2 text-left text-sm transition-all active:scale-[0.98]" style={{ color: '#1a1a2e' }}>{item}</button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-1">
+                      {content.items.map((item) => (
+                        <button key={item} className="flex flex-col items-center gap-1.5 glass-pill p-3 text-xs transition-all active:scale-95 flex-shrink-0" style={{ color: '#1a1a2e', minWidth: '72px' }}>
+                          <div className="h-8 w-8 rounded-lg" style={{ background: 'rgba(26, 26, 46, 0.06)' }} />
+                          <span className="text-[10px]">{item}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </motion.div>
