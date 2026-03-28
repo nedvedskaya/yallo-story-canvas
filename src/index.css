@@ -6,41 +6,40 @@
 
 @layer base {
   :root {
-    --background: 50 10% 89%;
-    --foreground: 220 25% 10%;
+    --background: 220 10% 92%;
+    --foreground: 220 15% 18%;
 
-    --card: 0 0% 100% / 0.2;
-    --card-foreground: 220 25% 10%;
+    --card: 0 0% 100% / 0.35;
+    --card-foreground: 220 15% 18%;
 
-    --popover: 0 0% 100% / 0.25;
-    --popover-foreground: 220 25% 10%;
+    --popover: 0 0% 100% / 0.4;
+    --popover-foreground: 220 15% 18%;
 
-    --primary: 47 100% 85%;
-    --primary-foreground: 220 25% 10%;
+    --primary: 220 10% 40%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 15% 92% / 0.3;
-    --secondary-foreground: 220 25% 20%;
+    --secondary: 220 8% 88% / 0.5;
+    --secondary-foreground: 220 15% 25%;
 
-    --muted: 220 15% 94% / 0.3;
-    --muted-foreground: 220 10% 45%;
+    --muted: 220 8% 90% / 0.4;
+    --muted-foreground: 220 8% 50%;
 
-    --accent: 47 100% 85%;
-    --accent-foreground: 220 25% 10%;
+    --accent: 220 10% 85%;
+    --accent-foreground: 220 15% 18%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 100% / 0.35;
-    --input: 0 0% 100% / 0.25;
-    --ring: 47 100% 85%;
+    --border: 0 0% 100% / 0.55;
+    --input: 0 0% 100% / 0.35;
+    --ring: 220 10% 40%;
 
     --radius: 1.25rem;
 
-    --glass-bg: 0 0% 100% / 0.12;
-    --glass-border: 0 0% 100% / 0.25;
-    --glass-blur: 50px;
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.04);
-
+    --glass-bg: 0 0% 100% / 0.25;
+    --glass-border: 0 0% 100% / 0.45;
+    --glass-blur: 40px;
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.06);
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
