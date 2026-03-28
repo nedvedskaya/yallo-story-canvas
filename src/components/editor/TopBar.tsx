@@ -4,7 +4,7 @@ const TopBar = () => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
       <div className="glass-strong mx-0">
-        <div className="flex items-center justify-between px-5 py-3 bg-[#d9d6ce] opacity-90">
+        <div className="flex items-center justify-between px-5 py-3" style={{ background: 'hsla(40, 10%, 83%, 0.78)', backdropFilter: 'blur(50px) saturate(180%)', WebkitBackdropFilter: 'blur(50px) saturate(180%)' }}>
           <h1 className="tracking-tight text-lg font-thin text-muted-foreground">
             Яло
           </h1>
