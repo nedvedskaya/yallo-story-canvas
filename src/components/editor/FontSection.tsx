@@ -11,7 +11,7 @@ export interface FontSettings {
 export const FONT_LIST = [
   { name: "Abraxas", family: "'Abraxas', serif" },
   { name: "HeadingNow", family: "'HeadingNow Trial', sans-serif" },
-  { name: "Postertoaster", family: "'Postertoaster', sans-serif" },
+  
   { name: "SouthGhetto", family: "'SouthGhetto', sans-serif" },
   { name: "Marvin Visions", family: "'Marvin Visions', sans-serif" },
   { name: "SONGER", family: "'SONGER Grotesque', sans-serif" },
