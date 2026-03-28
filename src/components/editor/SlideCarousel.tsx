@@ -1,36 +1,36 @@
-import { useRef } from "react";
+import { useRef, useState, useCallback } from "react";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Slide {
   id: number;
+  username: string;
   title: string;
-  subtitle: string;
+  body: string;
   bgColor: string;
-  textColor: string;
 }
 
-const demoSlides: Slide[] = [
+const initialSlides: Slide[] = [
   {
     id: 1,
-    title: "Привет, мир!",
-    subtitle: "Это первый слайд вашей карусели. Начните редактирование прямо сейчас.",
+    username: "@username",
+    title: "Заголовок слайда",
+    body: "Основной текст слайда. Начните редактирование прямо сейчас.",
     bgColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-    textColor: "#ffffff",
   },
   {
     id: 2,
+    username: "@username",
     title: "Расскажите историю",
-    subtitle: "Каждый слайд — это возможность передать вашу идею красиво и лаконично.",
+    body: "Каждый слайд — это возможность передать вашу идею красиво и лаконично.",
     bgColor: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-    textColor: "#ffffff",
   },
   {
     id: 3,
+    username: "@username",
     title: "Призыв к действию",
-    subtitle: "Подписывайтесь, ставьте лайк и делитесь с друзьями ✨",
+    body: "Подписывайтесь, ставьте лайк и делитесь с друзьями ✨",
     bgColor: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-    textColor: "#ffffff",
   },
 ];
 
@@ -41,6 +41,7 @@ interface SlideCarouselProps {
 
 const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [slides, setSlides] = useState(initialSlides);
 
   const handleScroll = () => {
     if (!scrollRef.current) return;
@@ -56,6 +57,10 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
     }
   };
 
+  const updateSlide = useCallback((id: number, field: keyof Pick<Slide, 'username' | 'title' | 'body'>, value: string) => {
+    setSlides(prev => prev.map(s => s.id === id ? { ...s, [field]: value } : s));
+  }, []);
+
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-0 py-4">
       <div
@@ -64,7 +69,7 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
         className="flex w-full gap-4 overflow-x-auto px-8 snap-x-mandatory scrollbar-hide"
         style={{ scrollBehavior: "smooth" }}
       >
-        {demoSlides.map((slide, index) => (
+        {slides.map((slide, index) => (
           <div
             key={slide.id}
             className={cn(
@@ -73,7 +78,7 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
             )}
             style={{
               width: "min(85vw, 360px)",
-              aspectRatio: "4/5",
+              aspectRatio: "1080/1440",
             }}
           >
             {/* Glass outer shell */}
@@ -90,23 +95,51 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
             >
               {/* Inner content plate */}
               <div
-                className="flex h-full flex-col items-center justify-center px-8 text-center"
+                className="relative flex h-full flex-col p-6"
                 style={{
                   background: slide.bgColor,
                   borderRadius: '16px',
                 }}
               >
+                {/* Top row: username + counter */}
+                <div className="flex items-center justify-between">
+                  <span
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={(e) => updateSlide(slide.id, 'username', e.currentTarget.textContent || '')}
+                    className="outline-none text-xs font-normal"
+                    style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '12px' }}
+                  >
+                    {slide.username}
+                  </span>
+                  <span
+                    className="text-xs font-normal"
+                    style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '12px' }}
+                  >
+                    {index + 1}/{slides.length}
+                  </span>
+                </div>
+
+                {/* Headline */}
                 <h2
-                  className="mb-4 text-2xl font-semibold leading-tight"
-                  style={{ color: slide.textColor }}
+                  contentEditable
+                  suppressContentEditableWarning
+                  onBlur={(e) => updateSlide(slide.id, 'title', e.currentTarget.textContent || '')}
+                  className="outline-none mt-8 font-bold leading-tight"
+                  style={{ color: '#ffffff', fontSize: '28px' }}
                 >
                   {slide.title}
                 </h2>
+
+                {/* Body text */}
                 <p
-                  className="text-sm font-light leading-relaxed opacity-90"
-                  style={{ color: slide.textColor }}
+                  contentEditable
+                  suppressContentEditableWarning
+                  onBlur={(e) => updateSlide(slide.id, 'body', e.currentTarget.textContent || '')}
+                  className="outline-none mt-3 font-normal"
+                  style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '16px', lineHeight: 1.5 }}
                 >
-                  {slide.subtitle}
+                  {slide.body}
                 </p>
               </div>
             </div>
@@ -118,7 +151,7 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
           className="flex flex-shrink-0 snap-center items-center justify-center overflow-hidden glass"
           style={{
             width: "min(85vw, 360px)",
-            aspectRatio: "4/5",
+            aspectRatio: "1080/1440",
           }}
         >
           <button className="flex flex-col items-center gap-2 transition-colors" style={{ color: 'rgba(26, 26, 46, 0.4)' }}>
@@ -130,7 +163,7 @@ const SlideCarousel = ({ activeSlide, onSlideChange }: SlideCarouselProps) => {
 
       {/* Dots indicator */}
       <div className="mt-6 flex items-center gap-2">
-        {demoSlides.map((_, index) => (
+        {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => {
