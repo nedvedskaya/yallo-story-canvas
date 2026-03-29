@@ -138,7 +138,7 @@ const TEMPLATES: SlideTemplate[] = [
       showUsername: true,
       showSlideCount: true,
       bgDarken: 0,
-      titleFont: "'Dela Gothic One', sans-serif",
+      titleFont: "'SONGER Grotesque', sans-serif",
       titleSize: 28,
       titleLineHeight: 1.15,
       titleLetterSpacing: 0,
