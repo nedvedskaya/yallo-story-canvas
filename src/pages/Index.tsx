@@ -47,11 +47,7 @@ const Index = () => {
   const [slideFormat, setSlideFormat] = useState<SlideFormat>("carousel");
   const [downloadOpen, setDownloadOpen] = useState(false);
 
-  const slideSnapshotRef = useRef<Slide | null>(null);
-  const formatSnapshotRef = useRef<SlideFormat | null>(null);
-
   const currentSlide = slides[activeSlide];
-
   const handleUpdateSlide = useCallback((id: number, updates: Partial<Slide>) => {
     setSlides(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
   }, []);
