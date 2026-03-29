@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { getContrastColors } from "@/lib/utils";
 import TopBar from "@/components/editor/TopBar";
 import SlideCarousel from "@/components/editor/SlideCarousel";
 import type { Slide } from "@/components/editor/SlideCarousel";
@@ -48,7 +49,16 @@ const Index = () => {
 
   const currentSlide = slides[activeSlide];
   const handleUpdateSlide = useCallback((id: number, updates: Partial<Slide>) => {
-    setSlides(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
+    setSlides(prev => prev.map(s => {
+      if (s.id !== id) return s;
+      const merged = { ...s, ...updates };
+      // Auto-contrast: if bgColor changed, apply contrast colors
+      if (updates.bgColor && !updates.titleColor) {
+        const contrast = getContrastColors(updates.bgColor);
+        Object.assign(merged, contrast);
+      }
+      return merged;
+    }));
   }, []);
 
   const handleApplyBgToAll = useCallback(() => {
