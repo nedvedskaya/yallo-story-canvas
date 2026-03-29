@@ -211,7 +211,7 @@ const SlideCarousel = ({
                     </div>
                   )}
                   {slide.bgVideo && (
-                    <div className="absolute inset-0 z-[2]" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+                    <div className="absolute inset-0 z-[2]" style={{ overflow: 'hidden' }}>
                       <video
                         src={slide.bgVideo}
                         autoPlay loop playsInline
