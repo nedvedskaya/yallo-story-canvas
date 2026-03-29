@@ -102,11 +102,8 @@ async function renderSlideToDOM(
   });
 }
 
-function cleanupContainer(container: HTMLDivElement) {
-  try {
-    const root = createRoot(container);
-    root.unmount();
-  } catch {}
+function cleanupContainer(container: HTMLDivElement, root: Root) {
+  try { root.unmount(); } catch {}
   try { document.body.removeChild(container); } catch {}
 }
 
