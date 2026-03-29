@@ -10,7 +10,6 @@ import InfoPanel from "./InfoPanel";
 interface BottomSheetProps {
   activeTab: MenuId | null;
   onClose: () => void;
-  onSaveClose: () => void;
   currentSlide?: Slide;
   onUpdateSlide?: (id: number, updates: Partial<Slide>) => void;
   onApplyBgToAll?: () => void;
