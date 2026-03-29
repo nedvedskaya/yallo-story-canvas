@@ -53,7 +53,7 @@ const SlideOverlay = ({ type, opacity, color, scale = 1 }: SlideOverlayProps) =>
         <div
           style={{
             ...style,
-            backgroundImage: `repeating-linear-gradient(0deg, ${ca(0.3)} 0px, ${ca(0.3)} 1px, transparent 1px, transparent 14px)`,
+            backgroundImage: `repeating-linear-gradient(0deg, ${ca(0.3)} 0px, ${ca(0.3)} ${1 * s}px, transparent ${1 * s}px, transparent ${14 * s}px)`,
           }}
         />
       );
