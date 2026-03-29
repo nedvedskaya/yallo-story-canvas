@@ -187,12 +187,13 @@ const SlideCarousel = ({
               >
                 <div
                   data-slide-id={slide.id}
-                  className="relative flex h-full flex-col p-6 overflow-hidden"
+                  className="relative flex h-full flex-col overflow-hidden"
                   style={{
                     background: slide.bgColor,
                     borderRadius: '16px',
                     justifyContent: vAlignToJustify[slide.vAlign],
                     textAlign: hAlignToText[slide.hAlign] as React.CSSProperties['textAlign'],
+                    padding: `${fmt.padding}px`,
                   }}
                 >
                   {/* Overlay pattern - on bg color only, behind image/video */}
