@@ -3,10 +3,10 @@ import { Plus, ChevronLeft, ChevronRight, Copy, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SlideToolbar, { type HAlign, type VAlign, type BgType } from "./SlideToolbar";
 import { glassBtnStyle, FORMAT_TEXT_DEFAULTS } from "./shared-styles";
-import SlideOverlay from "./SlideOverlay";
 import type { OverlayType } from "./BackgroundPanel";
 import TextEditorModal from "./TextEditorModal";
 import { FORMAT_OPTIONS, type SlideFormat } from "./SizePanel";
+import SlideFrame from "./SlideFrame";
 
 export interface Slide {
   id: number;
@@ -49,20 +49,6 @@ export interface Slide {
   bodyScale?: number;
 }
 
-const hAlignToText: Record<HAlign, string> = { left: "left", center: "center", right: "right" };
-const vAlignToJustify: Record<VAlign, string> = { start: "flex-start", center: "center", end: "flex-end" };
-
-const getBgMediaStyle = (slide: Slide): React.CSSProperties => ({
-  position: 'absolute',
-  left: `${slide.bgPosX}%`,
-  top: `${slide.bgPosY}%`,
-  transform: `translate(-50%, -50%) scale(${slide.bgScale / 100})`,
-  transformOrigin: 'center center',
-  minWidth: '100%',
-  minHeight: '100%',
-});
-
-
 const addBtnStyle: React.CSSProperties = { ...glassBtnStyle, width: 32, height: 32, flexShrink: 0 };
 
 interface SlideCarouselProps {
@@ -88,7 +74,7 @@ const SlideCarousel = ({
   const [editorOpen, setEditorOpen] = useState(false);
   const [editorField, setEditorField] = useState<"title" | "body">("title");
 
-  // Text drag & pinch state (fully separate for title and body)
+  // Text drag state
   const textDragTarget = useRef<"title" | "body">("title");
   const touchStartRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number } | null>(null);
   const pinchStartRef = useRef<{ dist: number; scale: number } | null>(null);
@@ -99,7 +85,7 @@ const SlideCarousel = ({
   const mouseDragRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number; slideId: number; target: "title" | "body" } | null>(null);
   const textDragMovedRef = useRef(false);
 
-  // Media drag & pinch state
+  // Media drag state
   const mediaTouchRef = useRef<{ x: number; y: number; posX: number; posY: number } | null>(null);
   const mediaPinchRef = useRef<{ dist: number; scale: number } | null>(null);
   const [mediaDragOffset, setMediaDragOffset] = useState<{ x: number; y: number } | null>(null);
@@ -109,24 +95,16 @@ const SlideCarousel = ({
   const formatInfo = FORMAT_OPTIONS.find(f => f.id === slideFormat) || FORMAT_OPTIONS[0];
   const slideAspectRatio = `${formatInfo.width}/${formatInfo.height}`;
   const isLandscape = formatInfo.width > formatInfo.height;
-  const fmt = FORMAT_TEXT_DEFAULTS[slideFormat] || FORMAT_TEXT_DEFAULTS.carousel;
 
   const openEditor = (field: "title" | "body") => {
-    setEditorField(field);
-    setEditorOpen(true);
-    onEditorOpenChange?.(true);
+    setEditorField(field); setEditorOpen(true); onEditorOpenChange?.(true);
   };
-
-  const closeEditor = () => {
-    setEditorOpen(false);
-    onEditorOpenChange?.(false);
-  };
+  const closeEditor = () => { setEditorOpen(false); onEditorOpenChange?.(false); };
 
   const getTouchDist = (e: React.TouchEvent) => {
     const [a, b] = [e.touches[0], e.touches[1]];
     return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
   };
-
   const setDragForTarget = (target: "title" | "body", val: { x: number; y: number } | null) => {
     if (target === "title") setTitleDragOffset(val); else setBodyDragOffset(val);
   };
@@ -134,7 +112,7 @@ const SlideCarousel = ({
     if (target === "title") setTitlePinchScale(val); else setBodyPinchScale(val);
   };
 
-  // ── Text touch drag/pinch ──
+  // Text touch handlers
   const handleTextTouchStart = (e: React.TouchEvent, slide: Slide, target: "title" | "body") => {
     if (editorOpen) return;
     textDragTarget.current = target;
@@ -179,7 +157,7 @@ const SlideCarousel = ({
     touchStartRef.current = null; pinchStartRef.current = null;
   };
 
-  // ── Text mouse drag (desktop) ──
+  // Text mouse drag
   const handleTextMouseDown = (e: React.MouseEvent, slide: Slide, target: "title" | "body") => {
     if (editorOpen) return;
     e.preventDefault();
@@ -213,7 +191,7 @@ const SlideCarousel = ({
     return () => { window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', onMouseUp); };
   }, [titleDragOffset, bodyDragOffset, onUpdateSlide]);
 
-  // ── Media touch drag/pinch ──
+  // Media touch handlers
   const handleMediaTouchStart = (e: React.TouchEvent, slide: Slide) => {
     e.stopPropagation();
     if (e.touches.length === 1) {
@@ -225,8 +203,7 @@ const SlideCarousel = ({
     }
   };
   const handleMediaTouchMove = (e: React.TouchEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
+    e.stopPropagation(); e.preventDefault();
     if (e.touches.length === 1 && mediaTouchRef.current) {
       const dx = e.touches[0].clientX - mediaTouchRef.current.x;
       const dy = e.touches[0].clientY - mediaTouchRef.current.y;
@@ -244,7 +221,7 @@ const SlideCarousel = ({
     mediaTouchRef.current = null; mediaPinchRef.current = null;
   };
 
-  // ── Media mouse drag (desktop) ──
+  // Media mouse drag
   const handleMediaMouseDown = (e: React.MouseEvent, slide: Slide) => {
     e.preventDefault(); e.stopPropagation();
     mediaMouseRef.current = { x: e.clientX, y: e.clientY, posX: slide.bgPosX, posY: slide.bgPosY, slideId: slide.id };
@@ -281,32 +258,16 @@ const SlideCarousel = ({
   const handleScroll = () => {
     if (!scrollRef.current) return;
     const container = scrollRef.current;
-    const slideWidth = container.firstElementChild
-      ? (container.firstElementChild as HTMLElement).offsetWidth : 0;
+    const slideWidth = container.firstElementChild ? (container.firstElementChild as HTMLElement).offsetWidth : 0;
     if (slideWidth === 0) return;
     const index = Math.round(container.scrollLeft / slideWidth);
     if (index !== activeSlide && index < slides.length) onSlideChange(index);
   };
 
-  const handleAdd = useCallback((idx: number) => {
-    onAddSlide(idx);
-    scrollToIndex(idx);
-  }, [onAddSlide]);
-
-  const handleMove = useCallback((fromIdx: number, dir: -1 | 1) => {
-    onMoveSlide(fromIdx, dir);
-    scrollToIndex(Math.max(0, Math.min(fromIdx + dir, slides.length - 1)));
-  }, [onMoveSlide, slides.length]);
-
-  const handleDuplicate = useCallback((idx: number) => {
-    onDuplicateSlide(idx);
-    scrollToIndex(idx + 1);
-  }, [onDuplicateSlide]);
-
-  const handleDelete = useCallback((idx: number) => {
-    onDeleteSlide(idx);
-    scrollToIndex(Math.min(idx, slides.length - 2));
-  }, [onDeleteSlide, slides.length]);
+  const handleAdd = useCallback((idx: number) => { onAddSlide(idx); scrollToIndex(idx); }, [onAddSlide]);
+  const handleMove = useCallback((fromIdx: number, dir: -1 | 1) => { onMoveSlide(fromIdx, dir); scrollToIndex(Math.max(0, Math.min(fromIdx + dir, slides.length - 1))); }, [onMoveSlide, slides.length]);
+  const handleDuplicate = useCallback((idx: number) => { onDuplicateSlide(idx); scrollToIndex(idx + 1); }, [onDuplicateSlide]);
+  const handleDelete = useCallback((idx: number) => { onDeleteSlide(idx); scrollToIndex(Math.min(idx, slides.length - 2)); }, [onDeleteSlide, slides.length]);
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-0 py-2 min-h-0">
@@ -329,193 +290,89 @@ const SlideCarousel = ({
           transformOrigin: 'center center',
         }}
       >
-        {slides.map((slide, index) => (
-          <div key={slide.id} className="flex items-center gap-3 flex-shrink-0">
-            <div
-              className={cn(
-                "flex-shrink-0 snap-center transition-all duration-300 overflow-hidden",
-                index === activeSlide ? "scale-100" : "scale-[0.92] opacity-60"
-              )}
-              style={{
-                width: isLandscape
-                  ? "min(90vw, 420px)"
-                  : formatInfo.id === "stories"
-                    ? "min(52vw, 240px)"
-                    : formatInfo.id === "square"
-                      ? "min(72vw, 300px)"
-                      : "min(78vw, 320px)",
-                aspectRatio: slideAspectRatio,
-                maxHeight: "calc(100vh - 220px)",
-              }}
-            >
+        {slides.map((slide, index) => {
+          const isActive = index === activeSlide;
+          return (
+            <div key={slide.id} className="flex items-center gap-3 flex-shrink-0">
               <div
-                className="h-full w-full p-[5px]"
+                className={cn(
+                  "flex-shrink-0 snap-center transition-all duration-300 overflow-hidden",
+                  isActive ? "scale-100" : "scale-[0.92] opacity-60"
+                )}
                 style={{
-                  background: 'rgba(255, 255, 255, 0.45)',
-                  backdropFilter: 'blur(24px) saturate(180%)',
-                  WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-                  border: '1.5px solid rgba(200, 200, 220, 0.5)',
-                  borderRadius: '0px',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9)',
+                  width: isLandscape
+                    ? "min(90vw, 420px)"
+                    : formatInfo.id === "stories"
+                      ? "min(52vw, 240px)"
+                      : formatInfo.id === "square"
+                        ? "min(72vw, 300px)"
+                        : "min(78vw, 320px)",
+                  aspectRatio: slideAspectRatio,
+                  maxHeight: "calc(100vh - 220px)",
                 }}
               >
                 <div
-                  data-slide-id={slide.id}
-                  className="relative flex h-full flex-col overflow-hidden"
+                  className="h-full w-full p-[5px]"
                   style={{
-                    background: slide.bgColor,
+                    background: 'rgba(255, 255, 255, 0.45)',
+                    backdropFilter: 'blur(24px) saturate(180%)',
+                    WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+                    border: '1.5px solid rgba(200, 200, 220, 0.5)',
                     borderRadius: '0px',
-                    textAlign: hAlignToText[slide.hAlign] as React.CSSProperties['textAlign'],
-                    padding: `${fmt.padding}px`,
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9)',
                   }}
                 >
-                  {/* Overlay pattern - on bg color only, behind image/video */}
-                  <SlideOverlay type={slide.overlayType} opacity={slide.overlayOpacity} />
-                  {/* Background image layer */}
-                  {slide.bgImage && (
-                    <div
-                      className="absolute inset-0 z-[2]"
-                      style={{ overflow: 'hidden', cursor: 'grab', touchAction: 'none' }}
-                      onTouchStart={(e) => handleMediaTouchStart(e, slide)}
-                      onTouchMove={(e) => handleMediaTouchMove(e)}
-                      onTouchEnd={() => handleMediaTouchEnd(slide.id)}
-                      onMouseDown={(e) => handleMediaMouseDown(e, slide)}
-                    >
-                      <img src={slide.bgImage} alt="" style={{
-                        ...getBgMediaStyle(slide),
-                        objectFit: 'contain',
-                        left: `${mediaDragOffset !== null && index === activeSlide ? mediaDragOffset.x : slide.bgPosX}%`,
-                        top: `${mediaDragOffset !== null && index === activeSlide ? mediaDragOffset.y : slide.bgPosY}%`,
-                        transform: `translate(-50%, -50%) scale(${(mediaPinchScale !== null && index === activeSlide ? mediaPinchScale : slide.bgScale) / 100})`,
-                      }} />
-                      {slide.bgDarken > 0 && (
-                        <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${slide.bgDarken / 100})`, pointerEvents: 'none' }} />
-                      )}
-                    </div>
-                  )}
-                  {slide.bgVideo && (
-                    <div
-                      className="absolute inset-0 z-[2]"
-                      style={{ overflow: 'hidden', cursor: 'grab', touchAction: 'none' }}
-                      onTouchStart={(e) => handleMediaTouchStart(e, slide)}
-                      onTouchMove={(e) => handleMediaTouchMove(e)}
-                      onTouchEnd={() => handleMediaTouchEnd(slide.id)}
-                      onMouseDown={(e) => handleMediaMouseDown(e, slide)}
-                    >
-                      <video
-                        src={slide.bgVideo}
-                        autoPlay loop playsInline
-                        muted={slide.bgMuted !== false || index !== activeSlide}
-                        style={{
-                          ...getBgMediaStyle(slide),
-                          objectFit: 'cover',
-                          left: `${mediaDragOffset !== null && index === activeSlide ? mediaDragOffset.x : slide.bgPosX}%`,
-                          top: `${mediaDragOffset !== null && index === activeSlide ? mediaDragOffset.y : slide.bgPosY}%`,
-                          transform: `translate(-50%, -50%) scale(${(mediaPinchScale !== null && index === activeSlide ? mediaPinchScale : slide.bgScale) / 100})`,
-                        }}
-                        ref={(el) => {
-                          if (el) {
-                            if (index === activeSlide) el.play().catch(() => {});
-                            else el.pause();
-                          }
-                        }}
-                      />
-                      {slide.bgDarken > 0 && (
-                        <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${slide.bgDarken / 100})`, pointerEvents: 'none' }} />
-                      )}
-                    </div>
-                  )}
-                  {/* Content layer */}
-                  <div className="relative z-10 flex flex-col h-full w-full">
-                    {/* Top bar: username + slide count — always at top */}
-                    <div className="flex items-center justify-between w-full flex-shrink-0 mb-2">
-                      {slide.showUsername !== false ? (
-                        <span className="outline-none font-normal" style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: `${fmt.usernameSize}px` }}>{slide.username}</span>
-                      ) : <span />}
-                      {slide.showSlideCount !== false ? (
-                        <span className="font-normal" style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: `${fmt.usernameSize}px` }}>{index + 1}/{slides.length}</span>
-                      ) : <span />}
-                    </div>
-
-                    {/* Content area — flex-1, vAlign controls justifyContent */}
-                    <div className="flex flex-col flex-1 min-h-0" style={{ justifyContent: vAlignToJustify[slide.vAlign] }}>
-                      <div>
-                        {/* Title — separate drag */}
-                        <div
-                          onTouchStart={(e) => handleTextTouchStart(e, slide, "title")}
-                          onTouchMove={(e) => handleTextTouchMove(e)}
-                          onTouchEnd={() => handleTextTouchEnd(slide.id)}
-                          onMouseDown={(e) => handleTextMouseDown(e, slide, "title")}
-                          style={{
-                            transform: `translate(${(titleDragOffset !== null && index === activeSlide ? titleDragOffset.x : slide.titleOffsetX ?? 0)}px, ${(titleDragOffset !== null && index === activeSlide ? titleDragOffset.y : slide.titleOffsetY ?? 0)}px) scale(${(titlePinchScale !== null && index === activeSlide ? titlePinchScale : slide.titleScale ?? 1)})`,
-                            transformOrigin: 'center center',
-                            touchAction: 'none',
-                            cursor: editorOpen ? 'text' : 'grab',
-                          }}
-                        >
-                          <h2
-                            onClick={() => { if (textDragMovedRef.current) return; openEditor("title"); }}
-                            className="outline-none font-bold cursor-pointer"
-                            style={{
-                              color: '#ffffff',
-                              fontSize: `${slide.titleSize ?? fmt.titleSize}px`,
-                              fontFamily: slide.titleFont || "'Inter', sans-serif",
-                              textTransform: (slide.titleCase === 'uppercase' ? 'uppercase' : slide.titleCase === 'lowercase' ? 'lowercase' : 'none') as React.CSSProperties['textTransform'],
-                              lineHeight: slide.titleLineHeight ?? 1.1,
-                              letterSpacing: `${slide.titleLetterSpacing ?? 0}px`,
-                            }}
-                            dangerouslySetInnerHTML={{ __html: slide.title }}
-                          />
-                        </div>
-                        {/* Body — separate drag */}
-                        <div
-                          onTouchStart={(e) => handleTextTouchStart(e, slide, "body")}
-                          onTouchMove={(e) => handleTextTouchMove(e)}
-                          onTouchEnd={() => handleTextTouchEnd(slide.id)}
-                          onMouseDown={(e) => handleTextMouseDown(e, slide, "body")}
-                          style={{
-                            transform: `translate(${(bodyDragOffset !== null && index === activeSlide ? bodyDragOffset.x : slide.bodyOffsetX ?? 0)}px, ${(bodyDragOffset !== null && index === activeSlide ? bodyDragOffset.y : slide.bodyOffsetY ?? 0)}px) scale(${(bodyPinchScale !== null && index === activeSlide ? bodyPinchScale : slide.bodyScale ?? 1)})`,
-                            transformOrigin: 'center center',
-                            touchAction: 'none',
-                            cursor: editorOpen ? 'text' : 'grab',
-                          }}
-                        >
-                          <p
-                            onClick={() => { if (textDragMovedRef.current) return; openEditor("body"); }}
-                            className="outline-none mt-3 font-normal cursor-pointer"
-                            style={{
-                              color: 'rgba(255, 255, 255, 0.85)',
-                              fontSize: `${slide.bodySize ?? fmt.bodySize}px`,
-                              fontFamily: slide.bodyFont || "'Inter', sans-serif",
-                              textTransform: (slide.bodyCase === 'uppercase' ? 'uppercase' : slide.bodyCase === 'lowercase' ? 'lowercase' : 'none') as React.CSSProperties['textTransform'],
-                              lineHeight: slide.bodyLineHeight ?? 1.5,
-                              letterSpacing: `${slide.bodyLetterSpacing ?? 0}px`,
-                            }}
-                            dangerouslySetInnerHTML={{ __html: slide.body }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Bottom bar: footer + swipe arrow — always at bottom */}
-                    <div className="flex items-end justify-between w-full flex-shrink-0">
-                      {slide.showFooter ? (
-                        <span className="font-normal" style={{ color: 'rgba(255,255,255,0.6)', fontSize: `${fmt.footerSize}px` }}>
-                          {slide.footerText || ""}
-                        </span>
-                      ) : <span />}
-                      {slide.showArrow !== false && index < slides.length - 1 ? (
-                        <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: `${fmt.footerSize + 2}px` }}>→</span>
-                      ) : <span />}
-                    </div>
-                  </div>
+                  <SlideFrame
+                    slide={slide}
+                    slideIndex={index}
+                    totalSlides={slides.length}
+                    format={slideFormat}
+                    dataSlideId={slide.id}
+                    editorOpen={editorOpen}
+                    videoMuted={slide.bgMuted !== false || !isActive}
+                    videoRefCallback={(el) => {
+                      if (el) {
+                        if (isActive) el.play().catch(() => {});
+                        else el.pause();
+                      }
+                    }}
+                    mediaOverrides={isActive && (mediaDragOffset !== null || mediaPinchScale !== null) ? {
+                      posX: mediaDragOffset?.x ?? slide.bgPosX,
+                      posY: mediaDragOffset?.y ?? slide.bgPosY,
+                      scale: mediaPinchScale ?? slide.bgScale,
+                    } : undefined}
+                    titleOverrides={isActive && (titleDragOffset !== null || titlePinchScale !== null) ? {
+                      offsetX: titleDragOffset?.x ?? (slide.titleOffsetX ?? 0),
+                      offsetY: titleDragOffset?.y ?? (slide.titleOffsetY ?? 0),
+                      scale: titlePinchScale ?? (slide.titleScale ?? 1),
+                    } : undefined}
+                    bodyOverrides={isActive && (bodyDragOffset !== null || bodyPinchScale !== null) ? {
+                      offsetX: bodyDragOffset?.x ?? (slide.bodyOffsetX ?? 0),
+                      offsetY: bodyDragOffset?.y ?? (slide.bodyOffsetY ?? 0),
+                      scale: bodyPinchScale ?? (slide.bodyScale ?? 1),
+                    } : undefined}
+                    onMediaTouchStart={(e) => handleMediaTouchStart(e, slide)}
+                    onMediaTouchMove={(e) => handleMediaTouchMove(e)}
+                    onMediaTouchEnd={() => handleMediaTouchEnd(slide.id)}
+                    onMediaMouseDown={(e) => handleMediaMouseDown(e, slide)}
+                    onTitleTouchStart={(e) => handleTextTouchStart(e, slide, "title")}
+                    onTitleTouchMove={(e) => handleTextTouchMove(e)}
+                    onTitleTouchEnd={() => handleTextTouchEnd(slide.id)}
+                    onTitleMouseDown={(e) => handleTextMouseDown(e, slide, "title")}
+                    onTitleClick={() => { if (!textDragMovedRef.current) openEditor("title"); }}
+                    onBodyTouchStart={(e) => handleTextTouchStart(e, slide, "body")}
+                    onBodyTouchMove={(e) => handleTextTouchMove(e)}
+                    onBodyTouchEnd={() => handleTextTouchEnd(slide.id)}
+                    onBodyMouseDown={(e) => handleTextMouseDown(e, slide, "body")}
+                    onBodyClick={() => { if (!textDragMovedRef.current) openEditor("body"); }}
+                  />
                 </div>
               </div>
-            </div>
 
-            <button onClick={() => handleAdd(index + 1)} className="flex items-center justify-center transition-all active:scale-90 flex-shrink-0" style={addBtnStyle}><Plus size={14} /></button>
-          </div>
-        ))}
+              <button onClick={() => handleAdd(index + 1)} className="flex items-center justify-center transition-all active:scale-90 flex-shrink-0" style={addBtnStyle}><Plus size={14} /></button>
+            </div>
+          );
+        })}
       </div>
 
       {currentSlide && !isSheetOpen && (
@@ -534,9 +391,7 @@ const SlideCarousel = ({
           open={editorOpen}
           field={editorField}
           initialHtml={editorField === "title" ? currentSlide.title : currentSlide.body}
-          onSave={(html) => {
-            onUpdateSlide(currentSlide.id, { [editorField]: html });
-          }}
+          onSave={(html) => onUpdateSlide(currentSlide.id, { [editorField]: html })}
           onClose={closeEditor}
         />
       )}
