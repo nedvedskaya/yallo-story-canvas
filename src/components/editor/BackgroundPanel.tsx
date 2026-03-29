@@ -260,7 +260,7 @@ const BackgroundPanel = ({
 
             <div className="mt-2 flex items-center justify-between">
               <span className="text-[11px]" style={valStyle}>Применить ко всем слайдам</span>
-              <Switch checked={applyToAll} onCheckedChange={setApplyToAll} />
+              <Switch checked={applyToAll} onCheckedChange={(v) => { setApplyToAll(v); if (v) onApplyToAll(); }} />
             </div>
           </div>
         </>

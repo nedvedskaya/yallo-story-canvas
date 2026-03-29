@@ -17,6 +17,8 @@ interface BottomMenuProps {
 }
 
 const BottomMenu = ({ activeTab, onTabChange }: BottomMenuProps) => {
+  if (activeTab) return null;
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
       <div
