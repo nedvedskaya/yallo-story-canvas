@@ -115,6 +115,104 @@ const TEMPLATES: SlideTemplate[] = [
       </div>
     ),
   },
+  {
+    id: "minimalism-clean",
+    name: "Минимализм",
+    accentColor: "#7C5CFC",
+    apply: {
+      bgColor: "#FFFFFF",
+      bgImage: undefined,
+      bgVideo: undefined,
+      bgType: "color",
+      overlayType: "none",
+      overlayOpacity: 0,
+      titleColor: "#1A1A1A",
+      bodyColor: "#1A1A1A",
+      metaColor: "#999999",
+      overlayColor: "rgba(0,0,0,0.08)",
+      showFooter: false,
+      footerText: "",
+      showArrow: true,
+      showUsername: true,
+      showSlideCount: true,
+      bgDarken: 0,
+      titleFont: "'Dela Gothic One', sans-serif",
+      titleSize: 28,
+      titleLineHeight: 1.15,
+      titleLetterSpacing: 0,
+      titleCase: "uppercase",
+      bodyFont: "'Inter', sans-serif",
+      bodySize: 14,
+      bodyLineHeight: 1.65,
+      bodyLetterSpacing: 0,
+      bodyCase: "none",
+      hAlign: "left",
+      vAlign: "center",
+    },
+    preview: (
+      <div
+        className="w-full h-full flex flex-col justify-between"
+        style={{
+          background: "#FFFFFF",
+          padding: 8,
+          fontFamily: "'Inter', sans-serif",
+        }}
+      >
+        {/* top bar */}
+        <div className="flex justify-between items-center">
+          <span style={{ fontSize: 5, color: "#999" }}>@username</span>
+          <span style={{ fontSize: 5, color: "#999" }}>[ 1/3 ]</span>
+        </div>
+        {/* content */}
+        <div className="flex-1 flex flex-col justify-center gap-1 py-1">
+          <h3
+            style={{
+              fontFamily: "'Dela Gothic One', sans-serif",
+              fontSize: 8,
+              lineHeight: 1.15,
+              color: "#1A1A1A",
+              margin: 0,
+              textAlign: "left",
+              textTransform: "uppercase",
+            }}
+          >
+            ЗАГОЛОВОК{" "}
+            <span
+              style={{
+                background: "#7C5CFC",
+                color: "#FFFFFF",
+                padding: "0 2px",
+                borderRadius: 1,
+              }}
+            >
+              СЛАЙДА
+            </span>
+          </h3>
+          <p style={{ fontSize: 5, color: "#1A1A1A", margin: 0, lineHeight: 1.5, textAlign: "left" }}>
+            Основной текст слайда
+          </p>
+        </div>
+        {/* bottom */}
+        <div className="flex justify-end items-center">
+          <div
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: "50%",
+              border: "1px solid #1A1A1A",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 5,
+              color: "#1A1A1A",
+            }}
+          >
+            →
+          </div>
+        </div>
+      </div>
+    ),
+  },
 ];
 
 interface TemplatesPanelProps {
