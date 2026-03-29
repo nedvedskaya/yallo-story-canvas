@@ -230,20 +230,9 @@ const SlideCarousel = ({
                     </div>
                   )}
                   {/* Content layer */}
-                  <div className="relative z-10 flex flex-col h-full w-full" style={{ justifyContent: vAlignToJustify[slide.vAlign] }}>
-
-                    {/* Top bar: username + slide count */}
-                    {(slide.showUsername !== false || slide.showSlideCount !== false) && (
-                    <div
-                      className="flex items-center justify-between w-full"
-                      style={{
-                        position: slide.vAlign !== "start" ? "absolute" : "relative",
-                        top: slide.vAlign !== "start" ? 0 : undefined,
-                        left: slide.vAlign !== "start" ? 0 : undefined,
-                        right: slide.vAlign !== "start" ? 0 : undefined,
-                        width: slide.vAlign !== "start" ? "100%" : undefined,
-                      }}
-                    >
+                  <div className="relative z-10 flex flex-col h-full w-full">
+                    {/* Top bar: username + slide count — always at top */}
+                    <div className="flex items-center justify-between w-full flex-shrink-0">
                       {slide.showUsername !== false ? (
                         <span className="outline-none font-normal" style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: `${fmt.usernameSize}px` }}>{slide.username}</span>
                       ) : <span />}
@@ -251,61 +240,50 @@ const SlideCarousel = ({
                         <span className="font-normal" style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: `${fmt.usernameSize}px` }}>{index + 1}/{slides.length}</span>
                       ) : <span />}
                     </div>
-                    )}
 
-                    <div>
-                    <h2
-                      onClick={() => openEditor("title")}
-                      className="outline-none font-bold cursor-pointer"
-                      style={{
-                        color: '#ffffff',
-                        fontSize: `${slide.titleSize ?? fmt.titleSize}px`,
-                        fontFamily: slide.titleFont || "'Inter', sans-serif",
-                        textTransform: (slide.titleCase === 'uppercase' ? 'uppercase' : slide.titleCase === 'lowercase' ? 'lowercase' : 'none') as React.CSSProperties['textTransform'],
-                        lineHeight: slide.titleLineHeight ?? 1.1,
-                        letterSpacing: `${slide.titleLetterSpacing ?? 0}px`,
-                        marginTop: slide.vAlign === "start" ? `${fmt.padding + 12}px` : "0",
-                      }}
-                      dangerouslySetInnerHTML={{ __html: slide.title }}
-                    />
-                      <p
-                        onClick={() => openEditor("body")}
-                        className="outline-none mt-3 font-normal cursor-pointer"
-                        style={{
-                          color: 'rgba(255, 255, 255, 0.85)',
-                          fontSize: `${slide.bodySize ?? fmt.bodySize}px`,
-                          fontFamily: slide.bodyFont || "'Inter', sans-serif",
-                          textTransform: (slide.bodyCase === 'uppercase' ? 'uppercase' : slide.bodyCase === 'lowercase' ? 'lowercase' : 'none') as React.CSSProperties['textTransform'],
-                          lineHeight: slide.bodyLineHeight ?? 1.5,
-                          letterSpacing: `${slide.bodyLetterSpacing ?? 0}px`,
-                        }}
-                        dangerouslySetInnerHTML={{ __html: slide.body }}
-                      />
+                    {/* Content area — flex-1, vAlign controls justifyContent */}
+                    <div className="flex flex-col flex-1 min-h-0" style={{ justifyContent: vAlignToJustify[slide.vAlign] }}>
+                      <div>
+                        <h2
+                          onClick={() => openEditor("title")}
+                          className="outline-none font-bold cursor-pointer"
+                          style={{
+                            color: '#ffffff',
+                            fontSize: `${slide.titleSize ?? fmt.titleSize}px`,
+                            fontFamily: slide.titleFont || "'Inter', sans-serif",
+                            textTransform: (slide.titleCase === 'uppercase' ? 'uppercase' : slide.titleCase === 'lowercase' ? 'lowercase' : 'none') as React.CSSProperties['textTransform'],
+                            lineHeight: slide.titleLineHeight ?? 1.1,
+                            letterSpacing: `${slide.titleLetterSpacing ?? 0}px`,
+                          }}
+                          dangerouslySetInnerHTML={{ __html: slide.title }}
+                        />
+                        <p
+                          onClick={() => openEditor("body")}
+                          className="outline-none mt-3 font-normal cursor-pointer"
+                          style={{
+                            color: 'rgba(255, 255, 255, 0.85)',
+                            fontSize: `${slide.bodySize ?? fmt.bodySize}px`,
+                            fontFamily: slide.bodyFont || "'Inter', sans-serif",
+                            textTransform: (slide.bodyCase === 'uppercase' ? 'uppercase' : slide.bodyCase === 'lowercase' ? 'lowercase' : 'none') as React.CSSProperties['textTransform'],
+                            lineHeight: slide.bodyLineHeight ?? 1.5,
+                            letterSpacing: `${slide.bodyLetterSpacing ?? 0}px`,
+                          }}
+                          dangerouslySetInnerHTML={{ __html: slide.body }}
+                        />
+                      </div>
                     </div>
 
-                    {/* Bottom: footer + swipe arrow */}
-                    {(slide.showFooter || slide.showArrow !== false) && (
-                      <div
-                        className="flex items-end justify-between w-full"
-                        style={{
-                          position: slide.vAlign !== "end" ? "absolute" : "relative",
-                          bottom: slide.vAlign !== "end" ? 0 : undefined,
-                          left: slide.vAlign !== "end" ? 0 : undefined,
-                          right: slide.vAlign !== "end" ? 0 : undefined,
-                          width: slide.vAlign !== "end" ? "100%" : undefined,
-                          marginTop: slide.vAlign === "end" ? "auto" : undefined,
-                        }}
-                      >
-                        {slide.showFooter ? (
-                          <span className="font-normal" style={{ color: 'rgba(255,255,255,0.6)', fontSize: `${fmt.footerSize}px` }}>
-                            {slide.footerText || ""}
-                          </span>
-                        ) : <span />}
-                        {slide.showArrow !== false && index < slides.length - 1 ? (
-                          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: `${fmt.footerSize + 2}px` }}>→</span>
-                        ) : <span />}
-                      </div>
-                    )}
+                    {/* Bottom bar: footer + swipe arrow — always at bottom */}
+                    <div className="flex items-end justify-between w-full flex-shrink-0">
+                      {slide.showFooter ? (
+                        <span className="font-normal" style={{ color: 'rgba(255,255,255,0.6)', fontSize: `${fmt.footerSize}px` }}>
+                          {slide.footerText || ""}
+                        </span>
+                      ) : <span />}
+                      {slide.showArrow !== false && index < slides.length - 1 ? (
+                        <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: `${fmt.footerSize + 2}px` }}>→</span>
+                      ) : <span />}
+                    </div>
                   </div>
                 </div>
               </div>
