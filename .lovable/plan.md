@@ -1,47 +1,49 @@
 
 
-# Исправления: экспорт PNG, качество медиа, drag текста
+# Исправления: компактный InfoPanel + корректный экспорт PNG/PDF
 
-## 1. PNG экспорт не работает + индикатор загрузки
+## Проблема экспорта
 
-**Проблема**: `html2canvas` плохо работает на мобильных с `video`, `blob:` URL и сложными стилями. ZIP-архив может не скачиваться на iOS (link.click() не всегда срабатывает).
+Из скриншота видно: PDF сохраняется с искажениями — текст слипается, пробелы пропадают, layout не совпадает с редактором. Причина: `html2canvas` захватывает слайды в их маленьком экранном размере (например, 240px шириной) и масштабирует до 1080px. При этом:
+- CSS transforms (drag offset, pinch scale) рендерятся некорректно
+- `backdrop-filter`, `blur` не поддерживаются html2canvas
+- Шрифты и межсловные пробелы искажаются при масштабировании
 
-**Решение** в `DownloadModal.tsx`:
-- Добавить прогресс-бар: state `progress` (0-100), обновлять после каждого слайда
-- На iOS/мобильных использовать `window.open(URL.createObjectURL(blob))` вместо `link.click()` как fallback
-- Для видео-слайдов: перед захватом ставить текущий кадр на `canvas` вручную через `video.currentTime` + `ctx.drawImage(video, ...)`
-- Показывать текст "Подготовка слайда 1 из N..." во время загрузки
-- Добавить toast-уведомление после успешного скачивания
+## Решение
 
-## 2. Сохранение качества фото и видео при экспорте
+### 1. InfoPanel — компактнее
 
-**В `DownloadModal.tsx`**:
-- В `captureSlides`: использовать `scale: Math.max(2, formatInfo.width / el.offsetWidth)` — минимум 2x для ретины
-- Для PNG: `canvas.toDataURL("image/png")` уже без сжатия — ОК
-- Для PDF: использовать `"PNG"` формат (без JPEG сжатия) — уже так
+**Файл: `InfoPanel.tsx`**
+- Уменьшить gap между элементами: `gap-3` → `gap-2`
+- Убрать разделители (`<div className="h-px">`) — они занимают место
+- Сделать строки тоньше: padding поменьше, font-size 10px вместо 11px
 
-## 3. Drag текста не должен открывать редактор
+### 2. Экспорт PNG/PDF — рендер через офф-скрин контейнер
 
-**Проблема**: `onClick` на `<h2>` / `<p>` вызывает `openEditor()` даже после drag. Нужно различать клик и drag.
+**Файл: `DownloadModal.tsx`** — полная переработка `captureSlides`
 
-**Решение** в `SlideCarousel.tsx`:
-- Добавить ref `textDragMovedRef = useRef(false)`
-- В `handleTextTouchMove` и mouse move: если `|dx| + |dy| > 5` — установить `textDragMovedRef.current = true`
-- В `handleTextTouchStart` и `handleTextMouseDown`: сбросить `textDragMovedRef.current = false`
-- В `onClick` на `<h2>` / `<p>`: проверять `if (textDragMovedRef.current) return;` — если был drag, не открывать редактор
+Вместо захвата маленьких превью-слайдов, создать **скрытый контейнер** (`position: fixed; left: -9999px`) с точными размерами экспорта (например, 1080×1350 для карусели). Для каждого слайда:
 
-## 4. Перетаскивание заголовка двигает основной текст и наоборот
+1. Создать `<div>` точно `formatInfo.width × formatInfo.height` пикселей
+2. Отрисовать в нём содержимое слайда напрямую: фон, изображение/видео, текст, overlay — используя те же стили что и в SlideCarousel, но в натуральном размере
+3. Захватить через `html2canvas` с `scale: 1` (уже в нужном размере)
+4. Удалить контейнер
 
-**Проблема**: `dragOffset` и `pinchScale` — общие state для title и body. Когда тянем body, `dragOffset` обновляется, и title тоже проверяет `dragOffset !== null && textDragTarget.current === "title"` — но `textDragTarget.current` может не совпадать с реальным target из-за race condition между touch events.
+Это гарантирует pixel-perfect экспорт, потому что html2canvas рендерит DOM в натуральном размере без масштабирования.
 
-**Решение** в `SlideCarousel.tsx`:
-- Разделить state: `titleDragOffset` / `bodyDragOffset` и `titlePinchScale` / `bodyPinchScale` вместо общих `dragOffset` / `pinchScale`
-- В handlers обновлять только соответствующий state в зависимости от `textDragTarget.current`
-- В `transform` на title-обёртке читать только `titleDragOffset`, на body — только `bodyDragOffset`
-- Это устраняет cross-contamination между title и body drag
+**Конкретно:**
+- Вынести функцию `renderSlideToDOM(slide, formatInfo, slideIndex, totalSlides)` которая создает DOM-элемент с точными размерами и стилями
+- Эта функция воспроизводит layout из SlideCarousel: bgColor, bgImage/bgVideo, overlay, text с font/size/offset/scale, username, footer, arrow
+- Для видео — рисовать текущий кадр как `<img>` (через canvas.drawImage)
+- Текст позиционировать с учётом titleOffsetX/Y, bodyOffsetX/Y, titleScale, bodyScale
+
+### 3. Общая функция стилей для слайда
+
+**Файл: `shared-styles.ts`** — добавить функцию `getSlideContentStyles(slide, fmt)` которую используют и SlideCarousel для отображения, и DownloadModal для экспорта. Это гарантирует идентичный рендер.
 
 ## Файлы для изменения
 
-1. `src/components/editor/DownloadModal.tsx` — прогресс-бар, fallback скачивания, качество
-2. `src/components/editor/SlideCarousel.tsx` — раздельные drag state, флаг textDragMoved для предотвращения открытия редактора
+1. `src/components/editor/InfoPanel.tsx` — компактнее
+2. `src/components/editor/DownloadModal.tsx` — офф-скрин рендер вместо захвата превью
+3. `src/components/editor/shared-styles.ts` — общие стили для слайда
 
