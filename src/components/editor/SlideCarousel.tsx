@@ -49,6 +49,9 @@ export interface Slide {
   showArrow?: boolean;
   showFooter?: boolean;
   footerText?: string;
+  textOffsetX?: number;
+  textOffsetY?: number;
+  textScale?: number;
 }
 
 const hAlignToText: Record<HAlign, string> = { left: "left", center: "center", right: "right" };
