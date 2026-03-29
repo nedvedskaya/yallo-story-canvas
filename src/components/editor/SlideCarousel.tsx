@@ -92,6 +92,12 @@ const SlideCarousel = ({
   const [editorOpen, setEditorOpen] = useState(false);
   const [editorField, setEditorField] = useState<"title" | "body">("title");
 
+  // Touch drag & pinch state
+  const touchStartRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number } | null>(null);
+  const pinchStartRef = useRef<{ dist: number; scale: number } | null>(null);
+  const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
+  const [pinchScale, setPinchScale] = useState<number | null>(null);
+
   const formatInfo = FORMAT_OPTIONS.find(f => f.id === slideFormat) || FORMAT_OPTIONS[0];
   const slideAspectRatio = `${formatInfo.width}/${formatInfo.height}`;
   const isLandscape = formatInfo.width > formatInfo.height;
