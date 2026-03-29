@@ -91,7 +91,7 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
   return (
     <div ref={ref} style={rootStyle} data-slide-id={dataSlideId}>
       {/* Overlay pattern */}
-      {!overlayOnly && <SlideOverlay type={slide.overlayType} opacity={slide.overlayOpacity} color={slide.overlayColor} />}
+      {!overlayOnly && <SlideOverlay type={slide.overlayType} opacity={slide.overlayOpacity} color={slide.overlayColor} scale={scale} />}
 
       {/* Background image */}
       {!overlayOnly && slide.bgImage && (

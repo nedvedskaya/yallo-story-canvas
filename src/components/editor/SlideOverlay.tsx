@@ -4,10 +4,12 @@ interface SlideOverlayProps {
   type: OverlayType;
   opacity: number; // 0-100
   color?: string; // base color for overlay lines/shapes, default white
+  scale?: number; // scale factor for export (1 = preview, >1 = export)
 }
 
-const SlideOverlay = ({ type, opacity, color }: SlideOverlayProps) => {
+const SlideOverlay = ({ type, opacity, color, scale = 1 }: SlideOverlayProps) => {
   if (type === "none" || opacity === 0) return null;
+  const s = scale; // shorthand for scaled pixel values
 
   const alpha = opacity / 100;
   const style: React.CSSProperties = {
@@ -41,8 +43,8 @@ const SlideOverlay = ({ type, opacity, color }: SlideOverlayProps) => {
         <div
           style={{
             ...style,
-            backgroundImage: `radial-gradient(circle, ${ca(0.5)} 1px, transparent 1px)`,
-            backgroundSize: "16px 16px",
+            backgroundImage: `radial-gradient(circle, ${ca(0.5)} ${1 * s}px, transparent ${1 * s}px)`,
+            backgroundSize: `${16 * s}px ${16 * s}px`,
           }}
         />
       );
@@ -51,7 +53,7 @@ const SlideOverlay = ({ type, opacity, color }: SlideOverlayProps) => {
         <div
           style={{
             ...style,
-            backgroundImage: `repeating-linear-gradient(0deg, ${ca(0.3)} 0px, ${ca(0.3)} 1px, transparent 1px, transparent 14px)`,
+            backgroundImage: `repeating-linear-gradient(0deg, ${ca(0.3)} 0px, ${ca(0.3)} ${1 * s}px, transparent ${1 * s}px, transparent ${14 * s}px)`,
           }}
         />
       );
@@ -61,10 +63,10 @@ const SlideOverlay = ({ type, opacity, color }: SlideOverlayProps) => {
           style={{
             ...style,
             backgroundImage: `
-              linear-gradient(${ca(0.25)} 1px, transparent 1px),
-              linear-gradient(90deg, ${ca(0.25)} 1px, transparent 1px)
+              linear-gradient(${ca(0.25)} ${1 * s}px, transparent ${1 * s}px),
+              linear-gradient(90deg, ${ca(0.25)} ${1 * s}px, transparent ${1 * s}px)
             `,
-            backgroundSize: "20px 20px",
+            backgroundSize: `${20 * s}px ${20 * s}px`,
           }}
         />
       );
@@ -72,12 +74,12 @@ const SlideOverlay = ({ type, opacity, color }: SlideOverlayProps) => {
       return (
         <svg style={{ ...style, width: "100%", height: "100%" }}>
           <defs>
-            <pattern id="cells" width="30" height="26" patternUnits="userSpaceOnUse">
+            <pattern id="cells" width={30 * s} height={26 * s} patternUnits="userSpaceOnUse">
               <path
-                d="M15 0 L30 8 L30 22 L15 26 L0 22 L0 8 Z"
+                d={`M${15 * s} 0 L${30 * s} ${8 * s} L${30 * s} ${22 * s} L${15 * s} ${26 * s} L0 ${22 * s} L0 ${8 * s} Z`}
                 fill="none"
                 stroke={ca(0.3)}
-                strokeWidth="0.8"
+                strokeWidth={0.8 * s}
               />
             </pattern>
           </defs>
