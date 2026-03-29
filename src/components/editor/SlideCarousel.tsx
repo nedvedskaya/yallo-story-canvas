@@ -54,6 +54,16 @@ export interface Slide {
 const hAlignToText: Record<HAlign, string> = { left: "left", center: "center", right: "right" };
 const vAlignToJustify: Record<VAlign, string> = { start: "flex-start", center: "center", end: "flex-end" };
 
+const getBgMediaStyle = (slide: Slide): React.CSSProperties => ({
+  position: 'absolute',
+  left: `${slide.bgPosX}%`,
+  top: `${slide.bgPosY}%`,
+  transform: `translate(-50%, -50%) scale(${slide.bgScale / 100})`,
+  transformOrigin: 'center center',
+  minWidth: '100%',
+  minHeight: '100%',
+});
+
 
 const addBtnStyle: React.CSSProperties = { ...glassBtnStyle, width: 32, height: 32, flexShrink: 0 };
 
