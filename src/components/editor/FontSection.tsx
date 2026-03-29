@@ -1,4 +1,6 @@
+import { useState, useRef } from "react";
 import { Slider } from "@/components/ui/slider";
+import { Plus } from "lucide-react";
 
 export interface FontSettings {
   font: string;
@@ -8,10 +10,14 @@ export interface FontSettings {
   letterSpacing: number;
 }
 
+export interface CustomFont {
+  name: string;
+  family: string;
+}
+
 export const FONT_LIST = [
   { name: "Abraxas", family: "'Abraxas', serif" },
   { name: "HeadingNow", family: "'HeadingNow Trial', sans-serif" },
-  
   { name: "SouthGhetto", family: "'SouthGhetto', sans-serif" },
   { name: "Marvin Visions", family: "'Marvin Visions', sans-serif" },
   { name: "SONGER", family: "'SONGER Grotesque', sans-serif" },
@@ -25,7 +31,32 @@ interface FontSectionProps {
 }
 
 const FontSection = ({ label, settings, onChange }: FontSectionProps) => {
-  const selectedFontObj = FONT_LIST.find(f => f.family === settings.font) || FONT_LIST[0];
+  const [customFonts, setCustomFonts] = useState<CustomFont[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const allFonts = [...FONT_LIST, ...customFonts];
+
+  const handleFontUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const fontName = file.name.replace(/\.(ttf|otf|woff|woff2)$/i, "");
+    const fontFamily = `'${fontName}'`;
+
+    try {
+      const buffer = await file.arrayBuffer();
+      const fontFace = new FontFace(fontName, buffer);
+      await fontFace.load();
+      document.fonts.add(fontFace);
+
+      setCustomFonts((prev) => [...prev, { name: fontName, family: fontFamily }]);
+      onChange({ font: fontFamily });
+    } catch (err) {
+      console.error("Failed to load font:", err);
+    }
+
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   return (
     <div className="flex flex-col gap-2.5">
@@ -33,7 +64,7 @@ const FontSection = ({ label, settings, onChange }: FontSectionProps) => {
 
       {/* Font picker */}
       <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-        {FONT_LIST.map((f) => (
+        {allFonts.map((f) => (
           <button
             key={f.name}
             onClick={() => onChange({ font: f.family })}
@@ -49,12 +80,32 @@ const FontSection = ({ label, settings, onChange }: FontSectionProps) => {
             {f.name}
           </button>
         ))}
+        {/* Add custom font button */}
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="flex-shrink-0 px-3 py-1.5 rounded-lg text-sm transition-all active:scale-95 flex items-center gap-1"
+          style={{
+            background: 'rgba(255,255,255,0.35)',
+            border: '1px dashed rgba(26,26,46,0.25)',
+            color: 'rgba(26,26,46,0.5)',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <Plus size={12} /> Шрифт
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".ttf,.otf,.woff,.woff2"
+          className="hidden"
+          onChange={handleFontUpload}
+        />
       </div>
 
       {/* Size */}
       <div className="flex items-center gap-3">
         <span className="text-[11px] w-16 flex-shrink-0" style={{ color: 'rgba(26,26,46,0.5)' }}>Размер</span>
-        <Slider min={8} max={100} step={1} value={[settings.size]} onValueChange={([v]) => onChange({ size: v })} className="flex-1" />
+        <Slider min={8} max={24} step={1} value={[settings.size]} onValueChange={([v]) => onChange({ size: v })} className="flex-1" />
         <span className="text-[11px] w-6 text-right" style={{ color: 'rgba(26,26,46,0.5)' }}>{settings.size}</span>
       </div>
 
