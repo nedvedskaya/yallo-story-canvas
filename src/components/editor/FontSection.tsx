@@ -81,10 +81,9 @@ const FontSection = ({ label, settings, onChange, customFonts = [], onAddCustomF
             {f.name}
           </button>
         ))}
-        {/* Add custom font button */}
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className="flex-shrink-0 px-3 py-1.5 rounded-lg text-sm transition-all active:scale-95 flex items-center gap-1"
+        {/* Add custom font — label for mobile compatibility */}
+        <label
+          className="flex-shrink-0 px-3 py-1.5 rounded-lg text-sm transition-all active:scale-95 flex items-center gap-1 cursor-pointer"
           style={{
             background: 'rgba(255,255,255,0.35)',
             border: '1px dashed rgba(26,26,46,0.25)',
@@ -93,14 +92,13 @@ const FontSection = ({ label, settings, onChange, customFonts = [], onAddCustomF
           }}
         >
           <Plus size={12} /> Шрифт
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".ttf,.otf,.woff,.woff2"
-          className="hidden"
-          onChange={handleFontUpload}
-        />
+          <input
+            type="file"
+            accept=".ttf,.otf,.woff,.woff2"
+            className="hidden"
+            onChange={handleFontUpload}
+          />
+        </label>
       </div>
 
       {/* Size */}
