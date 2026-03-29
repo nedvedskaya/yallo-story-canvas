@@ -19,7 +19,7 @@ const InfoPanel = ({ currentSlide, onSave, onApplyInfoToAll }: InfoPanelProps) =
   const footerText = currentSlide.footerText ?? "";
   const username = currentSlide.username ?? "@username";
 
-  const labelStyle = { color: "rgba(26,26,46,0.6)" };
+  
 
 
   return (

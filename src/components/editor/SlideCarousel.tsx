@@ -54,13 +54,6 @@ export interface Slide {
 const hAlignToText: Record<HAlign, string> = { left: "left", center: "center", right: "right" };
 const vAlignToJustify: Record<VAlign, string> = { start: "flex-start", center: "center", end: "flex-end" };
 
-const glassBtnStyle: React.CSSProperties = {
-  width: 36, height: 36, color: "#4a4a6a",
-  background: "rgba(255, 255, 255, 0.5)",
-  backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
-  border: "1px solid rgba(255, 255, 255, 0.7)", borderRadius: "10px",
-  boxShadow: "0 2px 6px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)",
-};
 
 const addBtnStyle: React.CSSProperties = { ...glassBtnStyle, width: 32, height: 32, flexShrink: 0 };
 
