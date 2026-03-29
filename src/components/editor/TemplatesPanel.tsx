@@ -13,7 +13,7 @@ export interface SlideTemplate {
 
 const TEMPLATES: SlideTemplate[] = [
   {
-    id: "tetrad",
+    id: "minimalism",
     name: "Тетрадь",
     accentColor: "#FF4200",
     apply: {
@@ -88,7 +88,7 @@ const TEMPLATES: SlideTemplate[] = [
             }}
           >
             Заголовок{" "}
-            <span style={{ background: "#FF4200", color: "#fff", padding: "0 2px", borderRadius: 1 }}>слайда</span>
+            <span style={{ color: "#FF4200" }}>слайда</span>
           </h3>
           <p style={{ fontSize: 5, color: "#1A1A1A", margin: 0, lineHeight: 1.5, textAlign: "left" }}>
             Основной текст слайда
@@ -107,84 +107,6 @@ const TEMPLATES: SlideTemplate[] = [
               justifyContent: "center",
               fontSize: 5,
               color: "#1A1A1A",
-            }}
-          >
-            →
-          </div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    id: "minimalism",
-    name: "Минимализм",
-    accentColor: "#7C3AED",
-    apply: {
-      bgColor: "#FFFFFF",
-      bgImage: undefined,
-      bgVideo: undefined,
-      bgType: "color",
-      bgDarken: 0,
-      overlayType: "none",
-      overlayOpacity: 0,
-      overlayColor: "rgba(0,0,0,0)",
-      titleColor: "#111111",
-      bodyColor: "#444444",
-      metaColor: "#AAAAAA",
-      titleFont: "'SONGER Grotesque', sans-serif",
-      titleSize: 24,
-      titleLineHeight: 1.15,
-      titleLetterSpacing: -0.3,
-      titleCase: "uppercase",
-      bodyFont: "'Inter', sans-serif",
-      bodySize: 13,
-      bodyLineHeight: 1.7,
-      bodyLetterSpacing: 0,
-      bodyCase: "none",
-      hAlign: "left",
-      vAlign: "end",
-      showUsername: true,
-      showSlideCount: true,
-      showArrow: true,
-      showFooter: false,
-      footerText: "",
-    },
-    preview: (
-      <div
-        className="w-full h-full flex flex-col justify-between relative"
-        style={{ background: "#FFFFFF", padding: 8, fontFamily: "'Inter', sans-serif" }}
-      >
-        <div className="flex justify-between items-center">
-          <span style={{ fontSize: 5, color: "#AAAAAA" }}>@username</span>
-          <span style={{ fontSize: 5, color: "#AAAAAA" }}>1/3</span>
-        </div>
-        <div className="flex flex-col gap-1 pb-1">
-          <h3
-            style={{
-              fontFamily: "'SONGER Grotesque', sans-serif",
-              fontSize: 9,
-              lineHeight: 1.15,
-              color: "#111111",
-              margin: 0,
-              textAlign: "left",
-              textTransform: "uppercase",
-              letterSpacing: "-0.3px",
-            }}
-          >
-            Заголовок{" "}
-            <span style={{ background: "#7C3AED", color: "#fff", padding: "0 2px", borderRadius: 1 }}>слайда</span>
-          </h3>
-          <p style={{ fontSize: 5, color: "#444444", margin: 0, lineHeight: 1.5, textAlign: "left" }}>
-            Основной текст слайда
-          </p>
-        </div>
-        <div className="flex justify-end items-center">
-          <div
-            style={{
-              width: 10, height: 10, borderRadius: "50%",
-              border: "1px solid #111111",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 5, color: "#111111",
             }}
           >
             →

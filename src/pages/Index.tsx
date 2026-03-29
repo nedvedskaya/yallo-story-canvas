@@ -113,8 +113,8 @@ const Index = () => {
     setSlides(prev => prev.map(s => {
       const updated = { ...s, ...tpl.apply };
       if (tpl.accentColor && updated.title) {
-        const clean = updated.title.replace(/<span style="[^"]*">([^<]*)<\/span>/g, '$1');
-        updated.title = clean.replace(/(\S+)(\s*)$/, `<span style="background:${tpl.accentColor};color:#fff;padding:0 4px;border-radius:4px">$1</span>$2`);
+        const clean = updated.title.replace(/<span style="color:[^"]*">([^<]*)<\/span>/g, '$1');
+        updated.title = clean.replace(/(\S+)(\s*)$/, `<span style="color:${tpl.accentColor}">$1</span>$2`);
       }
       return updated;
     }));
@@ -135,8 +135,8 @@ const Index = () => {
       ...templateProps,
     };
     if (activeTemplate?.accentColor && baseSlide.title) {
-      const clean = baseSlide.title.replace(/<span style="[^"]*">([^<]*)<\/span>/g, '$1');
-      baseSlide.title = clean.replace(/(\S+)(\s*)$/, `<span style="background:${activeTemplate.accentColor};color:#fff;padding:0 4px;border-radius:4px">$1</span>$2`);
+      const clean = baseSlide.title.replace(/<span style="color:[^"]*">([^<]*)<\/span>/g, '$1');
+      baseSlide.title = clean.replace(/(\S+)(\s*)$/, `<span style="color:${activeTemplate.accentColor}">$1</span>$2`);
     }
     setSlides(prev => { const next = [...prev]; next.splice(atIndex, 0, baseSlide); return next; });
     setActiveSlide(atIndex);
