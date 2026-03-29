@@ -28,6 +28,8 @@ interface FontSectionProps {
   label: string;
   settings: FontSettings;
   onChange: (updates: Partial<FontSettings>) => void;
+  customFonts?: CustomFont[];
+  onAddCustomFont?: (font: CustomFont) => void;
 }
 
 const FontSection = ({ label, settings, onChange, customFonts = [], onAddCustomFont }: FontSectionProps) => {
