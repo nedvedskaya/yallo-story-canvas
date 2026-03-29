@@ -109,10 +109,10 @@ const Index = () => {
   }, [currentSlide]);
 
   const handleApplyTemplate = useCallback((tpl: SlideTemplate) => {
+    setActiveTemplate(tpl);
     setSlides(prev => prev.map(s => {
       const updated = { ...s, ...tpl.apply };
       if (tpl.accentColor && updated.title) {
-        // Strip existing accent spans, then wrap last word
         const clean = updated.title.replace(/<span style="color:[^"]*">([^<]*)<\/span>/g, '$1');
         updated.title = clean.replace(/(\S+)(\s*)$/, `<span style="color:${tpl.accentColor}">$1</span>$2`);
       }
