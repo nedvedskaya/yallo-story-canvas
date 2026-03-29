@@ -1,55 +1,51 @@
 
 
-# Доработки: перетаскивание на всех устройствах, масштаб медиа, TextEditorModal
+# Исправления: ввод текста, раздельное перетаскивание, сброс позиции, drag медиа
 
-## 1. Перетаскивание текста — добавить поддержку мыши (десктоп)
+## 1. Текст пишется наоборот
 
-**Файл: `SlideCarousel.tsx`**
+**Причина**: В `TextEditorModal.tsx` useEffect на строке 19-24 зависит от `initialHtml`. Когда пользователь печатает, `onInput` → `onSave` → обновляет слайд → `initialHtml` меняется → useEffect срабатывает снова → `editorRef.current.innerHTML = initialHtml` сбрасывает содержимое и курсор на начало. Следующий символ вставляется в начало — текст выглядит задом наперёд.
 
-Сейчас drag/pinch текста работает только через `onTouchStart/Move/End`. Нужно добавить `onMouseDown/Move/Up` для десктопа:
-- `onMouseDown` — запоминает начальную позицию и текущий offset
-- `onMouseMove` (на window) — вычисляет dx/dy и обновляет `dragOffset`
-- `onMouseUp` (на window) — сохраняет через `onUpdateSlide` и убирает listener
+**Исправление** в `TextEditorModal.tsx`:
+- Убрать `initialHtml` из зависимостей useEffect
+- Использовать ref-флаг `initializedRef`, чтобы устанавливать innerHTML только при первом открытии (`open` переходит с false на true)
 
-## 2. Перетаскивание фото/видео пальцем и мышью на слайде
+```tsx
+const initializedRef = useRef(false);
+useEffect(() => {
+  if (open && editorRef.current && !initializedRef.current) {
+    editorRef.current.innerHTML = initialHtml;
+    editorRef.current.focus();
+    initializedRef.current = true;
+  }
+  if (!open) initializedRef.current = false;
+}, [open]);
+```
 
-**Файл: `SlideCarousel.tsx`**
+## 2. Раздельное перетаскивание заголовка и основного текста
 
-Добавить drag для медиа-фона (bgImage/bgVideo) аналогично тексту:
-- На `<div className="absolute inset-0 z-[2]">` (обёртка bgImage/bgVideo) повесить touch и mouse обработчики
-- Drag перемещает `bgPosX`/`bgPosY` (пересчитывая смещение пикселей в проценты)
-- Pinch двумя пальцами меняет `bgScale`
-- Сохранять через `onUpdateSlide`
+**В `SlideCarousel.tsx`**:
+- Добавить в `Slide`: `titleOffsetX/Y`, `bodyOffsetX/Y`, `titleScale`, `bodyScale` (вместо общих `textOffsetX/Y/textScale`)
+- Разделить `<div>` обёртку — сделать отдельные draggable-обёртки для `<h2>` и `<p>`
+- Каждая обёртка имеет свои touch/mouse handlers
+- В drag state добавить поле `target: "title" | "body"` чтобы различать что тащим
 
-## 3. Масштаб фото/видео — уменьшить минимум
+## 3. Сброс позиции при смене выравнивания
 
-**Файл: `MediaControls.tsx`**
-- Изменить `min={50}` → `min={10}` на слайдере масштаба, чтобы фото можно было уменьшить сильнее оригинала
+**В `SlideCarousel.tsx`** (или `SlideToolbar` → `onVAlignChange`):
+- При изменении `vAlign` сбрасывать `titleOffsetX/Y`, `bodyOffsetX/Y`, `titleScale`, `bodyScale` к 0/1
+- В `onVAlignChange` callback: `onUpdateSlide(id, { vAlign: v, titleOffsetX: 0, titleOffsetY: 0, bodyOffsetX: 0, bodyOffsetY: 0, titleScale: 1, bodyScale: 1 })`
+- То же для `hAlign`
 
-## 4. TextEditorModal — убрать кнопку «Сохранить», автосохранение
+## 4. Drag фото/видео не работает на мобильных
 
-**Файл: `TextEditorModal.tsx`**
-- Убрать кнопку «Сохранить» (строки 183-196)
-- Добавить `onInput` на contentEditable div — при каждом изменении вызывать `onSave(editorRef.current.innerHTML)`
-- Крестик (X) просто вызывает `onClose()` без сброса — данные уже сохранены
-- Убрать `handleSave` функцию
-
-## 5. Скрывать нижнее меню при открытом TextEditorModal
-
-**Файл: `SlideCarousel.tsx` + `Index.tsx`**
-
-Нужно пробросить состояние `editorOpen` наверх, чтобы `BottomMenu` скрывался:
-- В `SlideCarousel` добавить проп `onEditorOpenChange?: (open: boolean) => void` и вызывать при открытии/закрытии
-- В `Index.tsx` добавить state `textEditorOpen` и передать в `BottomMenu`
-- В `BottomMenu` — уже есть `if (activeTab) return null;` — добавить аналогично `if (textEditorOpen) return null;`
-
-Альтернативно: передавать `mb` для TextEditorModal — сейчас он позиционируется `mb-[calc(76px+env(safe-area-inset-bottom))]` (место под меню). Если меню скрыто, уменьшить до `mb-[env(safe-area-inset-bottom)]`.
+**В `SlideCarousel.tsx`**:
+- Проблема: touch-события на медиа-слое конфликтуют с горизонтальным scroll каруслели
+- Добавить `e.preventDefault()` в `handleMediaTouchMove` чтобы предотвратить скролл при перетаскивании медиа
+- Убедиться что `touchAction: 'none'` стоит на медиа-обёртке (уже есть)
 
 ## Файлы для изменения
 
-1. `src/components/editor/SlideCarousel.tsx` — mouse drag для текста, drag для медиа, проп editorOpen
-2. `src/components/editor/MediaControls.tsx` — min масштаба 10
-3. `src/components/editor/TextEditorModal.tsx` — убрать «Сохранить», автосохранение onInput
-4. `src/pages/Index.tsx` — state textEditorOpen, передать в BottomMenu
-5. `src/components/editor/BottomMenu.tsx` — скрывать при textEditorOpen
+1. `src/components/editor/TextEditorModal.tsx` — убрать `initialHtml` из deps useEffect
+2. `src/components/editor/SlideCarousel.tsx` — раздельные offsets для title/body, сброс при выравнивании, fix media drag
 
