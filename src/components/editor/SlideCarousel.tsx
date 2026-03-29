@@ -344,20 +344,46 @@ const SlideCarousel = ({
                   <SlideOverlay type={slide.overlayType} opacity={slide.overlayOpacity} />
                   {/* Background image layer */}
                   {slide.bgImage && (
-                    <div className="absolute inset-0 z-[2]" style={{ overflow: 'hidden' }}>
-                      <img src={slide.bgImage} alt="" style={{ ...getBgMediaStyle(slide), objectFit: 'contain' }} />
+                    <div
+                      className="absolute inset-0 z-[2]"
+                      style={{ overflow: 'hidden', cursor: 'grab', touchAction: 'none' }}
+                      onTouchStart={(e) => handleMediaTouchStart(e, slide)}
+                      onTouchMove={(e) => handleMediaTouchMove(e)}
+                      onTouchEnd={() => handleMediaTouchEnd(slide.id)}
+                      onMouseDown={(e) => handleMediaMouseDown(e, slide)}
+                    >
+                      <img src={slide.bgImage} alt="" style={{
+                        ...getBgMediaStyle(slide),
+                        objectFit: 'contain',
+                        left: `${mediaDragOffset !== null && index === activeSlide ? mediaDragOffset.x : slide.bgPosX}%`,
+                        top: `${mediaDragOffset !== null && index === activeSlide ? mediaDragOffset.y : slide.bgPosY}%`,
+                        transform: `translate(-50%, -50%) scale(${(mediaPinchScale !== null && index === activeSlide ? mediaPinchScale : slide.bgScale) / 100})`,
+                      }} />
                       {slide.bgDarken > 0 && (
-                        <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${slide.bgDarken / 100})` }} />
+                        <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${slide.bgDarken / 100})`, pointerEvents: 'none' }} />
                       )}
                     </div>
                   )}
                   {slide.bgVideo && (
-                    <div className="absolute inset-0 z-[2]" style={{ overflow: 'hidden' }}>
+                    <div
+                      className="absolute inset-0 z-[2]"
+                      style={{ overflow: 'hidden', cursor: 'grab', touchAction: 'none' }}
+                      onTouchStart={(e) => handleMediaTouchStart(e, slide)}
+                      onTouchMove={(e) => handleMediaTouchMove(e)}
+                      onTouchEnd={() => handleMediaTouchEnd(slide.id)}
+                      onMouseDown={(e) => handleMediaMouseDown(e, slide)}
+                    >
                       <video
                         src={slide.bgVideo}
                         autoPlay loop playsInline
                         muted={slide.bgMuted !== false || index !== activeSlide}
-                        style={{ ...getBgMediaStyle(slide), objectFit: 'cover' }}
+                        style={{
+                          ...getBgMediaStyle(slide),
+                          objectFit: 'cover',
+                          left: `${mediaDragOffset !== null && index === activeSlide ? mediaDragOffset.x : slide.bgPosX}%`,
+                          top: `${mediaDragOffset !== null && index === activeSlide ? mediaDragOffset.y : slide.bgPosY}%`,
+                          transform: `translate(-50%, -50%) scale(${(mediaPinchScale !== null && index === activeSlide ? mediaPinchScale : slide.bgScale) / 100})`,
+                        }}
                         ref={(el) => {
                           if (el) {
                             if (index === activeSlide) el.play().catch(() => {});
@@ -366,7 +392,7 @@ const SlideCarousel = ({
                         }}
                       />
                       {slide.bgDarken > 0 && (
-                        <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${slide.bgDarken / 100})` }} />
+                        <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${slide.bgDarken / 100})`, pointerEvents: 'none' }} />
                       )}
                     </div>
                   )}
