@@ -7,8 +7,9 @@ interface SlideOverlayProps {
   scale?: number; // scale factor for export (1 = preview, >1 = export)
 }
 
-const SlideOverlay = ({ type, opacity, color }: SlideOverlayProps) => {
+const SlideOverlay = ({ type, opacity, color, scale = 1 }: SlideOverlayProps) => {
   if (type === "none" || opacity === 0) return null;
+  const s = scale; // shorthand for scaled pixel values
 
   const alpha = opacity / 100;
   const style: React.CSSProperties = {
