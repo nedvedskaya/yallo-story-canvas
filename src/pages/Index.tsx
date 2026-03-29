@@ -174,6 +174,7 @@ const Index = () => {
         onApplyBgToAll={handleApplyBgToAll}
         onApplyTextToAll={handleApplyTextToAll}
         onApplyInfoToAll={handleApplyInfoToAll}
+        onApplyTemplate={handleApplyTemplate}
         slideFormat={slideFormat}
         onSlideFormatChange={setSlideFormat}
       />
