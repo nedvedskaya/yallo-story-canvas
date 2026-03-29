@@ -298,7 +298,7 @@ const SlideCarousel = ({
                         className="outline-none mt-3 font-normal cursor-pointer"
                         style={{
                           color: 'rgba(255, 255, 255, 0.85)',
-                          fontSize: `${slide.bodySize ?? 14}px`,
+                          fontSize: `${slide.bodySize ?? fmt.bodySize}px`,
                           fontFamily: slide.bodyFont || "'Inter', sans-serif",
                           textTransform: (slide.bodyCase === 'uppercase' ? 'uppercase' : slide.bodyCase === 'lowercase' ? 'lowercase' : 'none') as React.CSSProperties['textTransform'],
                           lineHeight: slide.bodyLineHeight ?? 1.5,
