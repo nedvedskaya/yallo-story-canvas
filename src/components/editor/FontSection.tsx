@@ -30,8 +30,7 @@ interface FontSectionProps {
   onChange: (updates: Partial<FontSettings>) => void;
 }
 
-const FontSection = ({ label, settings, onChange }: FontSectionProps) => {
-  const [customFonts, setCustomFonts] = useState<CustomFont[]>([]);
+const FontSection = ({ label, settings, onChange, customFonts = [], onAddCustomFont }: FontSectionProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const allFonts = [...FONT_LIST, ...customFonts];
