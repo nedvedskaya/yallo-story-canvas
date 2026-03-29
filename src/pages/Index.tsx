@@ -43,6 +43,7 @@ const Index = () => {
   const [slides, setSlides] = useState<Slide[]>(initialSlides);
   const [slideFormat, setSlideFormat] = useState<SlideFormat>("carousel");
   const [downloadOpen, setDownloadOpen] = useState(false);
+  const [textEditorOpen, setTextEditorOpen] = useState(false);
 
   const currentSlide = slides[activeSlide];
   const handleUpdateSlide = useCallback((id: number, updates: Partial<Slide>) => {
