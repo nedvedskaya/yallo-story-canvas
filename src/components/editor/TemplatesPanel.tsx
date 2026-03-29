@@ -9,6 +9,8 @@ export interface SlideTemplate {
   preview: React.ReactNode;
   /** Accent color for highlighting last word in titles */
   accentColor?: string;
+  /** How accent is applied: "color" = text color, "highlight" = background highlight */
+  accentMode?: "color" | "highlight";
 }
 
 const TEMPLATES: SlideTemplate[] = [
