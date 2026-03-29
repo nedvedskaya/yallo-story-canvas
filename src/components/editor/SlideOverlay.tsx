@@ -4,6 +4,7 @@ interface SlideOverlayProps {
   type: OverlayType;
   opacity: number; // 0-100
   color?: string; // base color for overlay lines/shapes, default white
+  scale?: number; // scale factor for export (1 = preview, >1 = export)
 }
 
 const SlideOverlay = ({ type, opacity, color }: SlideOverlayProps) => {
