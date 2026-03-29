@@ -51,7 +51,7 @@ async function renderSlideToDOM(
   exportHeight: number,
   previewWidth: number,
   overlayOnly = false,
-): Promise<HTMLDivElement> {
+): Promise<{ container: HTMLDivElement; root: Root }> {
   const scale = exportWidth / previewWidth;
 
   const container = document.createElement("div");
@@ -97,7 +97,7 @@ async function renderSlideToDOM(
       if (promises.length > 0) await Promise.all(promises);
       await wait(50);
 
-      resolve(container);
+      resolve({ container, root });
     }));
   });
 }
