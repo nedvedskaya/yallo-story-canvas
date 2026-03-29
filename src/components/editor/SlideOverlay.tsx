@@ -3,9 +3,10 @@ import type { OverlayType } from "./BackgroundPanel";
 interface SlideOverlayProps {
   type: OverlayType;
   opacity: number; // 0-100
+  color?: string; // base color for overlay lines/shapes, default white
 }
 
-const SlideOverlay = ({ type, opacity }: SlideOverlayProps) => {
+const SlideOverlay = ({ type, opacity, color }: SlideOverlayProps) => {
   if (type === "none" || opacity === 0) return null;
 
   const alpha = opacity / 100;
