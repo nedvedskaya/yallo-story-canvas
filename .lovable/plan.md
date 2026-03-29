@@ -1,39 +1,55 @@
 
 
-# Исправления: загрузка шрифтов, перетаскивание текста, отступ
+# Доработки: перетаскивание на всех устройствах, масштаб медиа, TextEditorModal
 
-## 1. Загрузка шрифтов не работает
+## 1. Перетаскивание текста — добавить поддержку мыши (десктоп)
 
-**Проблема**: Код загрузки в `FontSection.tsx` выглядит корректно — `FontFace` создается, добавляется в `document.fonts`, вызывается `onAddCustomFont` и `onChange`. Вероятная причина: на мобильных `fileInputRef.current?.click()` не срабатывает (тот же баг что был с color picker). Кнопка `<button onClick={() => fileInputRef.current?.click()}>` через programmatic click не открывает file picker на iOS/Android.
+**Файл: `SlideCarousel.tsx`**
 
-**Решение** в `FontSection.tsx`:
-- Заменить `<button>` + hidden `<input>` на `<label>` с визуальным оформлением кнопки, внутри которого `<input type="file" className="hidden">` — на мобильных `<label>` нативно открывает file picker без programmatic click
-- Убрать `fileInputRef` и `onClick`, использовать `htmlFor` / вложенный input
+Сейчас drag/pinch текста работает только через `onTouchStart/Move/End`. Нужно добавить `onMouseDown/Move/Up` для десктопа:
+- `onMouseDown` — запоминает начальную позицию и текущий offset
+- `onMouseMove` (на window) — вычисляет dx/dy и обновляет `dragOffset`
+- `onMouseUp` (на window) — сохраняет через `onUpdateSlide` и убирает listener
 
-## 2. Перетаскивание текста пальцем + pinch-to-zoom размера
+## 2. Перетаскивание фото/видео пальцем и мышью на слайде
 
-**Добавить в `Slide` интерфейс** (`SlideCarousel.tsx`):
-- `textOffsetX?: number` (default 0) — смещение текстового блока по X в процентах
-- `textOffsetY?: number` (default 0) — смещение текстового блока по Y в процентах  
-- `textScale?: number` (default 1) — масштаб текста от pinch-zoom
+**Файл: `SlideCarousel.tsx`**
 
-**В `SlideCarousel.tsx`** — на контентном блоке (title + body):
-- Добавить touch-обработчики:
-  - `onTouchStart` / `onTouchMove` / `onTouchEnd` для drag (один палец) — обновлять `textOffsetX/Y`
-  - Отслеживать 2 пальца для pinch — обновлять `textScale`
-- Применять `transform: translate(offsetX, offsetY) scale(textScale)` к обёртке текста
-- Вызывать `onUpdateSlide` при `onTouchEnd` чтобы сохранить позицию
+Добавить drag для медиа-фона (bgImage/bgVideo) аналогично тексту:
+- На `<div className="absolute inset-0 z-[2]">` (обёртка bgImage/bgVideo) повесить touch и mouse обработчики
+- Drag перемещает `bgPosX`/`bgPosY` (пересчитывая смещение пикселей в проценты)
+- Pinch двумя пальцами меняет `bgScale`
+- Сохранять через `onUpdateSlide`
 
-**Важно**: drag текста должен работать только когда `TextEditorModal` закрыт (иначе конфликт с редактированием). При `vAlign` смещение добавляется поверх базового выравнивания.
+## 3. Масштаб фото/видео — уменьшить минимум
 
-## 3. Отступ между username и заголовком при vAlign="start"
+**Файл: `MediaControls.tsx`**
+- Изменить `min={50}` → `min={10}` на слайдере масштаба, чтобы фото можно было уменьшить сильнее оригинала
 
-**В `SlideCarousel.tsx`**:
-- Добавить `marginTop` / `paddingTop` на top bar (`username + slide count`): `mb-2` или `marginBottom: 8px`
-- Это создаст зазор между строкой username и началом контентной области
+## 4. TextEditorModal — убрать кнопку «Сохранить», автосохранение
+
+**Файл: `TextEditorModal.tsx`**
+- Убрать кнопку «Сохранить» (строки 183-196)
+- Добавить `onInput` на contentEditable div — при каждом изменении вызывать `onSave(editorRef.current.innerHTML)`
+- Крестик (X) просто вызывает `onClose()` без сброса — данные уже сохранены
+- Убрать `handleSave` функцию
+
+## 5. Скрывать нижнее меню при открытом TextEditorModal
+
+**Файл: `SlideCarousel.tsx` + `Index.tsx`**
+
+Нужно пробросить состояние `editorOpen` наверх, чтобы `BottomMenu` скрывался:
+- В `SlideCarousel` добавить проп `onEditorOpenChange?: (open: boolean) => void` и вызывать при открытии/закрытии
+- В `Index.tsx` добавить state `textEditorOpen` и передать в `BottomMenu`
+- В `BottomMenu` — уже есть `if (activeTab) return null;` — добавить аналогично `if (textEditorOpen) return null;`
+
+Альтернативно: передавать `mb` для TextEditorModal — сейчас он позиционируется `mb-[calc(76px+env(safe-area-inset-bottom))]` (место под меню). Если меню скрыто, уменьшить до `mb-[env(safe-area-inset-bottom)]`.
 
 ## Файлы для изменения
 
-1. `src/components/editor/FontSection.tsx` — заменить button+hidden input на label для мобильной совместимости
-2. `src/components/editor/SlideCarousel.tsx` — добавить `textOffsetX/Y/textScale` в Slide, touch-обработчики для drag и pinch, отступ после username
+1. `src/components/editor/SlideCarousel.tsx` — mouse drag для текста, drag для медиа, проп editorOpen
+2. `src/components/editor/MediaControls.tsx` — min масштаба 10
+3. `src/components/editor/TextEditorModal.tsx` — убрать «Сохранить», автосохранение onInput
+4. `src/pages/Index.tsx` — state textEditorOpen, передать в BottomMenu
+5. `src/components/editor/BottomMenu.tsx` — скрывать при textEditorOpen
 
