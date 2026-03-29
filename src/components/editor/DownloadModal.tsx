@@ -18,8 +18,25 @@ interface DownloadModalProps {
   onSlideChange: (index: number) => void;
 }
 
-// Wait for a condition with timeout
-const waitFor = (ms: number) => new Promise(r => setTimeout(r, ms));
+const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
+
+// Wait for all images inside an element to finish loading
+async function waitForAssets(el: HTMLElement): Promise<void> {
+  await document.fonts.ready;
+  const imgs = el.querySelectorAll("img");
+  const promises: Promise<void>[] = [];
+  imgs.forEach(img => {
+    if (!img.complete) {
+      promises.push(new Promise(res => {
+        img.onload = () => res();
+        img.onerror = () => res();
+      }));
+    }
+  });
+  if (promises.length > 0) await Promise.all(promises);
+  // Extra frame for layout stabilization
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+}
 
 // Capture a video frame as data URL
 function captureVideoFrame(video: HTMLVideoElement): string {
@@ -38,28 +55,25 @@ function captureVideoFrame(video: HTMLVideoElement): string {
   return "";
 }
 
-// Record a video slide as WebM blob with audio
+// Record a video slide as WebM blob with text overlay and audio
 async function recordVideoSlide(
   slide: Slide,
   exportWidth: number,
   exportHeight: number,
-  slideIndex: number,
-  totalSlides: number,
-  format: SlideFormat,
+  slideEl: HTMLElement | null,
   onProgress: (text: string) => void,
 ): Promise<Blob | null> {
   return new Promise(async (resolve) => {
     try {
-      onProgress(`Запись видео слайда ${slideIndex + 1}...`);
-      
+      onProgress("Подготовка видео...");
+
       // Create offscreen video
       const video = document.createElement("video");
       video.src = slide.bgVideo!;
       video.crossOrigin = "anonymous";
       video.playsInline = true;
       video.muted = false;
-      
-      // Wait for video to load
+
       await new Promise<void>((res, rej) => {
         video.onloadeddata = () => res();
         video.onerror = () => rej(new Error("Video load failed"));
@@ -71,71 +85,88 @@ async function recordVideoSlide(
       canvas.height = exportHeight;
       const ctx = canvas.getContext("2d")!;
 
-      // Setup MediaRecorder
-      const canvasStream = canvas.captureStream(30);
-      
-      // Try to get audio from video
-      let combinedStream = canvasStream;
-      try {
-        const videoWithAudio = document.createElement("video");
-        videoWithAudio.src = slide.bgVideo!;
-        videoWithAudio.crossOrigin = "anonymous";
-        await new Promise<void>((res) => {
-          videoWithAudio.onloadeddata = () => res();
-          videoWithAudio.load();
-        });
-        // @ts-ignore - captureStream exists on video elements
-        const audioStream = videoWithAudio.captureStream?.() as MediaStream | undefined;
-        if (audioStream) {
-          const audioTracks = audioStream.getAudioTracks();
-          if (audioTracks.length > 0) {
-            audioTracks.forEach(t => canvasStream.addTrack(t));
+      // Build text overlay canvas from real DOM content layer
+      let overlayCanvas: HTMLCanvasElement | null = null;
+      if (slideEl) {
+        const contentLayer = slideEl.querySelector(".z-10") as HTMLElement;
+        if (contentLayer) {
+          try {
+            const elW = slideEl.offsetWidth;
+            const scale = exportWidth / elW;
+            overlayCanvas = await html2canvas(contentLayer, {
+              scale,
+              useCORS: true,
+              allowTaint: true,
+              backgroundColor: null,
+              width: contentLayer.offsetWidth,
+              height: contentLayer.offsetHeight,
+              logging: false,
+            });
+          } catch (e) {
+            console.warn("Overlay capture failed", e);
           }
         }
-        videoWithAudio.play().catch(() => {});
-      } catch {
-        // No audio, that's fine
       }
+
+      // Setup MediaRecorder
+      const canvasStream = canvas.captureStream(30);
+
+      // Try to get audio from video
+      try {
+        const audioVideo = document.createElement("video");
+        audioVideo.src = slide.bgVideo!;
+        audioVideo.crossOrigin = "anonymous";
+        await new Promise<void>(res => { audioVideo.onloadeddata = () => res(); audioVideo.load(); });
+        // @ts-ignore
+        const audioStream = audioVideo.captureStream?.() as MediaStream | undefined;
+        if (audioStream) {
+          const audioTracks = audioStream.getAudioTracks();
+          audioTracks.forEach(t => canvasStream.addTrack(t));
+        }
+        audioVideo.play().catch(() => {});
+      } catch { /* no audio */ }
 
       const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
         ? "video/webm;codecs=vp9"
         : "video/webm";
-      
-      const recorder = new MediaRecorder(combinedStream, { mimeType });
+
+      const recorder = new MediaRecorder(canvasStream, { mimeType });
       const chunks: Blob[] = [];
       recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
       recorder.onstop = () => {
         resolve(new Blob(chunks, { type: "video/webm" }));
       };
 
-      // Scale factors for drawing text
       const bgPosX = slide.bgPosX ?? 50;
       const bgPosY = slide.bgPosY ?? 50;
       const bgScale = slide.bgScale ?? 100;
 
       const drawFrame = () => {
-        // Clear
         ctx.clearRect(0, 0, exportWidth, exportHeight);
-        
-        // Background color
-        if (slide.bgColor.includes("gradient")) {
-          // Parse gradient and draw
-          ctx.fillStyle = "#333";
-          ctx.fillRect(0, 0, exportWidth, exportHeight);
-        } else {
-          ctx.fillStyle = slide.bgColor;
-          ctx.fillRect(0, 0, exportWidth, exportHeight);
-        }
 
-        // Draw video frame
+        // Background color
+        ctx.fillStyle = slide.bgColor.includes("gradient") ? "#333" : slide.bgColor;
+        ctx.fillRect(0, 0, exportWidth, exportHeight);
+
+        // Draw video frame (cover behavior)
         const vw = video.videoWidth || exportWidth;
         const vh = video.videoHeight || exportHeight;
+        const videoAR = vw / vh;
+        const canvasAR = exportWidth / exportHeight;
+        let drawW: number, drawH: number;
+        if (videoAR > canvasAR) {
+          drawH = exportHeight;
+          drawW = exportHeight * videoAR;
+        } else {
+          drawW = exportWidth;
+          drawH = exportWidth / videoAR;
+        }
         const scale = bgScale / 100;
-        const dw = Math.max(exportWidth, vw * (exportHeight / vh)) * scale;
-        const dh = Math.max(exportHeight, vh * (exportWidth / vw)) * scale;
-        const dx = (bgPosX / 100) * exportWidth - dw / 2;
-        const dy = (bgPosY / 100) * exportHeight - dh / 2;
-        ctx.drawImage(video, dx, dy, dw, dh);
+        drawW *= scale;
+        drawH *= scale;
+        const dx = (bgPosX / 100) * exportWidth - drawW / 2;
+        const dy = (bgPosY / 100) * exportHeight - drawH / 2;
+        ctx.drawImage(video, dx, dy, drawW, drawH);
 
         // Darken overlay
         if (slide.bgDarken > 0) {
@@ -143,11 +174,13 @@ async function recordVideoSlide(
           ctx.fillRect(0, 0, exportWidth, exportHeight);
         }
 
-        // We skip text overlay for video to keep it simple and fast
-        // The user gets the raw video with background effects
+        // Draw text overlay from captured content layer
+        if (overlayCanvas) {
+          ctx.drawImage(overlayCanvas, 0, 0, exportWidth, exportHeight);
+        }
       };
 
-      // Start recording
+      onProgress("Запись видео...");
       recorder.start();
       video.currentTime = 0;
       await video.play();
@@ -186,8 +219,54 @@ const DownloadModal = ({ open, onClose, slides, slideFormat, activeSlide, onSlid
   const formatInfo = FORMAT_OPTIONS.find(f => f.id === slideFormat) || FORMAT_OPTIONS[0];
   const hasVideoSlides = slides.some(s => !!s.bgVideo);
 
-  // Capture slides by navigating carousel and screenshotting real DOM
-  const captureSlides = useCallback(async (): Promise<HTMLCanvasElement[]> => {
+  // Navigate to slide and wait for stabilization
+  const prepareSlideCapture = useCallback(async (index: number) => {
+    onSlideChange(index);
+    await wait(400); // Wait for carousel animation
+    await document.fonts.ready;
+    const el = document.querySelector(`[data-slide-id="${slides[index].id}"]`) as HTMLElement;
+    if (el) await waitForAssets(el);
+    await wait(100); // Extra stabilization
+    return el;
+  }, [slides, onSlideChange]);
+
+  // Capture a single slide element as canvas
+  const captureSlideCanvas = useCallback(async (el: HTMLElement): Promise<HTMLCanvasElement> => {
+    const elWidth = el.offsetWidth;
+    const elHeight = el.offsetHeight;
+    // Scale to match export resolution, cap at 4x for mobile stability
+    const scale = Math.min(4, formatInfo.width / elWidth);
+
+    return html2canvas(el, {
+      scale,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: null,
+      width: elWidth,
+      height: elHeight,
+      logging: false,
+      imageTimeout: 15000,
+    });
+  }, [formatInfo]);
+
+  const triggerDownload = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    // Try link.click first
+    const link = document.createElement("a");
+    link.download = filename;
+    link.href = url;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    // iOS fallback
+    setTimeout(() => {
+      try { window.open(url, "_blank"); } catch {}
+    }, 500);
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  };
+
+  // Capture all slides as canvases (static frame for video slides)
+  const captureAllSlides = useCallback(async (): Promise<HTMLCanvasElement[]> => {
     const canvases: HTMLCanvasElement[] = [];
     const total = slides.length;
     const savedSlide = activeSlide;
@@ -196,18 +275,13 @@ const DownloadModal = ({ open, onClose, slides, slideFormat, activeSlide, onSlid
       setProgressText(`Подготовка слайда ${i + 1} из ${total}...`);
       setProgress(Math.round((i / total) * 80));
 
-      // Navigate to slide
-      onSlideChange(i);
-      await waitFor(350); // Wait for render + animation
-
-      // Find the actual slide element
-      const el = document.querySelector(`[data-slide-id="${slides[i].id}"]`) as HTMLElement;
+      const el = await prepareSlideCapture(i);
       if (!el) {
         console.warn(`Slide element not found: ${slides[i].id}`);
         continue;
       }
 
-      // For video slides: temporarily replace video with frame image
+      // For video slides: temporarily swap video with frame image
       let videoEl: HTMLVideoElement | null = null;
       let tempImg: HTMLImageElement | null = null;
       const videoContainer = el.querySelector("video");
@@ -218,37 +292,26 @@ const DownloadModal = ({ open, onClose, slides, slideFormat, activeSlide, onSlid
         if (frameUrl) {
           tempImg = document.createElement("img");
           tempImg.src = frameUrl;
-          tempImg.style.cssText = videoEl.style.cssText;
-          // Copy all computed positioning
-          const vs = videoEl.style;
-          tempImg.style.position = vs.position;
-          tempImg.style.left = vs.left;
-          tempImg.style.top = vs.top;
-          tempImg.style.transform = vs.transform;
-          tempImg.style.transformOrigin = vs.transformOrigin;
-          tempImg.style.minWidth = vs.minWidth;
-          tempImg.style.minHeight = vs.minHeight;
-          tempImg.style.objectFit = "cover";
+          // Copy exact computed styles
+          const cs = window.getComputedStyle(videoEl);
+          tempImg.style.position = cs.position;
+          tempImg.style.left = cs.left;
+          tempImg.style.top = cs.top;
+          tempImg.style.width = cs.width;
+          tempImg.style.height = cs.height;
+          tempImg.style.transform = cs.transform;
+          tempImg.style.transformOrigin = cs.transformOrigin;
+          tempImg.style.minWidth = cs.minWidth;
+          tempImg.style.minHeight = cs.minHeight;
+          tempImg.style.objectFit = cs.objectFit as string;
           videoEl.parentElement?.insertBefore(tempImg, videoEl);
           videoEl.style.display = "none";
-          await waitFor(50);
+          await wait(50);
         }
       }
 
-      // Calculate scale to get export resolution
-      const elementWidth = el.offsetWidth;
-      const scale = formatInfo.width / elementWidth;
-
       try {
-        const canvas = await html2canvas(el, {
-          scale,
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: null,
-          width: el.offsetWidth,
-          height: el.offsetHeight,
-          logging: false,
-        });
+        const canvas = await captureSlideCanvas(el);
         canvases.push(canvas);
       } catch (e) {
         console.error(`html2canvas failed for slide ${i}:`, e);
@@ -263,22 +326,10 @@ const DownloadModal = ({ open, onClose, slides, slideFormat, activeSlide, onSlid
       setProgress(Math.round(((i + 1) / total) * 80));
     }
 
-    // Restore original active slide
+    // Restore original slide
     onSlideChange(savedSlide);
     return canvases;
-  }, [slides, activeSlide, onSlideChange, formatInfo]);
-
-  const triggerDownload = (blob: Blob, filename: string) => {
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.download = filename;
-    link.href = url;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    // Fallback for iOS
-    setTimeout(() => { URL.revokeObjectURL(url); }, 5000);
-  };
+  }, [slides, activeSlide, onSlideChange, prepareSlideCapture, captureSlideCanvas]);
 
   const downloadPNG = async () => {
     setLoading(true);
@@ -286,7 +337,7 @@ const DownloadModal = ({ open, onClose, slides, slideFormat, activeSlide, onSlid
     setProgress(0);
     setProgressText("Начинаем экспорт...");
     try {
-      const canvases = await captureSlides();
+      const canvases = await captureAllSlides();
       if (canvases.length === 0) throw new Error("No slides captured");
 
       setProgressText("Упаковка в архив...");
@@ -319,7 +370,7 @@ const DownloadModal = ({ open, onClose, slides, slideFormat, activeSlide, onSlid
     setProgress(0);
     setProgressText("Начинаем экспорт...");
     try {
-      const canvases = await captureSlides();
+      const canvases = await captureAllSlides();
       if (canvases.length === 0) throw new Error("No slides captured");
 
       setProgressText("Создание PDF...");
@@ -363,15 +414,16 @@ const DownloadModal = ({ open, onClose, slides, slideFormat, activeSlide, onSlid
 
       for (let i = 0; i < total; i++) {
         const slide = slides[i];
+        setProgress(Math.round((i / total) * 90));
 
         if (slide.bgVideo) {
-          // Video slide → record as WebM
-          setProgressText(`Запись видео слайда ${i + 1} из ${total}...`);
-          setProgress(Math.round((i / total) * 90));
-          
+          // Video slide → navigate to it first to get the real DOM, then record
+          setProgressText(`Подготовка видео-слайда ${i + 1} из ${total}...`);
+          const el = await prepareSlideCapture(i);
+
           const blob = await recordVideoSlide(
             slide, formatInfo.width, formatInfo.height,
-            i, total, slideFormat, setProgressText,
+            el, setProgressText,
           );
           if (blob) {
             zip.file(`slide-${i + 1}.webm`, blob);
@@ -388,27 +440,11 @@ const DownloadModal = ({ open, onClose, slides, slideFormat, activeSlide, onSlid
         } else {
           // Image/color slide → capture as PNG
           setProgressText(`Подготовка слайда ${i + 1} из ${total}...`);
-          setProgress(Math.round((i / total) * 90));
-          
-          onSlideChange(i);
-          await waitFor(350);
-          
-          const el = document.querySelector(`[data-slide-id="${slide.id}"]`) as HTMLElement;
+          const el = await prepareSlideCapture(i);
           if (!el) continue;
 
-          const elementWidth = el.offsetWidth;
-          const scale = formatInfo.width / elementWidth;
-          
           try {
-            const canvas = await html2canvas(el, {
-              scale,
-              useCORS: true,
-              allowTaint: true,
-              backgroundColor: null,
-              width: el.offsetWidth,
-              height: el.offsetHeight,
-              logging: false,
-            });
+            const canvas = await captureSlideCanvas(el);
             const dataUrl = canvas.toDataURL("image/png");
             const base64 = dataUrl.split(",")[1];
             zip.file(`slide-${i + 1}.png`, base64, { base64: true });
@@ -506,7 +542,7 @@ const DownloadModal = ({ open, onClose, slides, slideFormat, activeSlide, onSlid
                 </div>
               </button>
 
-              {/* All (PNG + Video) — only show if there are video slides */}
+              {/* All (PNG + Video) */}
               {hasVideoSlides && (
                 <button
                   onClick={downloadAll}
