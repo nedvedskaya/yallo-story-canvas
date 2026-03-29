@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback } from "react";
 import TopBar from "@/components/editor/TopBar";
 import SlideCarousel from "@/components/editor/SlideCarousel";
 import type { Slide } from "@/components/editor/SlideCarousel";
