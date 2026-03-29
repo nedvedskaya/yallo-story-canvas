@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback } from "react";
 import TopBar from "@/components/editor/TopBar";
 import SlideCarousel from "@/components/editor/SlideCarousel";
 import type { Slide } from "@/components/editor/SlideCarousel";
@@ -47,11 +47,7 @@ const Index = () => {
   const [slideFormat, setSlideFormat] = useState<SlideFormat>("carousel");
   const [downloadOpen, setDownloadOpen] = useState(false);
 
-  const slideSnapshotRef = useRef<Slide | null>(null);
-  const formatSnapshotRef = useRef<SlideFormat | null>(null);
-
   const currentSlide = slides[activeSlide];
-
   const handleUpdateSlide = useCallback((id: number, updates: Partial<Slide>) => {
     setSlides(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
   }, []);
@@ -102,32 +98,9 @@ const Index = () => {
     );
   }, [currentSlide]);
 
-  const handleTabChange = useCallback((tab: MenuId | null) => {
-    if (tab && currentSlide) {
-      slideSnapshotRef.current = { ...currentSlide };
-      formatSnapshotRef.current = slideFormat;
-    }
-    setActiveTab(tab);
-  }, [currentSlide, slideFormat]);
-
-  const handleSaveClose = useCallback(() => {
-    slideSnapshotRef.current = null;
-    formatSnapshotRef.current = null;
+  const handleClosePanel = useCallback(() => {
     setActiveTab(null);
   }, []);
-
-  const handleCancelClose = useCallback(() => {
-    if (slideSnapshotRef.current && currentSlide) {
-      const snap = slideSnapshotRef.current;
-      setSlides(prev => prev.map(s => s.id === snap.id ? snap : s));
-    }
-    if (formatSnapshotRef.current !== null) {
-      setSlideFormat(formatSnapshotRef.current);
-    }
-    slideSnapshotRef.current = null;
-    formatSnapshotRef.current = null;
-    setActiveTab(null);
-  }, [currentSlide]);
 
   const handleAddSlide = useCallback((atIndex: number) => {
     const newSlide: Slide = {
@@ -192,8 +165,7 @@ const Index = () => {
 
       <BottomSheet
         activeTab={activeTab}
-        onClose={handleCancelClose}
-        onSaveClose={handleSaveClose}
+        onClose={handleClosePanel}
         currentSlide={currentSlide}
         onUpdateSlide={handleUpdateSlide}
         onApplyBgToAll={handleApplyBgToAll}
@@ -202,7 +174,7 @@ const Index = () => {
         slideFormat={slideFormat}
         onSlideFormatChange={setSlideFormat}
       />
-      <BottomMenu activeTab={activeTab} onTabChange={handleTabChange} />
+      <BottomMenu activeTab={activeTab} onTabChange={setActiveTab} />
       <DownloadModal open={downloadOpen} onClose={() => setDownloadOpen(false)} slides={slides} slideFormat={slideFormat} />
     </div>
   );

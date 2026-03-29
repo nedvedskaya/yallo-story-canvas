@@ -42,13 +42,12 @@ interface BackgroundPanelProps {
   bgMuted?: boolean;
   onSave: (draft: Partial<BgDraft>) => void;
   onApplyToAll: () => void;
-  onClose: () => void;
 }
 
 const BackgroundPanel = ({
   bgColor, overlayType, overlayOpacity,
   bgImage, bgVideo, bgScale, bgPosX, bgPosY, bgDarken, bgMuted,
-  onSave, onApplyToAll, onClose,
+  onSave, onApplyToAll,
 }: BackgroundPanelProps) => {
   const [bgTab, setBgTab] = useState<BgTab>(bgVideo ? "video" : bgImage ? "photo" : "color");
   const [applyToAll, setApplyToAll] = useState(false);
@@ -86,11 +85,6 @@ const BackgroundPanel = ({
       const url = URL.createObjectURL(file);
       update({ bgImage: undefined, bgVideo: url, bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0, bgMuted: false });
     }
-  };
-
-  const handleSave = () => {
-    if (applyToAll) onApplyToAll();
-    onClose();
   };
 
   const tabItems: { id: BgTab; label: string }[] = [

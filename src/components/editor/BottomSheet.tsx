@@ -10,7 +10,6 @@ import InfoPanel from "./InfoPanel";
 interface BottomSheetProps {
   activeTab: MenuId | null;
   onClose: () => void;
-  onSaveClose: () => void;
   currentSlide?: Slide;
   onUpdateSlide?: (id: number, updates: Partial<Slide>) => void;
   onApplyBgToAll?: () => void;
@@ -24,7 +23,7 @@ const sheetContent: Record<string, { title: string; icon: React.ElementType; ite
   design: { title: "Шаблоны", icon: Palette, items: ["Минимализм", "Градиент", "Ретро", "Неон", "Пастель", "Тёмный"] },
 };
 
-const BottomSheet = ({ activeTab, onClose, onSaveClose, currentSlide, onUpdateSlide, onApplyBgToAll, onApplyTextToAll, onApplyInfoToAll, slideFormat, onSlideFormatChange }: BottomSheetProps) => {
+const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyBgToAll, onApplyTextToAll, onApplyInfoToAll, slideFormat, onSlideFormatChange }: BottomSheetProps) => {
   const isBackground = activeTab === "background";
   const isText = activeTab === "text";
   const isSize = activeTab === "size";
@@ -81,14 +80,12 @@ const BottomSheet = ({ activeTab, onClose, onSaveClose, currentSlide, onUpdateSl
                   currentSlide={currentSlide}
                   onSave={(updates) => onUpdateSlide(currentSlide.id, updates)}
                   onApplyInfoToAll={() => onApplyInfoToAll?.()}
-                  onClose={onSaveClose}
                 />
               ) : isText && currentSlide && onUpdateSlide ? (
                 <TextPanel
                   currentSlide={currentSlide}
                   onSave={(updates) => onUpdateSlide(currentSlide.id, updates)}
                   onApplyTextToAll={() => onApplyTextToAll?.()}
-                  onClose={onSaveClose}
                 />
               ) : isBackground && currentSlide && onUpdateSlide ? (
                 <BackgroundPanel
@@ -104,13 +101,11 @@ const BottomSheet = ({ activeTab, onClose, onSaveClose, currentSlide, onUpdateSl
                   bgMuted={currentSlide.bgMuted}
                   onSave={(partial) => onUpdateSlide(currentSlide.id, partial)}
                   onApplyToAll={() => onApplyBgToAll?.()}
-                  onClose={onSaveClose}
                 />
               ) : isSize && slideFormat && onSlideFormatChange ? (
                 <SizePanel
                   currentFormat={slideFormat}
                   onSave={onSlideFormatChange}
-                  onClose={onSaveClose}
                 />
               ) : content && (
                 <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-1">

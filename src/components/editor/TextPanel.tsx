@@ -7,10 +7,9 @@ interface TextPanelProps {
   currentSlide: Slide;
   onSave: (updates: Partial<Slide>) => void;
   onApplyTextToAll: () => void;
-  onClose: () => void;
 }
 
-const TextPanel = ({ currentSlide, onSave, onApplyTextToAll, onClose }: TextPanelProps) => {
+const TextPanel = ({ currentSlide, onSave, onApplyTextToAll }: TextPanelProps) => {
   const [applyAll, setApplyAll] = useState(false);
 
   const titleSettings: FontSettings = {
@@ -49,10 +48,6 @@ const TextPanel = ({ currentSlide, onSave, onApplyTextToAll, onClose }: TextPane
     onSave(mapped);
   }, [onSave]);
 
-  const handleSave = () => {
-    if (applyAll) onApplyTextToAll();
-    onClose();
-  };
 
   return (
     <div className="flex flex-col gap-4 overflow-y-auto max-h-[30vh] scrollbar-hide">

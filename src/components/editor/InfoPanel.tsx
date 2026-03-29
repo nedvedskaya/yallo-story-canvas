@@ -6,10 +6,9 @@ interface InfoPanelProps {
   currentSlide: Slide;
   onSave: (updates: Partial<Slide>) => void;
   onApplyInfoToAll: () => void;
-  onClose: () => void;
 }
 
-const InfoPanel = ({ currentSlide, onSave, onApplyInfoToAll, onClose }: InfoPanelProps) => {
+const InfoPanel = ({ currentSlide, onSave, onApplyInfoToAll }: InfoPanelProps) => {
   const [applyAll, setApplyAll] = useState(false);
 
   const showUsername = currentSlide.showUsername !== false;
@@ -21,10 +20,6 @@ const InfoPanel = ({ currentSlide, onSave, onApplyInfoToAll, onClose }: InfoPane
 
   const labelStyle = { color: "rgba(26,26,46,0.6)" };
 
-  const handleSave = () => {
-    if (applyAll) onApplyInfoToAll();
-    onClose();
-  };
 
   return (
     <div className="flex flex-col gap-3 overflow-y-auto max-h-[28vh] scrollbar-hide">
