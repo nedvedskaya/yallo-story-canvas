@@ -115,7 +115,6 @@ const TEMPLATES: SlideTemplate[] = [
       </div>
     ),
   },
-  },
   {
     id: "minimalism",
     name: "Минимализм",
