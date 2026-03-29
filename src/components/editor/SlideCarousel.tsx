@@ -511,8 +511,8 @@ const SlideCarousel = ({
           hAlign={currentSlide.hAlign}
           vAlign={currentSlide.vAlign}
           bgType={currentSlide.bgType}
-          onHAlignChange={(v) => onUpdateSlide(currentSlide.id, { hAlign: v })}
-          onVAlignChange={(v) => onUpdateSlide(currentSlide.id, { vAlign: v })}
+          onHAlignChange={(v) => onUpdateSlide(currentSlide.id, { hAlign: v, titleOffsetX: 0, titleOffsetY: 0, bodyOffsetX: 0, bodyOffsetY: 0, titleScale: 1, bodyScale: 1 })}
+          onVAlignChange={(v) => onUpdateSlide(currentSlide.id, { vAlign: v, titleOffsetX: 0, titleOffsetY: 0, bodyOffsetX: 0, bodyOffsetY: 0, titleScale: 1, bodyScale: 1 })}
           onBgClick={() => {}}
           onCropClick={() => {}}
         />
