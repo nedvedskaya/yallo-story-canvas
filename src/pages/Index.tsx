@@ -7,6 +7,7 @@ import BottomSheet from "@/components/editor/BottomSheet";
 import type { MenuId } from "@/components/editor/BottomMenu";
 import type { SlideFormat } from "@/components/editor/SizePanel";
 import DownloadModal from "@/components/editor/DownloadModal";
+import type { SlideTemplate } from "@/components/editor/TemplatesPanel";
 
 let nextId = 4;
 
