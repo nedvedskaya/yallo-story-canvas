@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { getContrastColors } from "@/lib/utils";
 import TopBar from "@/components/editor/TopBar";
 import SlideCarousel from "@/components/editor/SlideCarousel";
@@ -11,6 +11,13 @@ import DownloadModal from "@/components/editor/DownloadModal";
 import type { SlideTemplate } from "@/components/editor/TemplatesPanel";
 
 let nextId = 4;
+
+const MAX_UNDO = 50;
+
+/** Strip all inline-style spans from HTML */
+function stripAccentSpans(html: string): string {
+  return html.replace(/<span style="[^"]*">([^<]*)<\/span>/g, '$1');
+}
 
 const initialSlides: Slide[] = [
   {
@@ -48,23 +55,59 @@ const Index = () => {
   const [textEditorOpen, setTextEditorOpen] = useState(false);
   const [activeTemplate, setActiveTemplate] = useState<SlideTemplate | null>(null);
 
+  // Undo/Redo stacks
+  const undoStack = useRef<Slide[][]>([]);
+  const redoStack = useRef<Slide[][]>([]);
+  const skipHistory = useRef(false);
+
+  const pushUndo = useCallback((prev: Slide[]) => {
+    if (skipHistory.current) return;
+    undoStack.current = [...undoStack.current.slice(-(MAX_UNDO - 1)), prev];
+    redoStack.current = [];
+  }, []);
+
+  const setSlidesWithHistory = useCallback((updater: Slide[] | ((prev: Slide[]) => Slide[])) => {
+    setSlides(prev => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      if (next !== prev) pushUndo(prev);
+      return next;
+    });
+  }, [pushUndo]);
+
+  const handleUndo = useCallback(() => {
+    if (undoStack.current.length === 0) return;
+    const prev = undoStack.current.pop()!;
+    setSlides(current => {
+      redoStack.current.push(current);
+      return prev;
+    });
+  }, []);
+
+  const handleRedo = useCallback(() => {
+    if (redoStack.current.length === 0) return;
+    const next = redoStack.current.pop()!;
+    setSlides(current => {
+      undoStack.current.push(current);
+      return next;
+    });
+  }, []);
+
   const currentSlide = slides[activeSlide];
   const handleUpdateSlide = useCallback((id: number, updates: Partial<Slide>) => {
-    setSlides(prev => prev.map(s => {
+    setSlidesWithHistory(prev => prev.map(s => {
       if (s.id !== id) return s;
       const merged = { ...s, ...updates };
-      // Auto-contrast: if bgColor changed, apply contrast colors
       if (updates.bgColor && !updates.titleColor) {
         const contrast = getContrastColors(updates.bgColor);
         Object.assign(merged, contrast);
       }
       return merged;
     }));
-  }, []);
+  }, [setSlidesWithHistory]);
 
   const handleApplyBgToAll = useCallback(() => {
     if (!currentSlide) return;
-    setSlides(prev =>
+    setSlidesWithHistory(prev =>
       prev.map(s => ({
         ...s,
         bgColor: currentSlide.bgColor,
@@ -72,11 +115,11 @@ const Index = () => {
         overlayOpacity: currentSlide.overlayOpacity,
       }))
     );
-  }, [currentSlide]);
+  }, [currentSlide, setSlidesWithHistory]);
 
   const handleApplyTextToAll = useCallback(() => {
     if (!currentSlide) return;
-    setSlides(prev =>
+    setSlidesWithHistory(prev =>
       prev.map(s => ({
         ...s,
         titleFont: currentSlide.titleFont,
@@ -91,11 +134,11 @@ const Index = () => {
         bodyLetterSpacing: currentSlide.bodyLetterSpacing,
       }))
     );
-  }, [currentSlide]);
+  }, [currentSlide, setSlidesWithHistory]);
 
   const handleApplyInfoToAll = useCallback(() => {
     if (!currentSlide) return;
-    setSlides(prev =>
+    setSlidesWithHistory(prev =>
       prev.map(s => ({
         ...s,
         showUsername: currentSlide.showUsername,
@@ -106,17 +149,14 @@ const Index = () => {
         footerText: currentSlide.footerText,
       }))
     );
-  }, [currentSlide]);
+  }, [currentSlide, setSlidesWithHistory]);
 
   const handleApplyTemplate = useCallback((tpl: SlideTemplate) => {
     setActiveTemplate(tpl);
-    setSlides(prev => prev.map(s => {
+    setSlidesWithHistory(prev => prev.map(s => {
       const updated = { ...s, ...tpl.apply };
       if (tpl.accentColor && updated.title) {
-        // Remove old accent spans (both color and highlight)
-        const clean = updated.title
-          .replace(/<span style="color:[^"]*">([^<]*)<\/span>/g, '$1')
-          .replace(/<span style="background:[^"]*;[^"]*">([^<]*)<\/span>/g, '$1');
+        const clean = stripAccentSpans(updated.title);
         if (tpl.accentMode === "highlight") {
           updated.title = clean.replace(/(\S+)(\s*)$/, `<span style="background:${tpl.accentColor};color:#FFFFFF;padding:2px 6px;border-radius:3px">$1</span>$2`);
         } else {
@@ -125,7 +165,7 @@ const Index = () => {
       }
       return updated;
     }));
-  }, []);
+  }, [setSlidesWithHistory]);
 
   const handleClosePanel = useCallback(() => {
     setActiveTab(null);
@@ -142,21 +182,19 @@ const Index = () => {
       ...templateProps,
     };
     if (activeTemplate?.accentColor && baseSlide.title) {
-      const clean = baseSlide.title
-        .replace(/<span style="color:[^"]*">([^<]*)<\/span>/g, '$1')
-        .replace(/<span style="background:[^"]*;[^"]*">([^<]*)<\/span>/g, '$1');
+      const clean = stripAccentSpans(baseSlide.title);
       if (activeTemplate.accentMode === "highlight") {
         baseSlide.title = clean.replace(/(\S+)(\s*)$/, `<span style="background:${activeTemplate.accentColor};color:#FFFFFF;padding:2px 6px;border-radius:3px">$1</span>$2`);
       } else {
         baseSlide.title = clean.replace(/(\S+)(\s*)$/, `<span style="color:${activeTemplate.accentColor}">$1</span>$2`);
       }
     }
-    setSlides(prev => { const next = [...prev]; next.splice(atIndex, 0, baseSlide); return next; });
+    setSlidesWithHistory(prev => { const next = [...prev]; next.splice(atIndex, 0, baseSlide); return next; });
     setActiveSlide(atIndex);
-  }, [activeTemplate]);
+  }, [activeTemplate, setSlidesWithHistory]);
 
   const handleMoveSlide = useCallback((fromIdx: number, dir: -1 | 1) => {
-    setSlides(prev => {
+    setSlidesWithHistory(prev => {
       const toIdx = fromIdx + dir;
       if (toIdx < 0 || toIdx >= prev.length) return prev;
       const next = [...prev];
@@ -167,26 +205,32 @@ const Index = () => {
       const toIdx = prev + dir;
       return Math.max(0, Math.min(toIdx, slides.length - 1));
     });
-  }, [slides.length]);
+  }, [slides.length, setSlidesWithHistory]);
 
   const handleDuplicateSlide = useCallback((idx: number) => {
-    setSlides(prev => {
+    setSlidesWithHistory(prev => {
       const clone = { ...prev[idx], id: nextId++ };
       const next = [...prev]; next.splice(idx + 1, 0, clone); return next;
     });
     setActiveSlide(idx + 1);
-  }, []);
+  }, [setSlidesWithHistory]);
 
   const handleDeleteSlide = useCallback((idx: number) => {
     if (slides.length <= 1) return;
-    setSlides(prev => prev.filter((_, i) => i !== idx));
+    setSlidesWithHistory(prev => prev.filter((_, i) => i !== idx));
     setActiveSlide(prev => Math.min(prev, slides.length - 2));
-  }, [slides.length]);
+  }, [slides.length, setSlidesWithHistory]);
 
   return (
     <div className="flex h-[100dvh] flex-col bg-gradient-main overflow-hidden">
       <div className="relative z-10 flex h-[100dvh] flex-col pt-[env(safe-area-inset-top)]">
-        <TopBar onDownload={() => setDownloadOpen(true)} />
+        <TopBar
+          onDownload={() => setDownloadOpen(true)}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          canUndo={undoStack.current.length > 0}
+          canRedo={redoStack.current.length > 0}
+        />
         <main className="flex flex-1 flex-col min-h-0 pb-[calc(72px+env(safe-area-inset-bottom))]">
           <SlideCarousel
             slides={slides}
