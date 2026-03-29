@@ -45,13 +45,6 @@ const SizePanel = ({ currentFormat, onSave, onClose }: SizePanelProps) => {
         ))}
       </div>
 
-      <button
-        onClick={onClose}
-        className="w-full rounded-xl py-2 text-[11px] font-medium transition-all active:scale-[0.97]"
-        style={{ background: "rgba(26,26,46,0.85)", color: "#fff" }}
-      >
-        Сохранить
-      </button>
     </div>
   );
 };

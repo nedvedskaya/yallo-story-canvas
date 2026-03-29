@@ -95,16 +95,8 @@ const InfoPanel = ({ currentSlide, onSave, onApplyInfoToAll, onClose }: InfoPane
       {/* Apply to all */}
       <div className="flex items-center justify-between">
         <span className="text-[11px]" style={labelStyle}>Применить ко всем слайдам</span>
-        <Switch checked={applyAll} onCheckedChange={setApplyAll} />
+        <Switch checked={applyAll} onCheckedChange={(v) => { setApplyAll(v); if (v) onApplyInfoToAll(); }} />
       </div>
-
-      <button
-        onClick={handleSave}
-        className="w-full rounded-xl py-2 text-[11px] font-medium transition-all active:scale-[0.97]"
-        style={{ background: "rgba(26,26,46,0.85)", color: "#fff" }}
-      >
-        Сохранить
-      </button>
     </div>
   );
 };

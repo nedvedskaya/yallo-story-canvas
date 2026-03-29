@@ -45,7 +45,7 @@ const BottomSheet = ({ activeTab, onClose, onSaveClose, currentSlide, onUpdateSl
           <motion.div
             initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed bottom-20 left-2 right-2 z-40 overflow-hidden"
+            className="fixed bottom-4 left-2 right-2 z-40 overflow-hidden"
             style={{
               maxHeight: "35vh",
               background: 'rgba(255, 255, 255, 0.55)',

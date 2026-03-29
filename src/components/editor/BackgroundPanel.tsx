@@ -260,18 +260,12 @@ const BackgroundPanel = ({
 
             <div className="mt-2 flex items-center justify-between">
               <span className="text-[11px]" style={valStyle}>Применить ко всем слайдам</span>
-              <Switch checked={applyToAll} onCheckedChange={setApplyToAll} />
+              <Switch checked={applyToAll} onCheckedChange={(v) => { setApplyToAll(v); if (v) onApplyToAll(); }} />
             </div>
           </div>
         </>
       )}
 
-      <div>
-        <button onClick={handleSave} className="w-full rounded-xl py-2 text-[11px] font-medium transition-all active:scale-[0.97]"
-          style={{ background: "rgba(26,26,46,0.85)", color: "#fff" }}>
-          Сохранить
-        </button>
-      </div>
     </div>
   );
 };
