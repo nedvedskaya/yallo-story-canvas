@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState } from "react";
+import { useRef, useCallback, useState, useEffect } from "react";
 import { Plus, ChevronLeft, ChevronRight, Copy, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SlideToolbar, { type HAlign, type VAlign, type BgType } from "./SlideToolbar";
