@@ -55,7 +55,8 @@ const FontSection = ({ label, settings, onChange, customFonts = [], onAddCustomF
       console.error("Failed to load font:", err);
     }
 
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    // Reset input via event target
+    e.target.value = "";
   };
 
   return (
