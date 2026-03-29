@@ -1,49 +1,70 @@
+# Добавить шаблон «Минимализм»
+
+## Дизайн (из референса)
+
+- Белый фон `#FFFFFF`, без сетки (`overlayType: "none"`)
+- Заголовок: жирный, чёрный `#1A1A1A`, шрифт заголовка Songer, uppercase
+- Акцент: фиолетовый `#7C5CFC` — **выделение фоном** (highlight), не цветом текста
+- Тело: обычный Inter, `#1A1A1A`
+- Мета: `#999999`
+- Стрелка внизу справа, username и счётчик вверху
+- Без футера
+
+## Отличие от «Тетрадь»
 
 
-# Исправить сброс форматирования + упростить UX цвета
+| &nbsp;  | Тетрадь         | Минимализм               |
+| ------- | --------------- | ------------------------ |
+| Фон     | #F3F3F3 + grid  | #FFFFFF, без overlay     |
+| Акцент  | оранжевый текст | фиолетовый highlight-фон |
+| Регистр | none            | uppercase                |
 
-## Баг 1: Сброс не сохраняется
 
-`handleResetFormatting()` (строка 53) убирает форматирование из DOM, но **не вызывает `onSave()`** после этого. Поэтому слайд не обновляется.
+## Изменения
 
-**Исправление:** добавить вызов `onSave(editorRef.current.innerHTML)` в конце `handleResetFormatting`.
+**Файл: `src/components/editor/TemplatesPanel.tsx**`
 
-## Проблема 2: UX палитры и выделения неинтуитивный
+Добавить второй объект в массив `TEMPLATES`:
 
-Сейчас пользователь должен:
-1. Сначала выбрать акцентный цвет внизу
-2. Выделить текст
-3. Нажать кнопку палитры/выделения
+```ts
+{
+  id: "minimalism-clean",
+  name: "Минимализм",
+  accentColor: "#7C5CFC",
+  apply: {
+    bgColor: "#FFFFFF",
+    bgImage: undefined,
+    bgVideo: undefined,
+    bgType: "color",
+    overlayType: "none",
+    overlayOpacity: 0,
+    titleColor: "#1A1A1A",
+    bodyColor: "#1A1A1A",
+    metaColor: "#999999",
+    overlayColor: "rgba(0,0,0,0.08)",
+    showFooter: false,
+    footerText: "",
+    showArrow: true,
+    showUsername: true,
+    showSlideCount: true,
+    bgDarken: 0,
+    titleFont: "'Dela Gothic One', sans-serif",
+    titleSize: 28,
+    titleLineHeight: 1.15,
+    titleLetterSpacing: 0,
+    titleCase: "uppercase",
+    bodyFont: "'Inter', sans-serif",
+    bodySize: 14,
+    bodyLineHeight: 1.65,
+    bodyLetterSpacing: 0,
+    bodyCase: "none",
+    hAlign: "left",
+    vAlign: "center",
+  },
+  preview: /* мини-карточка: белый фон, чёрный заголовок uppercase,
+              слово «СЛАЙДА» с фиолетовым фоном-выделением,
+              тело текстом, стрелка внизу */
+}
+```
 
-Это 3 шага, и неочевидно что цвет надо выбирать заранее.
-
-**Решение: кнопки палитры и выделения сразу открывают color picker**
-
-- Нажатие на 🎨 (Palette) → открывает нативный `<input type="color">`, после выбора цвета сразу применяет `foreColor` к выделенному тексту
-- Нажатие на 🖍 (Highlighter) → то же, но применяет `hiliteColor`
-- Убрать отдельную секцию "Акцентный цвет" — она больше не нужна
-- Под каждой кнопкой показывать тонкую цветную полоску (3px) с последним использованным цветом — визуальная подсказка
-
-**UX-флоу после исправления:**
-1. Выделить текст
-2. Нажать 🎨 → выбрать цвет → текст окрашен
-3. Повторное нажатие 🎨 → применяет тот же цвет (быстро)
-4. Долгое нажатие или второй клик → новый цвет
-
-Упрощённый вариант (без long press): 
-- Клик на иконку → применяет последний цвет
-- Клик на цветную полоску под иконкой → открывает picker для смены цвета
-
-## Файл для изменения
-
-`src/components/editor/TextEditorModal.tsx`
-
-### Конкретные изменения:
-
-1. В `handleResetFormatting` — добавить `onSave(editorRef.current.innerHTML)` после очистки
-2. Также добавить `onSave` вызов после `handleLight` (тонкий шрифт)
-3. Убрать секцию "Акцентный цвет" (строки 161-185) и `<div className="pb-3" />` 
-4. Для кнопок Palette и Highlighter: разделить на иконку (применяет цвет) + полоску (открывает picker)
-5. Добавить два скрытых `<input type="color">` — один для foreColor, один для hiliteColor
-6. Хранить `textColor` и `highlightColor` в state, показывать полоски под кнопками
-
+Превью будет без сетки, с чистым белым фоном и фиолетовым highlight на ключевом слове.
