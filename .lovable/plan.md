@@ -1,51 +1,47 @@
 
 
-# Исправления: ввод текста, раздельное перетаскивание, сброс позиции, drag медиа
+# Исправления: экспорт PNG, качество медиа, drag текста
 
-## 1. Текст пишется наоборот
+## 1. PNG экспорт не работает + индикатор загрузки
 
-**Причина**: В `TextEditorModal.tsx` useEffect на строке 19-24 зависит от `initialHtml`. Когда пользователь печатает, `onInput` → `onSave` → обновляет слайд → `initialHtml` меняется → useEffect срабатывает снова → `editorRef.current.innerHTML = initialHtml` сбрасывает содержимое и курсор на начало. Следующий символ вставляется в начало — текст выглядит задом наперёд.
+**Проблема**: `html2canvas` плохо работает на мобильных с `video`, `blob:` URL и сложными стилями. ZIP-архив может не скачиваться на iOS (link.click() не всегда срабатывает).
 
-**Исправление** в `TextEditorModal.tsx`:
-- Убрать `initialHtml` из зависимостей useEffect
-- Использовать ref-флаг `initializedRef`, чтобы устанавливать innerHTML только при первом открытии (`open` переходит с false на true)
+**Решение** в `DownloadModal.tsx`:
+- Добавить прогресс-бар: state `progress` (0-100), обновлять после каждого слайда
+- На iOS/мобильных использовать `window.open(URL.createObjectURL(blob))` вместо `link.click()` как fallback
+- Для видео-слайдов: перед захватом ставить текущий кадр на `canvas` вручную через `video.currentTime` + `ctx.drawImage(video, ...)`
+- Показывать текст "Подготовка слайда 1 из N..." во время загрузки
+- Добавить toast-уведомление после успешного скачивания
 
-```tsx
-const initializedRef = useRef(false);
-useEffect(() => {
-  if (open && editorRef.current && !initializedRef.current) {
-    editorRef.current.innerHTML = initialHtml;
-    editorRef.current.focus();
-    initializedRef.current = true;
-  }
-  if (!open) initializedRef.current = false;
-}, [open]);
-```
+## 2. Сохранение качества фото и видео при экспорте
 
-## 2. Раздельное перетаскивание заголовка и основного текста
+**В `DownloadModal.tsx`**:
+- В `captureSlides`: использовать `scale: Math.max(2, formatInfo.width / el.offsetWidth)` — минимум 2x для ретины
+- Для PNG: `canvas.toDataURL("image/png")` уже без сжатия — ОК
+- Для PDF: использовать `"PNG"` формат (без JPEG сжатия) — уже так
 
-**В `SlideCarousel.tsx`**:
-- Добавить в `Slide`: `titleOffsetX/Y`, `bodyOffsetX/Y`, `titleScale`, `bodyScale` (вместо общих `textOffsetX/Y/textScale`)
-- Разделить `<div>` обёртку — сделать отдельные draggable-обёртки для `<h2>` и `<p>`
-- Каждая обёртка имеет свои touch/mouse handlers
-- В drag state добавить поле `target: "title" | "body"` чтобы различать что тащим
+## 3. Drag текста не должен открывать редактор
 
-## 3. Сброс позиции при смене выравнивания
+**Проблема**: `onClick` на `<h2>` / `<p>` вызывает `openEditor()` даже после drag. Нужно различать клик и drag.
 
-**В `SlideCarousel.tsx`** (или `SlideToolbar` → `onVAlignChange`):
-- При изменении `vAlign` сбрасывать `titleOffsetX/Y`, `bodyOffsetX/Y`, `titleScale`, `bodyScale` к 0/1
-- В `onVAlignChange` callback: `onUpdateSlide(id, { vAlign: v, titleOffsetX: 0, titleOffsetY: 0, bodyOffsetX: 0, bodyOffsetY: 0, titleScale: 1, bodyScale: 1 })`
-- То же для `hAlign`
+**Решение** в `SlideCarousel.tsx`:
+- Добавить ref `textDragMovedRef = useRef(false)`
+- В `handleTextTouchMove` и mouse move: если `|dx| + |dy| > 5` — установить `textDragMovedRef.current = true`
+- В `handleTextTouchStart` и `handleTextMouseDown`: сбросить `textDragMovedRef.current = false`
+- В `onClick` на `<h2>` / `<p>`: проверять `if (textDragMovedRef.current) return;` — если был drag, не открывать редактор
 
-## 4. Drag фото/видео не работает на мобильных
+## 4. Перетаскивание заголовка двигает основной текст и наоборот
 
-**В `SlideCarousel.tsx`**:
-- Проблема: touch-события на медиа-слое конфликтуют с горизонтальным scroll каруслели
-- Добавить `e.preventDefault()` в `handleMediaTouchMove` чтобы предотвратить скролл при перетаскивании медиа
-- Убедиться что `touchAction: 'none'` стоит на медиа-обёртке (уже есть)
+**Проблема**: `dragOffset` и `pinchScale` — общие state для title и body. Когда тянем body, `dragOffset` обновляется, и title тоже проверяет `dragOffset !== null && textDragTarget.current === "title"` — но `textDragTarget.current` может не совпадать с реальным target из-за race condition между touch events.
+
+**Решение** в `SlideCarousel.tsx`:
+- Разделить state: `titleDragOffset` / `bodyDragOffset` и `titlePinchScale` / `bodyPinchScale` вместо общих `dragOffset` / `pinchScale`
+- В handlers обновлять только соответствующий state в зависимости от `textDragTarget.current`
+- В `transform` на title-обёртке читать только `titleDragOffset`, на body — только `bodyDragOffset`
+- Это устраняет cross-contamination между title и body drag
 
 ## Файлы для изменения
 
-1. `src/components/editor/TextEditorModal.tsx` — убрать `initialHtml` из deps useEffect
-2. `src/components/editor/SlideCarousel.tsx` — раздельные offsets для title/body, сброс при выравнивании, fix media drag
+1. `src/components/editor/DownloadModal.tsx` — прогресс-бар, fallback скачивания, качество
+2. `src/components/editor/SlideCarousel.tsx` — раздельные drag state, флаг textDragMoved для предотвращения открытия редактора
 
