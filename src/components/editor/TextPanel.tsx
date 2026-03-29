@@ -12,6 +12,11 @@ interface TextPanelProps {
 const TextPanel = ({ currentSlide, onSave, onApplyTextToAll }: TextPanelProps) => {
   const [activeSection, setActiveSection] = useState<"title" | "body">("title");
   const [applyAll, setApplyAll] = useState(false);
+  const [customFonts, setCustomFonts] = useState<CustomFont[]>([]);
+
+  const handleAddCustomFont = useCallback((font: CustomFont) => {
+    setCustomFonts(prev => [...prev, font]);
+  }, []);
 
   const titleSettings: FontSettings = {
     font: currentSlide.titleFont || "'Coolvetica', sans-serif",
