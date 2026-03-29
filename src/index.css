@@ -6,6 +6,7 @@
 @font-face { font-family: 'SouthGhetto'; src: url('/fonts/SouthGhetto.ttf') format('truetype'); font-display: swap; }
 @font-face { font-family: 'Marvin Visions'; src: url('/fonts/MarvinVisions.otf') format('opentype'); font-display: swap; }
 @font-face { font-family: 'SONGER Grotesque'; src: url('/fonts/SONGERGrotesque.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'SONGER Grotesque'; src: url('/fonts/SONGERGrotesque.otf') format('opentype'); font-weight: 700; font-style: normal; font-display: swap; }
 @font-face { font-family: 'Coolvetica'; src: url('/fonts/Coolvetica.ttf') format('truetype'); font-display: swap; }
 
 @tailwind base;
