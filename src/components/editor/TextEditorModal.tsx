@@ -13,15 +13,18 @@ interface TextEditorModalProps {
 const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEditorModalProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const colorInputRef = useRef<HTMLInputElement>(null);
+  const initializedRef = useRef(false);
   const [accentColor, setAccentColor] = useState("#4D96FF");
   const [hexInput, setHexInput] = useState("#4D96FF");
 
   useEffect(() => {
-    if (open && editorRef.current) {
+    if (open && editorRef.current && !initializedRef.current) {
       editorRef.current.innerHTML = initialHtml;
       editorRef.current.focus();
+      initializedRef.current = true;
     }
-  }, [open, initialHtml]);
+    if (!open) initializedRef.current = false;
+  }, [open]);
 
   const exec = useCallback((command: string, value?: string) => {
     document.execCommand(command, false, value);

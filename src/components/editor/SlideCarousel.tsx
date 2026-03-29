@@ -49,9 +49,12 @@ export interface Slide {
   showArrow?: boolean;
   showFooter?: boolean;
   footerText?: string;
-  textOffsetX?: number;
-  textOffsetY?: number;
-  textScale?: number;
+  titleOffsetX?: number;
+  titleOffsetY?: number;
+  titleScale?: number;
+  bodyOffsetX?: number;
+  bodyOffsetY?: number;
+  bodyScale?: number;
 }
 
 const hAlignToText: Record<HAlign, string> = { left: "left", center: "center", right: "right" };
@@ -93,12 +96,13 @@ const SlideCarousel = ({
   const [editorOpen, setEditorOpen] = useState(false);
   const [editorField, setEditorField] = useState<"title" | "body">("title");
 
-  // Text drag & pinch state
+  // Text drag & pinch state (separate for title and body)
+  const textDragTarget = useRef<"title" | "body">("title");
   const touchStartRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number } | null>(null);
   const pinchStartRef = useRef<{ dist: number; scale: number } | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
   const [pinchScale, setPinchScale] = useState<number | null>(null);
-  const mouseDragRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number; slideId: number } | null>(null);
+  const mouseDragRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number; slideId: number; target: "title" | "body" } | null>(null);
 
   // Media drag & pinch state
   const mediaTouchRef = useRef<{ x: number; y: number; posX: number; posY: number } | null>(null);
@@ -129,14 +133,18 @@ const SlideCarousel = ({
   };
 
   // ── Text touch drag/pinch ──
-  const handleTextTouchStart = (e: React.TouchEvent, slide: Slide) => {
+  const handleTextTouchStart = (e: React.TouchEvent, slide: Slide, target: "title" | "body") => {
     if (editorOpen) return;
+    textDragTarget.current = target;
+    const oxKey = target === "title" ? "titleOffsetX" : "bodyOffsetX";
+    const oyKey = target === "title" ? "titleOffsetY" : "bodyOffsetY";
+    const scaleKey = target === "title" ? "titleScale" : "bodyScale";
     if (e.touches.length === 1) {
-      touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, offsetX: slide.textOffsetX ?? 0, offsetY: slide.textOffsetY ?? 0 };
+      touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, offsetX: slide[oxKey] ?? 0, offsetY: slide[oyKey] ?? 0 };
       pinchStartRef.current = null;
     } else if (e.touches.length === 2) {
       touchStartRef.current = null;
-      pinchStartRef.current = { dist: getTouchDist(e), scale: slide.textScale ?? 1 };
+      pinchStartRef.current = { dist: getTouchDist(e), scale: slide[scaleKey] ?? 1 };
     }
   };
   const handleTextTouchMove = (e: React.TouchEvent) => {
@@ -150,20 +158,26 @@ const SlideCarousel = ({
       setPinchScale(Math.max(0.3, Math.min(3, pinchStartRef.current.scale * (dist / pinchStartRef.current.dist))));
     }
   };
-  const handleTextTouchEnd = (slideId: number, slide: Slide) => {
+  const handleTextTouchEnd = (slideId: number) => {
     if (editorOpen) return;
+    const t = textDragTarget.current;
+    const oxKey = t === "title" ? "titleOffsetX" : "bodyOffsetX";
+    const oyKey = t === "title" ? "titleOffsetY" : "bodyOffsetY";
+    const scaleKey = t === "title" ? "titleScale" : "bodyScale";
     const updates: Partial<Slide> = {};
-    if (dragOffset !== null) { updates.textOffsetX = dragOffset.x; updates.textOffsetY = dragOffset.y; setDragOffset(null); }
-    if (pinchScale !== null) { updates.textScale = pinchScale; setPinchScale(null); }
+    if (dragOffset !== null) { updates[oxKey] = dragOffset.x; updates[oyKey] = dragOffset.y; setDragOffset(null); }
+    if (pinchScale !== null) { updates[scaleKey] = pinchScale; setPinchScale(null); }
     if (Object.keys(updates).length > 0) onUpdateSlide(slideId, updates);
     touchStartRef.current = null; pinchStartRef.current = null;
   };
 
   // ── Text mouse drag (desktop) ──
-  const handleTextMouseDown = (e: React.MouseEvent, slide: Slide) => {
+  const handleTextMouseDown = (e: React.MouseEvent, slide: Slide, target: "title" | "body") => {
     if (editorOpen) return;
     e.preventDefault();
-    mouseDragRef.current = { x: e.clientX, y: e.clientY, offsetX: slide.textOffsetX ?? 0, offsetY: slide.textOffsetY ?? 0, slideId: slide.id };
+    const oxKey = target === "title" ? "titleOffsetX" : "bodyOffsetX";
+    const oyKey = target === "title" ? "titleOffsetY" : "bodyOffsetY";
+    mouseDragRef.current = { x: e.clientX, y: e.clientY, offsetX: slide[oxKey] ?? 0, offsetY: slide[oyKey] ?? 0, slideId: slide.id, target };
   };
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
@@ -175,7 +189,10 @@ const SlideCarousel = ({
     const onMouseUp = () => {
       if (!mouseDragRef.current) return;
       if (dragOffset !== null) {
-        onUpdateSlide(mouseDragRef.current.slideId, { textOffsetX: dragOffset.x, textOffsetY: dragOffset.y });
+        const t = mouseDragRef.current.target;
+        const oxKey = t === "title" ? "titleOffsetX" : "bodyOffsetX";
+        const oyKey = t === "title" ? "titleOffsetY" : "bodyOffsetY";
+        onUpdateSlide(mouseDragRef.current.slideId, { [oxKey]: dragOffset.x, [oyKey]: dragOffset.y });
         setDragOffset(null);
       }
       mouseDragRef.current = null;
@@ -198,6 +215,7 @@ const SlideCarousel = ({
   };
   const handleMediaTouchMove = (e: React.TouchEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     if (e.touches.length === 1 && mediaTouchRef.current) {
       const dx = e.touches[0].clientX - mediaTouchRef.current.x;
       const dy = e.touches[0].clientY - mediaTouchRef.current.y;
@@ -408,46 +426,63 @@ const SlideCarousel = ({
                       ) : <span />}
                     </div>
 
-                    {/* Content area — flex-1, vAlign controls justifyContent, draggable */}
+                    {/* Content area — flex-1, vAlign controls justifyContent */}
                     <div className="flex flex-col flex-1 min-h-0" style={{ justifyContent: vAlignToJustify[slide.vAlign] }}>
-                      <div
-                        onTouchStart={(e) => handleTextTouchStart(e, slide)}
-                        onTouchMove={(e) => handleTextTouchMove(e)}
-                        onTouchEnd={() => handleTextTouchEnd(slide.id, slide)}
-                        onMouseDown={(e) => handleTextMouseDown(e, slide)}
-                        style={{
-                          transform: `translate(${(dragOffset !== null && index === activeSlide ? dragOffset.x : slide.textOffsetX ?? 0)}px, ${(dragOffset !== null && index === activeSlide ? dragOffset.y : slide.textOffsetY ?? 0)}px) scale(${(pinchScale !== null && index === activeSlide ? pinchScale : slide.textScale ?? 1)})`,
-                          transformOrigin: 'center center',
-                          touchAction: 'none',
-                          cursor: editorOpen ? 'text' : 'grab',
-                        }}
-                      >
-                        <h2
-                          onClick={() => openEditor("title")}
-                          className="outline-none font-bold cursor-pointer"
+                      <div>
+                        {/* Title — separate drag */}
+                        <div
+                          onTouchStart={(e) => handleTextTouchStart(e, slide, "title")}
+                          onTouchMove={(e) => handleTextTouchMove(e)}
+                          onTouchEnd={() => handleTextTouchEnd(slide.id)}
+                          onMouseDown={(e) => handleTextMouseDown(e, slide, "title")}
                           style={{
-                            color: '#ffffff',
-                            fontSize: `${slide.titleSize ?? fmt.titleSize}px`,
-                            fontFamily: slide.titleFont || "'Inter', sans-serif",
-                            textTransform: (slide.titleCase === 'uppercase' ? 'uppercase' : slide.titleCase === 'lowercase' ? 'lowercase' : 'none') as React.CSSProperties['textTransform'],
-                            lineHeight: slide.titleLineHeight ?? 1.1,
-                            letterSpacing: `${slide.titleLetterSpacing ?? 0}px`,
+                            transform: `translate(${(dragOffset !== null && textDragTarget.current === "title" && index === activeSlide ? dragOffset.x : slide.titleOffsetX ?? 0)}px, ${(dragOffset !== null && textDragTarget.current === "title" && index === activeSlide ? dragOffset.y : slide.titleOffsetY ?? 0)}px) scale(${(pinchScale !== null && textDragTarget.current === "title" && index === activeSlide ? pinchScale : slide.titleScale ?? 1)})`,
+                            transformOrigin: 'center center',
+                            touchAction: 'none',
+                            cursor: editorOpen ? 'text' : 'grab',
                           }}
-                          dangerouslySetInnerHTML={{ __html: slide.title }}
-                        />
-                        <p
-                          onClick={() => openEditor("body")}
-                          className="outline-none mt-3 font-normal cursor-pointer"
+                        >
+                          <h2
+                            onClick={() => openEditor("title")}
+                            className="outline-none font-bold cursor-pointer"
+                            style={{
+                              color: '#ffffff',
+                              fontSize: `${slide.titleSize ?? fmt.titleSize}px`,
+                              fontFamily: slide.titleFont || "'Inter', sans-serif",
+                              textTransform: (slide.titleCase === 'uppercase' ? 'uppercase' : slide.titleCase === 'lowercase' ? 'lowercase' : 'none') as React.CSSProperties['textTransform'],
+                              lineHeight: slide.titleLineHeight ?? 1.1,
+                              letterSpacing: `${slide.titleLetterSpacing ?? 0}px`,
+                            }}
+                            dangerouslySetInnerHTML={{ __html: slide.title }}
+                          />
+                        </div>
+                        {/* Body — separate drag */}
+                        <div
+                          onTouchStart={(e) => handleTextTouchStart(e, slide, "body")}
+                          onTouchMove={(e) => handleTextTouchMove(e)}
+                          onTouchEnd={() => handleTextTouchEnd(slide.id)}
+                          onMouseDown={(e) => handleTextMouseDown(e, slide, "body")}
                           style={{
-                            color: 'rgba(255, 255, 255, 0.85)',
-                            fontSize: `${slide.bodySize ?? fmt.bodySize}px`,
-                            fontFamily: slide.bodyFont || "'Inter', sans-serif",
-                            textTransform: (slide.bodyCase === 'uppercase' ? 'uppercase' : slide.bodyCase === 'lowercase' ? 'lowercase' : 'none') as React.CSSProperties['textTransform'],
-                            lineHeight: slide.bodyLineHeight ?? 1.5,
-                            letterSpacing: `${slide.bodyLetterSpacing ?? 0}px`,
+                            transform: `translate(${(dragOffset !== null && textDragTarget.current === "body" && index === activeSlide ? dragOffset.x : slide.bodyOffsetX ?? 0)}px, ${(dragOffset !== null && textDragTarget.current === "body" && index === activeSlide ? dragOffset.y : slide.bodyOffsetY ?? 0)}px) scale(${(pinchScale !== null && textDragTarget.current === "body" && index === activeSlide ? pinchScale : slide.bodyScale ?? 1)})`,
+                            transformOrigin: 'center center',
+                            touchAction: 'none',
+                            cursor: editorOpen ? 'text' : 'grab',
                           }}
-                          dangerouslySetInnerHTML={{ __html: slide.body }}
-                        />
+                        >
+                          <p
+                            onClick={() => openEditor("body")}
+                            className="outline-none mt-3 font-normal cursor-pointer"
+                            style={{
+                              color: 'rgba(255, 255, 255, 0.85)',
+                              fontSize: `${slide.bodySize ?? fmt.bodySize}px`,
+                              fontFamily: slide.bodyFont || "'Inter', sans-serif",
+                              textTransform: (slide.bodyCase === 'uppercase' ? 'uppercase' : slide.bodyCase === 'lowercase' ? 'lowercase' : 'none') as React.CSSProperties['textTransform'],
+                              lineHeight: slide.bodyLineHeight ?? 1.5,
+                              letterSpacing: `${slide.bodyLetterSpacing ?? 0}px`,
+                            }}
+                            dangerouslySetInnerHTML={{ __html: slide.body }}
+                          />
+                        </div>
                       </div>
                     </div>
 
@@ -477,8 +512,8 @@ const SlideCarousel = ({
           hAlign={currentSlide.hAlign}
           vAlign={currentSlide.vAlign}
           bgType={currentSlide.bgType}
-          onHAlignChange={(v) => onUpdateSlide(currentSlide.id, { hAlign: v })}
-          onVAlignChange={(v) => onUpdateSlide(currentSlide.id, { vAlign: v })}
+          onHAlignChange={(v) => onUpdateSlide(currentSlide.id, { hAlign: v, titleOffsetX: 0, titleOffsetY: 0, bodyOffsetX: 0, bodyOffsetY: 0, titleScale: 1, bodyScale: 1 })}
+          onVAlignChange={(v) => onUpdateSlide(currentSlide.id, { vAlign: v, titleOffsetX: 0, titleOffsetY: 0, bodyOffsetX: 0, bodyOffsetY: 0, titleScale: 1, bodyScale: 1 })}
           onBgClick={() => {}}
           onCropClick={() => {}}
         />
