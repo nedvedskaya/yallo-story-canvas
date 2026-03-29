@@ -46,20 +46,34 @@ const TEMPLATES: SlideTemplate[] = [
     },
     preview: (
       <div
-        className="w-full h-full flex flex-col justify-between"
+        className="w-full h-full flex flex-col justify-between relative"
         style={{
           background: "#F3F3F3",
           padding: 8,
           fontFamily: "'Inter', sans-serif",
         }}
       >
+        {/* Grid overlay */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage: `
+              linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px)
+            `,
+            backgroundSize: "12px 12px",
+            pointerEvents: "none",
+            zIndex: 0,
+          }}
+        />
         {/* top bar */}
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center relative z-10">
           <span style={{ fontSize: 5, color: "#999" }}>@username</span>
           <span style={{ fontSize: 5, color: "#999" }}>[ 1/3 ]</span>
         </div>
         {/* content */}
-        <div className="flex-1 flex flex-col justify-center gap-1 py-1">
+        <div className="flex-1 flex flex-col justify-center gap-1 py-1 relative z-10">
           <h3
             style={{
               fontFamily: "'Dela Gothic One', sans-serif",
@@ -67,18 +81,18 @@ const TEMPLATES: SlideTemplate[] = [
               lineHeight: 1.15,
               color: "#1A1A1A",
               margin: 0,
+              textAlign: "left",
             }}
           >
             Заголовок{" "}
             <span style={{ color: "#FF4200" }}>слайда</span>
           </h3>
-          <p style={{ fontSize: 5, color: "#1A1A1A", margin: 0, lineHeight: 1.5 }}>
+          <p style={{ fontSize: 5, color: "#1A1A1A", margin: 0, lineHeight: 1.5, textAlign: "left" }}>
             Основной текст слайда
           </p>
         </div>
         {/* bottom */}
-        <div className="flex justify-between items-center">
-          <span style={{ fontSize: 4.5, color: "#999" }}>МИНИМАЛИЗМ</span>
+        <div className="flex justify-end items-center relative z-10">
           <div
             style={{
               width: 10,
