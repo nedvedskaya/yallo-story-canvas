@@ -386,12 +386,14 @@ const SlideCarousel = ({
                     <div className="flex flex-col flex-1 min-h-0" style={{ justifyContent: vAlignToJustify[slide.vAlign] }}>
                       <div
                         onTouchStart={(e) => handleTextTouchStart(e, slide)}
-                        onTouchMove={(e) => handleTextTouchMove(e, slide.id)}
+                        onTouchMove={(e) => handleTextTouchMove(e)}
                         onTouchEnd={() => handleTextTouchEnd(slide.id, slide)}
+                        onMouseDown={(e) => handleTextMouseDown(e, slide)}
                         style={{
                           transform: `translate(${(dragOffset !== null && index === activeSlide ? dragOffset.x : slide.textOffsetX ?? 0)}px, ${(dragOffset !== null && index === activeSlide ? dragOffset.y : slide.textOffsetY ?? 0)}px) scale(${(pinchScale !== null && index === activeSlide ? pinchScale : slide.textScale ?? 1)})`,
                           transformOrigin: 'center center',
                           touchAction: 'none',
+                          cursor: editorOpen ? 'text' : 'grab',
                         }}
                       >
                         <h2
