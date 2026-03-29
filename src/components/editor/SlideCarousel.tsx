@@ -294,7 +294,7 @@ const SlideCarousel = ({
                   {/* Content layer */}
                   <div className="relative z-10 flex flex-col h-full w-full">
                     {/* Top bar: username + slide count — always at top */}
-                    <div className="flex items-center justify-between w-full flex-shrink-0">
+                    <div className="flex items-center justify-between w-full flex-shrink-0 mb-2">
                       {slide.showUsername !== false ? (
                         <span className="outline-none font-normal" style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: `${fmt.usernameSize}px` }}>{slide.username}</span>
                       ) : <span />}
@@ -303,9 +303,18 @@ const SlideCarousel = ({
                       ) : <span />}
                     </div>
 
-                    {/* Content area — flex-1, vAlign controls justifyContent */}
+                    {/* Content area — flex-1, vAlign controls justifyContent, draggable */}
                     <div className="flex flex-col flex-1 min-h-0" style={{ justifyContent: vAlignToJustify[slide.vAlign] }}>
-                      <div>
+                      <div
+                        onTouchStart={(e) => handleTextTouchStart(e, slide)}
+                        onTouchMove={(e) => handleTextTouchMove(e, slide.id)}
+                        onTouchEnd={() => handleTextTouchEnd(slide.id, slide)}
+                        style={{
+                          transform: `translate(${(dragOffset !== null && index === activeSlide ? dragOffset.x : slide.textOffsetX ?? 0)}px, ${(dragOffset !== null && index === activeSlide ? dragOffset.y : slide.textOffsetY ?? 0)}px) scale(${(pinchScale !== null && index === activeSlide ? pinchScale : slide.textScale ?? 1)})`,
+                          transformOrigin: 'center center',
+                          touchAction: 'none',
+                        }}
+                      >
                         <h2
                           onClick={() => openEditor("title")}
                           className="outline-none font-bold cursor-pointer"
