@@ -74,7 +74,7 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
               </button>
             </div>
 
-            <div className="px-4 pb-4 pt-1">
+            <div className="px-4 pb-4 pt-1 overflow-y-auto" style={{ maxHeight: 'calc(45vh - 48px)' }}>
               {isInfo && currentSlide && onUpdateSlide ? (
                 <InfoPanel
                   currentSlide={currentSlide}

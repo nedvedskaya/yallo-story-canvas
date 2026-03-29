@@ -176,9 +176,11 @@ const BackgroundPanel = ({
           <div>
             <p className="text-[11px] font-medium mb-1.5" style={labelStyle}>Акцентный цвет</p>
             <div className="flex items-center gap-2">
-              <button onClick={() => colorRef.current?.click()} className="w-7 h-7 rounded-full flex-shrink-0 transition-all active:scale-90"
-                style={{ background: hexInput, border: "2px solid rgba(255,255,255,0.8)", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }} />
-              <input ref={colorRef} type="color" value={hexInput} onChange={handleColorPickerChange} className="sr-only" />
+              <div className="relative w-7 h-7 flex-shrink-0">
+                <div className="w-7 h-7 rounded-full" style={{ background: hexInput, border: "2px solid rgba(255,255,255,0.8)", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }} />
+                <input ref={colorRef} type="color" value={hexInput} onChange={handleColorPickerChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+              </div>
               <input type="text" value={hexInput} onChange={(e) => handleHexInput(e.target.value)} maxLength={7}
                 className="w-20 rounded-lg px-2 py-1 text-xs font-mono outline-none"
                 style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(200,200,220,0.5)", color: "#1a1a2e" }} />
