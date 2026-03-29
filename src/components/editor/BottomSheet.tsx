@@ -46,7 +46,7 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
             className="fixed bottom-4 left-2 right-2 z-40 overflow-hidden"
             style={{
-              maxHeight: "35vh",
+              maxHeight: "45vh",
               background: 'rgba(255, 255, 255, 0.55)',
               backdropFilter: 'blur(32px) saturate(200%)',
               WebkitBackdropFilter: 'blur(32px) saturate(200%)',
