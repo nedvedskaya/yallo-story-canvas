@@ -322,7 +322,7 @@ const SlideCarousel = ({
                         }}
                       >
                         {slide.showFooter ? (
-                          <span className="text-[10px] font-normal" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                          <span className="font-normal" style={{ color: 'rgba(255,255,255,0.6)', fontSize: `${fmt.footerSize}px` }}>
                             {slide.footerText || ""}
                           </span>
                         ) : <span />}
