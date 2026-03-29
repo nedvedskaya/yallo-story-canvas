@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import FontSection, { type FontSettings, type CustomFont } from "./FontSection";
 import { Switch } from "@/components/ui/switch";
 import type { Slide } from "./SlideCarousel";
@@ -8,6 +8,68 @@ interface TextPanelProps {
   onSave: (updates: Partial<Slide>) => void;
   onApplyTextToAll: () => void;
 }
+
+const ColorPicker = ({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (color: string) => void;
+}) => {
+  const ref = useRef<HTMLInputElement>(null);
+  const [hex, setHex] = useState(value);
+
+  const handlePicker = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const c = e.target.value;
+    setHex(c);
+    onChange(c);
+  };
+
+  const handleHex = (val: string) => {
+    setHex(val);
+    if (/^#[0-9a-fA-F]{6}$/.test(val)) onChange(val);
+  };
+
+  // Sync external changes
+  if (value !== hex && /^#[0-9a-fA-F]{6}$/.test(value)) {
+    // Only sync if it's a valid hex that differs
+  }
+
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-xs" style={{ color: 'rgba(26,26,46,0.6)' }}>{label}</span>
+      <div className="flex items-center gap-2">
+        <div
+          className="relative w-7 h-7 rounded-full cursor-pointer border"
+          style={{ backgroundColor: value, borderColor: 'rgba(200,200,220,0.5)' }}
+          onClick={() => ref.current?.click()}
+        >
+          <input
+            ref={ref}
+            type="color"
+            value={value}
+            onChange={handlePicker}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          />
+        </div>
+        <input
+          type="text"
+          value={hex}
+          onChange={(e) => handleHex(e.target.value)}
+          onBlur={() => { if (!/^#[0-9a-fA-F]{6}$/.test(hex)) setHex(value); }}
+          className="w-[72px] rounded-lg px-2 py-1 text-[11px] font-mono text-center"
+          style={{
+            background: 'rgba(255,255,255,0.6)',
+            border: '1px solid rgba(200,200,220,0.5)',
+            color: '#1a1a2e',
+          }}
+        />
+      </div>
+    </div>
+  );
+};
 
 const TextPanel = ({ currentSlide, onSave, onApplyTextToAll }: TextPanelProps) => {
   const [activeSection, setActiveSection] = useState<"title" | "body">("title");
@@ -81,9 +143,25 @@ const TextPanel = ({ currentSlide, onSave, onApplyTextToAll }: TextPanelProps) =
 
       {/* Active section content */}
       {activeSection === "title" ? (
-        <FontSection label="Шрифт заголовка" settings={titleSettings} onChange={handleTitleChange} customFonts={customFonts} onAddCustomFont={handleAddCustomFont} />
+        <>
+          <FontSection label="Шрифт заголовка" settings={titleSettings} onChange={handleTitleChange} customFonts={customFonts} onAddCustomFont={handleAddCustomFont} />
+          <div className="h-px" style={{ background: 'rgba(26,26,46,0.08)' }} />
+          <ColorPicker
+            label="Цвет заголовка"
+            value={currentSlide.titleColor || '#ffffff'}
+            onChange={(c) => onSave({ titleColor: c })}
+          />
+        </>
       ) : (
-        <FontSection label="Шрифт основного текста" settings={bodySettings} onChange={handleBodyChange} customFonts={customFonts} onAddCustomFont={handleAddCustomFont} />
+        <>
+          <FontSection label="Шрифт основного текста" settings={bodySettings} onChange={handleBodyChange} customFonts={customFonts} onAddCustomFont={handleAddCustomFont} />
+          <div className="h-px" style={{ background: 'rgba(26,26,46,0.08)' }} />
+          <ColorPicker
+            label="Цвет текста"
+            value={currentSlide.bodyColor || 'rgba(255,255,255,0.85)'}
+            onChange={(c) => onSave({ bodyColor: c })}
+          />
+        </>
       )}
 
       <div className="h-px" style={{ background: 'rgba(26,26,46,0.08)' }} />
