@@ -4,6 +4,8 @@ import { X, Image, FileText, Loader2 } from "lucide-react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import JSZip from "jszip";
+import { toast } from "@/hooks/use-toast";
+import { Progress } from "@/components/ui/progress";
 import type { Slide } from "./SlideCarousel";
 import { FORMAT_OPTIONS, type SlideFormat } from "./SizePanel";
 
@@ -17,16 +19,55 @@ interface DownloadModalProps {
 const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProps) => {
   const [loading, setLoading] = useState(false);
   const [loadingType, setLoadingType] = useState<"png" | "pdf" | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [progressText, setProgressText] = useState("");
 
   const formatInfo = FORMAT_OPTIONS.find(f => f.id === slideFormat) || FORMAT_OPTIONS[0];
 
   const captureSlides = async (): Promise<HTMLCanvasElement[]> => {
     const canvases: HTMLCanvasElement[] = [];
     const slideElements = document.querySelectorAll<HTMLElement>("[data-slide-id]");
+    const total = slideElements.length;
 
-    for (const el of Array.from(slideElements)) {
+    for (let i = 0; i < total; i++) {
+      const el = slideElements[i];
+      setProgressText(`Подготовка слайда ${i + 1} из ${total}...`);
+      setProgress(Math.round(((i) / total) * 100));
+
+      // For video elements, pause and draw current frame to canvas
+      const videos = el.querySelectorAll('video');
+      const videoCanvases: { video: HTMLVideoElement; canvas: HTMLCanvasElement; parent: HTMLElement }[] = [];
+      
+      for (const video of Array.from(videos)) {
+        try {
+          video.pause();
+          const vc = document.createElement('canvas');
+          vc.width = video.videoWidth || video.clientWidth;
+          vc.height = video.videoHeight || video.clientHeight;
+          const ctx = vc.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(video, 0, 0, vc.width, vc.height);
+          }
+          // Replace video with canvas image temporarily
+          const img = document.createElement('img');
+          img.src = vc.toDataURL('image/png');
+          img.style.cssText = video.style.cssText;
+          img.style.position = video.style.position;
+          img.style.objectFit = video.style.objectFit || 'cover';
+          const parent = video.parentElement;
+          if (parent) {
+            parent.insertBefore(img, video);
+            video.style.display = 'none';
+            videoCanvases.push({ video, canvas: vc, parent });
+          }
+        } catch (e) {
+          console.warn('Video frame capture failed:', e);
+        }
+      }
+
+      const scale = Math.max(2, formatInfo.width / el.offsetWidth);
       const canvas = await html2canvas(el, {
-        scale: formatInfo.width / el.offsetWidth,
+        scale,
         useCORS: true,
         allowTaint: true,
         backgroundColor: null,
@@ -34,42 +75,86 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
         height: el.offsetHeight,
       });
       canvases.push(canvas);
+
+      // Restore videos
+      for (const { video, parent } of videoCanvases) {
+        video.style.display = '';
+        const tempImg = parent.querySelector('img[src^="data:image/png"]');
+        if (tempImg) parent.removeChild(tempImg);
+        video.play().catch(() => {});
+      }
+
+      setProgress(Math.round(((i + 1) / total) * 100));
     }
     return canvases;
+  };
+
+  const triggerDownload = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.download = filename;
+    link.href = url;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Fallback for iOS
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 1000);
   };
 
   const downloadPNG = async () => {
     setLoading(true);
     setLoadingType("png");
+    setProgress(0);
+    setProgressText("Начинаем экспорт...");
     try {
       const canvases = await captureSlides();
-      const zip = new JSZip();
-      for (let i = 0; i < canvases.length; i++) {
-        const dataUrl = canvases[i].toDataURL("image/png");
-        const base64 = dataUrl.split(",")[1];
-        zip.file(`slide-${i + 1}.png`, base64, { base64: true });
+      
+      if (canvases.length === 1) {
+        // Single slide — download as PNG directly
+        setProgressText("Сохранение...");
+        canvases[0].toBlob((blob) => {
+          if (blob) {
+            triggerDownload(blob, "slide.png");
+            toast({ title: "Готово!", description: "Слайд сохранён как PNG" });
+          }
+        }, "image/png");
+      } else {
+        // Multiple slides — ZIP
+        setProgressText("Упаковка в архив...");
+        const zip = new JSZip();
+        for (let i = 0; i < canvases.length; i++) {
+          const dataUrl = canvases[i].toDataURL("image/png");
+          const base64 = dataUrl.split(",")[1];
+          zip.file(`slide-${i + 1}.png`, base64, { base64: true });
+        }
+        const blob = await zip.generateAsync({ type: "blob" });
+        triggerDownload(blob, "slides.zip");
+        toast({ title: "Готово!", description: `${canvases.length} слайдов сохранены как PNG` });
       }
-      const blob = await zip.generateAsync({ type: "blob" });
-      const link = document.createElement("a");
-      link.download = "slides.zip";
-      link.href = URL.createObjectURL(blob);
-      link.click();
-      URL.revokeObjectURL(link.href);
     } catch (e) {
       console.error("PNG export error:", e);
+      toast({ title: "Ошибка", description: "Не удалось сохранить PNG", variant: "destructive" });
     } finally {
       setLoading(false);
       setLoadingType(null);
+      setProgress(0);
+      setProgressText("");
     }
   };
 
   const downloadPDF = async () => {
     setLoading(true);
     setLoadingType("pdf");
+    setProgress(0);
+    setProgressText("Начинаем экспорт...");
     try {
       const canvases = await captureSlides();
       if (canvases.length === 0) return;
 
+      setProgressText("Создание PDF...");
       const isLandscape = formatInfo.width > formatInfo.height;
       const pdf = new jsPDF({
         orientation: isLandscape ? "landscape" : "portrait",
@@ -84,11 +169,15 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
       });
 
       pdf.save("slides.pdf");
+      toast({ title: "Готово!", description: "Слайды сохранены как PDF" });
     } catch (e) {
       console.error("PDF export error:", e);
+      toast({ title: "Ошибка", description: "Не удалось сохранить PDF", variant: "destructive" });
     } finally {
       setLoading(false);
       setLoadingType(null);
+      setProgress(0);
+      setProgressText("");
     }
   };
 
@@ -123,6 +212,14 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
                 <X size={16} />
               </button>
             </div>
+
+            {/* Progress bar */}
+            {loading && (
+              <div className="px-4 pb-2">
+                <p className="text-[11px] mb-1.5" style={{ color: "rgba(26,26,46,0.6)" }}>{progressText}</p>
+                <Progress value={progress} className="h-1.5" />
+              </div>
+            )}
 
             <div className="flex flex-col gap-2 px-4 pb-4 pt-2">
               <button

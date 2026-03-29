@@ -96,13 +96,16 @@ const SlideCarousel = ({
   const [editorOpen, setEditorOpen] = useState(false);
   const [editorField, setEditorField] = useState<"title" | "body">("title");
 
-  // Text drag & pinch state (separate for title and body)
+  // Text drag & pinch state (fully separate for title and body)
   const textDragTarget = useRef<"title" | "body">("title");
   const touchStartRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number } | null>(null);
   const pinchStartRef = useRef<{ dist: number; scale: number } | null>(null);
-  const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
-  const [pinchScale, setPinchScale] = useState<number | null>(null);
+  const [titleDragOffset, setTitleDragOffset] = useState<{ x: number; y: number } | null>(null);
+  const [bodyDragOffset, setBodyDragOffset] = useState<{ x: number; y: number } | null>(null);
+  const [titlePinchScale, setTitlePinchScale] = useState<number | null>(null);
+  const [bodyPinchScale, setBodyPinchScale] = useState<number | null>(null);
   const mouseDragRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number; slideId: number; target: "title" | "body" } | null>(null);
+  const textDragMovedRef = useRef(false);
 
   // Media drag & pinch state
   const mediaTouchRef = useRef<{ x: number; y: number; posX: number; posY: number } | null>(null);
