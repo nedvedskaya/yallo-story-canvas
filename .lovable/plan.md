@@ -1,48 +1,29 @@
 
-# Fix: видео-слайды не открываются на телефоне
 
-## Проблема
-Из скриншота видно: сохраняется файл `slide-2.webm` (1.3 МБ). **iOS не поддерживает формат WebM** — файл нельзя ни открыть, ни воспроизвести на iPhone. Кроме того, `MediaRecorder` на iOS Safari может вообще не поддерживать запись, и текущий код молча падает.
+# Исправление двух багов в экспорте
 
-## Решение
+## Баг 1: `cleanupContainer` создаёт новый React root вместо закрытия оригинального
 
-**Файл: `src/components/editor/DownloadModal.tsx`**
+**Файл: `DownloadModal.tsx`, строки 103-109**
 
-### 1. Определять поддерживаемый формат видео
-- На iOS Safari `MediaRecorder` поддерживает `video/mp4` (если доступен вообще)
-- Порядок проверки MIME: `video/mp4` → `video/webm;codecs=vp9` → `video/webm`
-- Расширение файла выбирать по MIME (`.mp4` или `.webm`)
+Сейчас `cleanupContainer` делает `createRoot(container)` — это создаёт **второй** root на том же DOM-узле, а оригинальный root из `renderSlideToDOM` (строка 59) никогда не закрывается. React выдаёт предупреждение, рендер может сломаться при повторных вызовах.
 
-### 2. Fallback: скачивать оригинальное видео
-- Если `MediaRecorder` недоступен или запись не удалась — скачивать оригинальный файл видео пользователя напрямую
-- Показывать toast: «Видео сохранено без наложенного текста»
+**Исправление**: `renderSlideToDOM` должен возвращать и контейнер, и root. `cleanupContainer` должен вызывать `root.unmount()` на **оригинальном** root.
 
-### 3. Исправить скачивание на мобильных
-- Текущий `triggerDownload` использует `link.click()` + `window.open()` — на iOS это ненадёжно
-- Для отдельных файлов (не ZIP): использовать `<a>` с `target="_blank"` и `download`
-- Для видео-слайдов без ZIP: скачивать каждый файл отдельно через `window.open(blobUrl)` (iOS лучше обрабатывает прямое открытие blob)
+## Баг 2: Видео-слайды в PNG/PDF — чёрный кадр
 
-### 4. Видео-слайды скачивать отдельными файлами (не в ZIP)
-- ZIP с видео на iOS проблематичен (нет встроенной распаковки для blob-видео)
-- Если есть видео-слайды: скачивать каждый слайд отдельным файлом (PNG или MP4/WebM)
-- Показывать прогресс для каждого файла
+**Файл: `DownloadModal.tsx`, функция `captureSlide`**
 
-## Изменения в коде
+При экспорте видео-слайда в PNG/PDF, `SlideFrame` рендерит `<video>` элемент. Но **`html2canvas` не умеет захватывать содержимое `<video>`** — вместо кадра будет чёрный прямоугольник.
 
-```text
-recordVideoSlide():
-  - MIME: проверить mp4 первым → webm вторым
-  - Расширение: .mp4 если mp4, иначе .webm
-  - video.muted = true для iOS autoplay policy
+**Исправление**: Перед захватом видео-слайда — извлечь кадр из видео через canvas (`captureVideoFrame`), подставить его как `bgImage` в слайд (временно убрав `bgVideo`), и рендерить `SlideFrame` с изображением вместо видео.
 
-triggerDownload():
-  - iOS: window.open(blobUrl) вместо link.click()
-  - Убрать setTimeout + window.open дубль
+## Конкретные изменения
 
-downloadAll():
-  - Видео-файлы скачивать отдельно, не в ZIP
-  - Или: оставить ZIP но с правильным расширением (.mp4)
-```
+**`DownloadModal.tsx`**:
 
-## Файл для изменения
-1. `src/components/editor/DownloadModal.tsx`
+1. Изменить `renderSlideToDOM` — возвращать `{ container, root }` вместо просто `container`
+2. Изменить `cleanupContainer` — принимать `root` и вызывать `root.unmount()`
+3. Обновить все вызовы `renderSlideToDOM` и `cleanupContainer` под новую сигнатуру
+4. В `captureSlide`: если у слайда есть `bgVideo`, перед рендером захватить кадр через `loadVideoFrame()` из `export-utils.ts`, создать копию слайда с `bgImage = frame, bgVideo = undefined` и рендерить её
+
