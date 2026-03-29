@@ -7,6 +7,14 @@
 @font-face { font-family: 'Marvin Visions'; src: url('/fonts/MarvinVisions.otf') format('opentype'); font-display: swap; }
 @font-face { font-family: 'SONGER Grotesque'; src: url('/fonts/SONGERGrotesque.otf') format('opentype'); font-display: swap; }
 @font-face { font-family: 'Coolvetica'; src: url('/fonts/Coolvetica.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'BeerMoney'; src: url('/fonts/BeerMoney.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'Bella Script CYR'; src: url('/fonts/BellaScriptCYR.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'Druk Wide Cyr'; src: url('/fonts/DrukWideCyrBold.otf') format('opentype'); font-weight: bold; font-display: swap; }
+@font-face { font-family: 'Evolventa'; src: url('/fonts/EvolventaBold.otf') format('opentype'); font-weight: bold; font-display: swap; }
+@font-face { font-family: 'Great Vibes'; src: url('/fonts/GreatVibes.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'Le Murmure'; src: url('/fonts/LeMurmure.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'Moniqa'; src: url('/fonts/MoniqaBlackItalic.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'Oks Free'; src: url('/fonts/OksFree.otf') format('opentype'); font-display: swap; }
 
 @tailwind base;
 @tailwind components;
