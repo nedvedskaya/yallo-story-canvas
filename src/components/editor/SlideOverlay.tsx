@@ -74,12 +74,12 @@ const SlideOverlay = ({ type, opacity, color, scale = 1 }: SlideOverlayProps) =>
       return (
         <svg style={{ ...style, width: "100%", height: "100%" }}>
           <defs>
-            <pattern id="cells" width="30" height="26" patternUnits="userSpaceOnUse">
+            <pattern id="cells" width={30 * s} height={26 * s} patternUnits="userSpaceOnUse">
               <path
-                d="M15 0 L30 8 L30 22 L15 26 L0 22 L0 8 Z"
+                d={`M${15 * s} 0 L${30 * s} ${8 * s} L${30 * s} ${22 * s} L${15 * s} ${26 * s} L0 ${22 * s} L0 ${8 * s} Z`}
                 fill="none"
                 stroke={ca(0.3)}
-                strokeWidth="0.8"
+                strokeWidth={0.8 * s}
               />
             </pattern>
           </defs>
