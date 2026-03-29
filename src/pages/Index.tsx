@@ -165,8 +165,7 @@ const Index = () => {
 
       <BottomSheet
         activeTab={activeTab}
-        onClose={handleCancelClose}
-        onSaveClose={handleSaveClose}
+        onClose={handleClosePanel}
         currentSlide={currentSlide}
         onUpdateSlide={handleUpdateSlide}
         onApplyBgToAll={handleApplyBgToAll}
