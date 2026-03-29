@@ -2,19 +2,11 @@ import { useRef, useCallback, useState, useEffect } from "react";
 import { Plus, ChevronLeft, ChevronRight, Copy, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SlideToolbar, { type HAlign, type VAlign, type BgType } from "./SlideToolbar";
-import { glassBtnStyle } from "./shared-styles";
+import { glassBtnStyle, FORMAT_TEXT_DEFAULTS } from "./shared-styles";
 import SlideOverlay from "./SlideOverlay";
 import type { OverlayType } from "./BackgroundPanel";
 import TextEditorModal from "./TextEditorModal";
 import { FORMAT_OPTIONS, type SlideFormat } from "./SizePanel";
-
-// Adaptive text sizes per format (used as defaults when slide doesn't override)
-const FORMAT_TEXT_DEFAULTS: Record<SlideFormat, { titleSize: number; bodySize: number; padding: number; usernameSize: number; footerSize: number }> = {
-  carousel:     { titleSize: 22, bodySize: 13, padding: 20, usernameSize: 11, footerSize: 9 },
-  square:       { titleSize: 20, bodySize: 12, padding: 18, usernameSize: 11, footerSize: 9 },
-  stories:      { titleSize: 20, bodySize: 12, padding: 24, usernameSize: 12, footerSize: 10 },
-  presentation: { titleSize: 18, bodySize: 11, padding: 16, usernameSize: 10, footerSize: 8 },
-};
 
 export interface Slide {
   id: number;
