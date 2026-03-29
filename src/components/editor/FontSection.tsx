@@ -50,7 +50,7 @@ const FontSection = ({ label, settings, onChange, customFonts = [], onAddCustomF
       await fontFace.load();
       document.fonts.add(fontFace);
 
-      setCustomFonts((prev) => [...prev, { name: fontName, family: fontFamily }]);
+      onAddCustomFont?.({ name: fontName, family: `${fontFamily}, sans-serif` });
       onChange({ font: fontFamily });
     } catch (err) {
       console.error("Failed to load font:", err);
