@@ -156,16 +156,15 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
           {/* Accent color — like BackgroundPanel */}
           <div className="flex items-center gap-2">
             <p className="text-[11px] font-medium flex-shrink-0" style={{ color: 'rgba(26,26,46,0.5)' }}>Акцентный цвет</p>
-            <button
-              onClick={() => colorInputRef.current?.click()}
-              className="w-6 h-6 rounded-full flex-shrink-0 transition-all active:scale-90"
-              style={{
+            <div className="relative w-6 h-6 flex-shrink-0">
+              <div className="w-6 h-6 rounded-full" style={{
                 background: accentColor,
                 border: '2px solid rgba(255,255,255,0.8)',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-              }}
-            />
-            <input ref={colorInputRef} type="color" value={accentColor} onChange={handleColorPickerChange} className="sr-only" />
+              }} />
+              <input ref={colorInputRef} type="color" value={accentColor} onChange={handleColorPickerChange}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+            </div>
             <input
               type="text"
               value={hexInput}

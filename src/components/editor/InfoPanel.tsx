@@ -23,7 +23,7 @@ const InfoPanel = ({ currentSlide, onSave, onApplyInfoToAll }: InfoPanelProps) =
 
 
   return (
-    <div className="flex flex-col gap-3 overflow-y-auto max-h-[28vh] scrollbar-hide">
+    <div className="flex flex-col gap-3">
       {/* Username */}
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center justify-between">
