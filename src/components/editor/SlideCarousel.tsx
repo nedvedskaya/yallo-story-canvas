@@ -87,8 +87,8 @@ const SlideCarousel = ({
 
   const formatInfo = FORMAT_OPTIONS.find(f => f.id === slideFormat) || FORMAT_OPTIONS[0];
   const slideAspectRatio = `${formatInfo.width}/${formatInfo.height}`;
-  // For landscape formats, use height-based sizing
   const isLandscape = formatInfo.width > formatInfo.height;
+  const fmt = FORMAT_TEXT_DEFAULTS[slideFormat] || FORMAT_TEXT_DEFAULTS.carousel;
 
   const openEditor = (field: "title" | "body") => {
     setEditorField(field);
