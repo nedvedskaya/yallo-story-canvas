@@ -105,7 +105,7 @@ const FontSection = ({ label, settings, onChange }: FontSectionProps) => {
       {/* Size */}
       <div className="flex items-center gap-3">
         <span className="text-[11px] w-16 flex-shrink-0" style={{ color: 'rgba(26,26,46,0.5)' }}>Размер</span>
-        <Slider min={8} max={24} step={1} value={[settings.size]} onValueChange={([v]) => onChange({ size: v })} className="flex-1" />
+        <Slider min={8} max={48} step={1} value={[settings.size]} onValueChange={([v]) => onChange({ size: v })} className="flex-1" />
         <span className="text-[11px] w-6 text-right" style={{ color: 'rgba(26,26,46,0.5)' }}>{settings.size}</span>
       </div>
 
