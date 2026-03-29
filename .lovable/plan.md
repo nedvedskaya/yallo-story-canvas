@@ -1,37 +1,36 @@
 
 
-# Добавить оранжевый акцент (#FF4200) на слайды при применении шаблона «Минимализм»
+# Автоконтраст: светлые/тёмные элементы в зависимости от фона
 
-## Проблема
+## Идея
 
-Шаблон применяет только стилевые свойства (цвета, шрифты, overlay), но не меняет содержимое текста. Заголовки остаются plain text без оранжевых выделений. В превью шаблона оранжевый виден (`<span style="color:#FF4200">слайда</span>`), но на реальных слайдах его нет.
+Добавить утилиту определения яркости цвета фона. Когда пользователь меняет `bgColor`, автоматически пересчитывать `titleColor`, `bodyColor`, `metaColor`, `overlayColor` — светлые для тёмного фона, тёмные для светлого.
 
-## Решение
+## Как работает
 
-При применении шаблона «Минимализм» — автоматически оборачивать последнее слово каждого заголовка в `<span style="color:#FF4200">...</span>`. Заголовки уже рендерятся через `dangerouslySetInnerHTML`, поэтому inline HTML поддерживается.
+1. **Утилита `getContrastColors(bgColor: string)`** — парсит hex или gradient (берёт первый цвет), вычисляет relative luminance по формуле W3C. Возвращает набор цветов:
+   - Светлый фон (luminance > 0.5): `titleColor: "#1A1A1A"`, `bodyColor: "#1A1A1A"`, `metaColor: "#999999"`, `overlayColor: "rgba(0,0,0,0.08)"`
+   - Тёмный фон (luminance ≤ 0.5): `titleColor: "#ffffff"`, `bodyColor: "rgba(255,255,255,0.85)"`, `metaColor: "rgba(255,255,255,0.7)"`, `overlayColor: "rgba(255,255,255,0.25)"`
 
-### Изменения
+2. **Автоприменение при смене цвета** — в `handleUpdateSlide` (Index.tsx): если `updates` содержит `bgColor` и пользователь НЕ задал цвета текста вручную, автоматически добавить контрастные цвета из утилиты.
 
-**Файл: `src/pages/Index.tsx`** — в `handleApplyTemplate`:
-- Если у шаблона есть `accentColor` (новое поле), обработать каждый заголовок: найти последнее слово, обернуть в `<span style="color:${accentColor}">`.
-- Убрать предыдущие `<span style="color:...">` обёртки перед повторным применением (чтобы не дублировать).
-
-**Файл: `src/components/editor/TemplatesPanel.tsx`** — добавить поле `accentColor: string` в `SlideTemplate` и задать `"#FF4200"` для шаблона «Минимализм».
-
-### Техническая деталь
-
-Функция выделения последнего слова:
-```ts
-function accentLastWord(html: string, color: string): string {
-  // Убрать существующие акцент-спаны
-  const clean = html.replace(/<span style="color:[^"]*">([^<]*)<\/span>/g, '$1');
-  // Найти последнее слово и обернуть
-  return clean.replace(/(\S+)(\s*)$/, `<span style="color:${color}">$1</span>$2`);
-}
-```
+3. **Автоприменение в BackgroundPanel** — при выборе цвета/градиента через `update({ bgColor })` также передавать контрастные цвета.
 
 ## Файлы для изменения
 
-1. `src/components/editor/TemplatesPanel.tsx` — добавить `accentColor` в интерфейс и шаблон
-2. `src/pages/Index.tsx` — применять акцент к заголовкам при выборе шаблона
+1. **`src/lib/utils.ts`** — добавить `getContrastColors(bgColor)` и вспомогательную `getLuminance(hex)`
+2. **`src/pages/Index.tsx`** — в `handleUpdateSlide`: если приходит `bgColor`, автоматически добавлять контрастные цвета
+3. **`src/components/editor/BackgroundPanel.tsx`** — при смене цвета вызывать `update` с контрастными цветами в одном объекте
+
+## Технические детали
+
+```text
+getLuminance("#667eea"):
+  1. parse hex → r,g,b (0-255)
+  2. linearize: c/255, if c<=0.03928 → c/12.92, else ((c+0.055)/1.055)^2.4
+  3. L = 0.2126*R + 0.7152*G + 0.0722*B
+  4. L > 0.5 → "light", else → "dark"
+
+Для gradient: извлечь первый #hex из строки regex /#[0-9a-fA-F]{6}/
+```
 
