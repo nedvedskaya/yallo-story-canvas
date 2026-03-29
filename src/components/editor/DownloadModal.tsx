@@ -10,6 +10,8 @@ import { Progress } from "@/components/ui/progress";
 import type { Slide } from "./SlideCarousel";
 import { FORMAT_OPTIONS, type SlideFormat } from "./SizePanel";
 import SlideFrame from "./SlideFrame";
+import { loadVideoFrame } from "./export-utils";
+import type { Root } from "react-dom/client";
 
 interface DownloadModalProps {
   open: boolean;
