@@ -96,7 +96,7 @@ const BackgroundPanel = ({
   ];
 
   return (
-    <div className="flex flex-col gap-3 overflow-y-auto max-h-[28vh] scrollbar-hide">
+    <div className="flex flex-col gap-3">
       <div>
         <div className="flex gap-1 mb-2">
           {tabItems.map((t) => (
