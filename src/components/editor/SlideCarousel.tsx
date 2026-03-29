@@ -203,7 +203,7 @@ const SlideCarousel = ({
                   <SlideOverlay type={slide.overlayType} opacity={slide.overlayOpacity} />
                   {/* Background image layer */}
                   {slide.bgImage && (
-                    <div className="absolute inset-0 z-[2]" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+                    <div className="absolute inset-0 z-[2]" style={{ overflow: 'hidden' }}>
                       <img src={slide.bgImage} alt="" style={{ ...getBgMediaStyle(slide), objectFit: 'contain' }} />
                       {slide.bgDarken > 0 && (
                         <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${slide.bgDarken / 100})` }} />
