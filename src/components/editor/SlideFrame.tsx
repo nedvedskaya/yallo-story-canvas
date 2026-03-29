@@ -184,12 +184,12 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
         {/* Bottom bar */}
         <div className="flex items-end justify-between w-full flex-shrink-0">
           {slide.showFooter ? (
-            <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: `${metrics.footerSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>
+            <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.6)', fontSize: `${metrics.footerSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>
               {slide.footerText || ""}
             </span>
           ) : <span />}
           {slide.showArrow !== false && slideIndex < totalSlides - 1 ? (
-            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: `${(metrics.footerSize + 2 * scale)}px` }}>→</span>
+            <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.5)', fontSize: `${(metrics.footerSize + 2 * scale)}px` }}>→</span>
           ) : <span />}
         </div>
       </div>

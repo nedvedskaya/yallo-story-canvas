@@ -18,13 +18,30 @@ const SlideOverlay = ({ type, opacity, color }: SlideOverlayProps) => {
     opacity: alpha,
   };
 
+  // Parse color prop to get rgba values for overlays
+  const c = color || "rgba(255,255,255,1)";
+  // Helper: apply given alpha to the color
+  const ca = (a: number) => {
+    // If color is hex like #000000, convert
+    if (c.startsWith("#")) {
+      const r = parseInt(c.slice(1, 3), 16);
+      const g = parseInt(c.slice(3, 5), 16);
+      const b = parseInt(c.slice(5, 7), 16);
+      return `rgba(${r},${g},${b},${a})`;
+    }
+    // If rgba(...), replace alpha
+    const match = c.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) return `rgba(${match[1]},${match[2]},${match[3]},${a})`;
+    return `rgba(255,255,255,${a})`;
+  };
+
   switch (type) {
     case "dots":
       return (
         <div
           style={{
             ...style,
-            backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 1px)`,
+            backgroundImage: `radial-gradient(circle, ${ca(0.5)} 1px, transparent 1px)`,
             backgroundSize: "16px 16px",
           }}
         />
@@ -34,7 +51,7 @@ const SlideOverlay = ({ type, opacity, color }: SlideOverlayProps) => {
         <div
           style={{
             ...style,
-            backgroundImage: `repeating-linear-gradient(0deg, rgba(255,255,255,0.3) 0px, rgba(255,255,255,0.3) 1px, transparent 1px, transparent 14px)`,
+            backgroundImage: `repeating-linear-gradient(0deg, ${ca(0.3)} 0px, ${ca(0.3)} 1px, transparent 1px, transparent 14px)`,
           }}
         />
       );
@@ -44,8 +61,8 @@ const SlideOverlay = ({ type, opacity, color }: SlideOverlayProps) => {
           style={{
             ...style,
             backgroundImage: `
-              linear-gradient(rgba(255,255,255,0.25) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255,255,255,0.25) 1px, transparent 1px)
+              linear-gradient(${ca(0.25)} 1px, transparent 1px),
+              linear-gradient(90deg, ${ca(0.25)} 1px, transparent 1px)
             `,
             backgroundSize: "20px 20px",
           }}
@@ -59,7 +76,7 @@ const SlideOverlay = ({ type, opacity, color }: SlideOverlayProps) => {
               <path
                 d="M15 0 L30 8 L30 22 L15 26 L0 22 L0 8 Z"
                 fill="none"
-                stroke="rgba(255,255,255,0.3)"
+                stroke={ca(0.3)}
                 strokeWidth="0.8"
               />
             </pattern>
@@ -78,7 +95,7 @@ const SlideOverlay = ({ type, opacity, color }: SlideOverlayProps) => {
               top: "10%",
               left: "5%",
               borderRadius: "50%",
-              background: "rgba(255,255,255,0.2)",
+              background: ca(0.2),
               filter: "blur(30px)",
             }}
           />
@@ -90,7 +107,7 @@ const SlideOverlay = ({ type, opacity, color }: SlideOverlayProps) => {
               bottom: "15%",
               right: "10%",
               borderRadius: "50%",
-              background: "rgba(255,255,255,0.15)",
+              background: ca(0.15),
               filter: "blur(25px)",
             }}
           />

@@ -82,7 +82,7 @@ export function getBodyStyle(slide: Slide, metrics: SlideMetrics, overrides?: { 
       transformOrigin: 'center center',
     },
     textStyle: {
-      color: 'rgba(255, 255, 255, 0.85)',
+      color: slide.bodyColor || 'rgba(255, 255, 255, 0.85)',
       fontSize: `${metrics.bodySize}px`,
       fontFamily: slide.bodyFont || "'Inter', sans-serif",
       textTransform: (slide.bodyCase === 'uppercase' ? 'uppercase' : slide.bodyCase === 'lowercase' ? 'lowercase' : 'none') as React.CSSProperties['textTransform'],
