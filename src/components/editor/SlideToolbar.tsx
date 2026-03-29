@@ -57,14 +57,8 @@ const SlideToolbar = ({
   };
 
   const btnStyle = (isActive: boolean): React.CSSProperties => ({
-    width: 36,
-    height: 36,
+    ...glassBtnStyle,
     color: isActive ? "#1a1a2e" : "#4a4a6a",
-    background: "rgba(255, 255, 255, 0.5)",
-    backdropFilter: "blur(12px)",
-    WebkitBackdropFilter: "blur(12px)",
-    border: "1px solid rgba(255, 255, 255, 0.7)",
-    borderRadius: "10px",
     boxShadow: isActive
       ? "0 -3px 8px rgba(100, 120, 220, 0.35), 0 2px 6px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)"
       : "0 2px 6px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)",

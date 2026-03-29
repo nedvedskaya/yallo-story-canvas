@@ -1,7 +1,9 @@
 import { useState, useRef, useCallback } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { Upload, Move, ZoomIn, Volume2, VolumeX } from "lucide-react";
+import { Upload, Volume2, VolumeX } from "lucide-react";
+import MediaControls from "./MediaControls";
+import { labelStyle, valStyle } from "./shared-styles";
 
 export type OverlayType = "none" | "dots" | "lines" | "grid" | "cells" | "blobs" | "noise";
 type BgTab = "color" | "photo" | "video";
@@ -93,9 +95,6 @@ const BackgroundPanel = ({
     { id: "video", label: "Видео" },
   ];
 
-  const labelStyle = { color: "rgba(26,26,46,0.5)" };
-  const valStyle = { color: "rgba(26,26,46,0.6)" };
-
   return (
     <div className="flex flex-col gap-3 overflow-y-auto max-h-[28vh] scrollbar-hide">
       <div>
@@ -123,35 +122,13 @@ const BackgroundPanel = ({
             </button>
 
             {bgImage && (
-              <div className="flex flex-col gap-2 mt-2">
-                <div className="flex items-center gap-2">
-                  <ZoomIn size={12} style={labelStyle} />
-                  <span className="text-[10px] flex-shrink-0" style={labelStyle}>Масштаб</span>
-                  <Slider value={[bgScale]} onValueChange={([v]) => update({ bgScale: v })} min={50} max={300} step={1} className="flex-1" />
-                  <span className="text-[10px] w-8 text-right" style={valStyle}>{bgScale}%</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Move size={12} style={labelStyle} />
-                  <span className="text-[10px] flex-shrink-0" style={labelStyle}>X</span>
-                  <Slider value={[bgPosX]} onValueChange={([v]) => update({ bgPosX: v })} min={0} max={100} step={1} className="flex-1" />
-                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgPosX}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Move size={12} style={labelStyle} />
-                  <span className="text-[10px] flex-shrink-0" style={labelStyle}>Y</span>
-                  <Slider value={[bgPosY]} onValueChange={([v]) => update({ bgPosY: v })} min={0} max={100} step={1} className="flex-1" />
-                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgPosY}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] flex-shrink-0" style={labelStyle}>Затемнение</span>
-                  <Slider value={[bgDarken]} onValueChange={([v]) => update({ bgDarken: v })} min={0} max={100} step={1} className="flex-1" />
-                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgDarken}</span>
-                </div>
+              <>
+                <MediaControls scale={bgScale} posX={bgPosX} posY={bgPosY} darken={bgDarken} onChange={update} />
                 <button onClick={() => update({ bgImage: undefined })}
-                  className="w-full rounded-xl py-1.5 text-[10px] font-medium transition-all active:scale-[0.98]"
+                  className="w-full rounded-xl py-1.5 text-[10px] font-medium transition-all active:scale-[0.98] mt-2"
                   style={{ background: "rgba(255,255,255,0.4)", border: "1px solid rgba(200,200,220,0.4)", color: "rgba(26,26,46,0.5)" }}
                 >Удалить фото</button>
-              </div>
+              </>
             )}
           </>
         )}
@@ -167,31 +144,9 @@ const BackgroundPanel = ({
             </button>
 
             {bgVideo && (
-              <div className="flex flex-col gap-2 mt-2">
-                <div className="flex items-center gap-2">
-                  <ZoomIn size={12} style={labelStyle} />
-                  <span className="text-[10px] flex-shrink-0" style={labelStyle}>Масштаб</span>
-                  <Slider value={[bgScale]} onValueChange={([v]) => update({ bgScale: v })} min={50} max={300} step={1} className="flex-1" />
-                  <span className="text-[10px] w-8 text-right" style={valStyle}>{bgScale}%</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Move size={12} style={labelStyle} />
-                  <span className="text-[10px] flex-shrink-0" style={labelStyle}>X</span>
-                  <Slider value={[bgPosX]} onValueChange={([v]) => update({ bgPosX: v })} min={0} max={100} step={1} className="flex-1" />
-                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgPosX}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Move size={12} style={labelStyle} />
-                  <span className="text-[10px] flex-shrink-0" style={labelStyle}>Y</span>
-                  <Slider value={[bgPosY]} onValueChange={([v]) => update({ bgPosY: v })} min={0} max={100} step={1} className="flex-1" />
-                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgPosY}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] flex-shrink-0" style={labelStyle}>Затемнение</span>
-                  <Slider value={[bgDarken]} onValueChange={([v]) => update({ bgDarken: v })} min={0} max={100} step={1} className="flex-1" />
-                  <span className="text-[10px] w-6 text-right" style={valStyle}>{bgDarken}</span>
-                </div>
-                <div className="flex items-center gap-2">
+              <>
+                <MediaControls scale={bgScale} posX={bgPosX} posY={bgPosY} darken={bgDarken} onChange={update} />
+                <div className="flex items-center gap-2 mt-2">
                   {bgMuted !== false ? <VolumeX size={12} style={labelStyle} /> : <Volume2 size={12} style={labelStyle} />}
                   <span className="text-[10px] flex-shrink-0" style={labelStyle}>Звук</span>
                   <button
@@ -207,10 +162,10 @@ const BackgroundPanel = ({
                   </button>
                 </div>
                 <button onClick={() => update({ bgVideo: undefined })}
-                  className="w-full rounded-xl py-1.5 text-[10px] font-medium transition-all active:scale-[0.98]"
+                  className="w-full rounded-xl py-1.5 text-[10px] font-medium transition-all active:scale-[0.98] mt-2"
                   style={{ background: "rgba(255,255,255,0.4)", border: "1px solid rgba(200,200,220,0.4)", color: "rgba(26,26,46,0.5)" }}
                 >Удалить видео</button>
-              </div>
+              </>
             )}
           </>
         )}
