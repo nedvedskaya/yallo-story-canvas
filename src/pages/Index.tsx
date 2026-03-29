@@ -125,16 +125,22 @@ const Index = () => {
   }, []);
 
   const handleAddSlide = useCallback((atIndex: number) => {
-    const newSlide: Slide = {
+    const templateProps = activeTemplate?.apply ?? {};
+    const baseSlide: Slide = {
       id: nextId++, username: "@username", title: "Новый слайд", body: "Введите текст...",
       bgColor: "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)",
       bgType: "color", hAlign: "left", vAlign: "center",
       overlayType: "none", overlayOpacity: 50,
       bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0,
+      ...templateProps,
     };
-    setSlides(prev => { const next = [...prev]; next.splice(atIndex, 0, newSlide); return next; });
+    if (activeTemplate?.accentColor && baseSlide.title) {
+      const clean = baseSlide.title.replace(/<span style="color:[^"]*">([^<]*)<\/span>/g, '$1');
+      baseSlide.title = clean.replace(/(\S+)(\s*)$/, `<span style="color:${activeTemplate.accentColor}">$1</span>$2`);
+    }
+    setSlides(prev => { const next = [...prev]; next.splice(atIndex, 0, baseSlide); return next; });
     setActiveSlide(atIndex);
-  }, []);
+  }, [activeTemplate]);
 
   const handleMoveSlide = useCallback((fromIdx: number, dir: -1 | 1) => {
     setSlides(prev => {
