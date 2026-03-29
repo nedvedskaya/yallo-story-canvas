@@ -132,13 +132,13 @@ const TEMPLATES: SlideTemplate[] = [
       bodyColor: "#444444",
       metaColor: "#AAAAAA",
       titleFont: "'SONGER Grotesque', sans-serif",
-      titleSize: 28,
-      titleLineHeight: 1.1,
-      titleLetterSpacing: -0.5,
+      titleSize: 24,
+      titleLineHeight: 1.15,
+      titleLetterSpacing: -0.3,
       titleCase: "uppercase",
-      bodyFont: "'SONGER Grotesque', sans-serif",
-      bodySize: 14,
-      bodyLineHeight: 1.65,
+      bodyFont: "'Inter', sans-serif",
+      bodySize: 13,
+      bodyLineHeight: 1.7,
       bodyLetterSpacing: 0,
       bodyCase: "none",
       hAlign: "left",
@@ -152,18 +152,18 @@ const TEMPLATES: SlideTemplate[] = [
     preview: (
       <div
         className="w-full h-full flex flex-col justify-between relative"
-        style={{ background: "#FFFFFF", padding: 8, fontFamily: "'SONGER Grotesque', sans-serif" }}
+        style={{ background: "#FFFFFF", padding: 8, fontFamily: "'Inter', sans-serif" }}
       >
         <div className="flex justify-between items-center">
           <span style={{ fontSize: 5, color: "#AAAAAA" }}>@username</span>
-          <span style={{ fontSize: 5, color: "#AAAAAA" }}>1/2</span>
+          <span style={{ fontSize: 5, color: "#AAAAAA" }}>1/3</span>
         </div>
         <div className="flex flex-col gap-1 pb-1">
           <h3
             style={{
               fontFamily: "'SONGER Grotesque', sans-serif",
               fontSize: 9,
-              lineHeight: 1.1,
+              lineHeight: 1.15,
               color: "#111111",
               margin: 0,
               textAlign: "left",
@@ -172,7 +172,7 @@ const TEMPLATES: SlideTemplate[] = [
             }}
           >
             Заголовок{" "}
-            <span style={{ color: "#7C3AED" }}>слайда</span>
+            <span style={{ background: "#7C3AED", color: "#fff", padding: "0 2px", borderRadius: 1 }}>слайда</span>
           </h3>
           <p style={{ fontSize: 5, color: "#444444", margin: 0, lineHeight: 1.5, textAlign: "left" }}>
             Основной текст слайда

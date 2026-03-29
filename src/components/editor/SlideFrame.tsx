@@ -174,7 +174,7 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
               <p
                 onClick={onBodyClick}
                 className="outline-none cursor-pointer"
-                style={body.textStyle}
+                style={{ ...body.textStyle, wordBreak: 'break-word' as const }}
                 dangerouslySetInnerHTML={{ __html: slide.body }}
               />
             </div>
