@@ -1,46 +1,28 @@
 
 
-# Три исправления
+# Исправить экспорт видео-слайдов
 
-## 1. Палитра цвета текста в разделе «Текст»
+## Проблема
 
-**Файл: `src/components/editor/TextPanel.tsx`**
+В двух местах кода при загрузке видео для экспорта устанавливается `crossOrigin = "anonymous"` на элементе `<video>`. Когда источник видео — blob URL (`blob:...`, создан через `URL.createObjectURL`), атрибут `crossOrigin` мешает загрузке или вызывает tainted canvas, из-за чего `captureVideoFrame` возвращает пустую строку, а `recordVideoSlide` падает с ошибкой.
 
-Добавить цветовой пикер (круг + HEX-ввод, как в BackgroundPanel) для цвета заголовка и основного текста:
-- В табе «Заголовок» — пикер для `titleColor`
-- В табе «Основной текст» — пикер для `bodyColor`
+## Решение
 
-Формат идентичен акцентному цвету в BackgroundPanel: круглый превью цвета с наложенным `<input type="color">` + текстовое поле HEX.
+### Файл 1: `src/components/editor/export-utils.ts`
 
-## 2. Глюч при переключении шаблонов (сырой HTML в заголовке)
+В `loadVideoFrame` — убрать `v.crossOrigin = "anonymous"` для blob URL:
 
-**Файл: `src/pages/Index.tsx`**, строка 119
-
-Проблема: regex для удаления старых highlight-спанов `/<span style="background:[^"]*;[^"]*">` матчит только одну точку с запятой. Реальный стиль содержит 4 свойства (`background:...;color:...;padding:...;border-radius:...`), поэтому regex не срабатывает, старые спаны не удаляются, и при повторном применении шаблона HTML ломается.
-
-Исправление — заменить обе очистки на универсальный regex:
 ```ts
-const clean = updated.title
-  .replace(/<span style="[^"]*">([^<]*)<\/span>/g, '$1');
+if (!src.startsWith("blob:")) v.crossOrigin = "anonymous";
 ```
-Один regex убирает все inline-style спаны. Тот же фикс в `handleAddSlide` (строки ~143-148).
 
-## 3. Undo/Redo кнопки в TopBar
+### Файл 2: `src/components/editor/DownloadModal.tsx`
 
-**Файл: `src/pages/Index.tsx`** — добавить стек истории состояний слайдов:
-- `undoStack: Slide[][]` и `redoStack: Slide[][]`
-- Каждое изменение `slides` пушит предыдущее состояние в `undoStack`
-- `handleUndo`: pop из undoStack → push текущее в redo → setSlides
-- `handleRedo`: pop из redoStack → push текущее в undo → setSlides
-- Передать `onUndo`, `onRedo`, `canUndo`, `canRedo` в TopBar
+В `recordVideoSlide` (строка 161) — аналогично:
 
-**Файл: `src/components/editor/TopBar.tsx`** — добавить кнопки ← → слева от «Скачать»:
-- Две иконки `Undo2` и `Redo2` из lucide-react
-- Disabled-стиль когда стек пуст
+```ts
+if (!slide.bgVideo!.startsWith("blob:")) video.crossOrigin = "anonymous";
+```
 
-## Файлы для изменения
-
-1. `src/components/editor/TextPanel.tsx` — цветовой пикер
-2. `src/pages/Index.tsx` — фикс regex + undo/redo стек
-3. `src/components/editor/TopBar.tsx` — кнопки undo/redo
+Два изменения в двух файлах. Картинки уже работают, так как у `<img>` в `renderSlideToDOM` нет проблемы с blob URL.
 
