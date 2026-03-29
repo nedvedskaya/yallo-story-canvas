@@ -9,6 +9,8 @@ export interface SlideTemplate {
   preview: React.ReactNode;
   /** Accent color for highlighting last word in titles */
   accentColor?: string;
+  /** How accent is applied: "color" = text color, "highlight" = background highlight */
+  accentMode?: "color" | "highlight";
 }
 
 const TEMPLATES: SlideTemplate[] = [
@@ -119,6 +121,7 @@ const TEMPLATES: SlideTemplate[] = [
     id: "minimalism-clean",
     name: "Минимализм",
     accentColor: "#7C5CFC",
+    accentMode: "highlight",
     apply: {
       bgColor: "#FFFFFF",
       bgImage: undefined,
@@ -136,7 +139,7 @@ const TEMPLATES: SlideTemplate[] = [
       showUsername: true,
       showSlideCount: true,
       bgDarken: 0,
-      titleFont: "'Dela Gothic One', sans-serif",
+      titleFont: "'SONGER Grotesque', sans-serif",
       titleSize: 28,
       titleLineHeight: 1.15,
       titleLetterSpacing: 0,
@@ -167,9 +170,9 @@ const TEMPLATES: SlideTemplate[] = [
         <div className="flex-1 flex flex-col justify-center gap-1 py-1">
           <h3
             style={{
-              fontFamily: "'Dela Gothic One', sans-serif",
-              fontSize: 8,
-              lineHeight: 1.15,
+              fontFamily: "'SONGER Grotesque', sans-serif",
+              fontSize: 7,
+              lineHeight: 1.2,
               color: "#1A1A1A",
               margin: 0,
               textAlign: "left",
@@ -181,7 +184,7 @@ const TEMPLATES: SlideTemplate[] = [
               style={{
                 background: "#7C5CFC",
                 color: "#FFFFFF",
-                padding: "0 2px",
+                padding: "1px 2px",
                 borderRadius: 1,
               }}
             >
