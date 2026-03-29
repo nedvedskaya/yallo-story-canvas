@@ -273,7 +273,17 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
 
   const captureSlide = useCallback(async (slide: Slide, index: number): Promise<HTMLCanvasElement> => {
     const pw = getPreviewWidth(slideFormat);
-    const container = await renderSlideToDOM(slide, slideFormat, index, slides.length, formatInfo.width, formatInfo.height, pw);
+
+    // For video slides, capture a frame and substitute as bgImage so html2canvas can render it
+    let renderSlide = slide;
+    if (slide.bgVideo) {
+      const frameDataUrl = await loadVideoFrame(slide.bgVideo);
+      if (frameDataUrl) {
+        renderSlide = { ...slide, bgImage: frameDataUrl, bgVideo: undefined };
+      }
+    }
+
+    const { container, root } = await renderSlideToDOM(renderSlide, slideFormat, index, slides.length, formatInfo.width, formatInfo.height, pw);
 
     const canvas = await html2canvas(container.firstElementChild as HTMLElement || container, {
       scale: 1,
@@ -285,7 +295,7 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
       logging: false,
     });
 
-    cleanupContainer(container);
+    cleanupContainer(container, root);
     return canvas;
   }, [formatInfo, slides.length, slideFormat]);
 
