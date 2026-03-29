@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { getContrastColors } from "@/lib/utils";
 import TopBar from "@/components/editor/TopBar";
 import SlideCarousel from "@/components/editor/SlideCarousel";
 import type { Slide } from "@/components/editor/SlideCarousel";
