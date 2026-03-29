@@ -57,7 +57,7 @@ export function getTitleStyle(slide: Slide, metrics: SlideMetrics, overrides?: {
       transformOrigin: 'center center',
     },
     textStyle: {
-      color: '#ffffff',
+      color: slide.titleColor || '#ffffff',
       fontSize: `${metrics.titleSize}px`,
       fontFamily: slide.titleFont || "'Inter', sans-serif",
       textTransform: (slide.titleCase === 'uppercase' ? 'uppercase' : slide.titleCase === 'lowercase' ? 'lowercase' : 'none') as React.CSSProperties['textTransform'],
