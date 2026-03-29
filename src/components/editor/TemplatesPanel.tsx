@@ -14,9 +14,10 @@ export interface SlideTemplate {
 const TEMPLATES: SlideTemplate[] = [
   {
     id: "minimalism",
-    name: "Минимализм",
+    name: "Тетрадь",
     accentColor: "#FF4200",
     apply: {
+
       bgColor: "#F3F3F3",
       bgImage: undefined,
       bgVideo: undefined,
