@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import FontSection, { type FontSettings } from "./FontSection";
+import FontSection, { type FontSettings, type CustomFont } from "./FontSection";
 import { Switch } from "@/components/ui/switch";
 import type { Slide } from "./SlideCarousel";
 
