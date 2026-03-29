@@ -43,8 +43,8 @@ const SlideOverlay = ({ type, opacity, color, scale = 1 }: SlideOverlayProps) =>
         <div
           style={{
             ...style,
-            backgroundImage: `radial-gradient(circle, ${ca(0.5)} 1px, transparent 1px)`,
-            backgroundSize: "16px 16px",
+            backgroundImage: `radial-gradient(circle, ${ca(0.5)} ${1 * s}px, transparent ${1 * s}px)`,
+            backgroundSize: `${16 * s}px ${16 * s}px`,
           }}
         />
       );
