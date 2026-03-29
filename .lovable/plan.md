@@ -1,27 +1,48 @@
 
 
-# Убрать откат изменений при закрытии панелей
+# Устранение дублирования кода
 
-## Проблема
+## Найденные дубликаты
 
-Сейчас при нажатии на крестик (X) вызывается `handleCancelClose`, который откатывает все изменения к снимку состояния (snapshot). Пользователь хочет, чтобы все изменения сохранялись автоматически, а крестик просто закрывал панель.
+### 1. BackgroundPanel — слайдеры фото/видео (критично)
+Блоки «Масштаб / X / Y / Затемнение» для фото (строки 126-154) и видео (строки 170-213) — практически идентичный код. Нужно вынести в общий компонент `MediaControls`.
 
-## Решение
+### 2. SlideCarousel — рендер bgImage и bgVideo
+Позиционирование фона (position, left, top, transform, scale) одинаковое для картинки и видео (строки 202-256). Вынести стили в общую функцию `getBgMediaStyle(slide)`.
 
-В `src/pages/Index.tsx`:
+### 3. glassBtnStyle — дублирование стилей кнопок
+В `SlideCarousel.tsx` и `SlideToolbar.tsx` одинаковые glass-стили для кнопок. Вынести в общий файл констант.
 
-1. **Удалить** `slideSnapshotRef` и `formatSnapshotRef` — снимки больше не нужны
-2. **Удалить** `handleCancelClose` и `handleSaveClose` — они больше не нужны
-3. **Создать** простую функцию `handleClosePanel` — только `setActiveTab(null)`
-4. **Упростить** `handleTabChange` — убрать логику создания снимков, оставить только `setActiveTab(tab)`
+### 4. labelStyle / valStyle — повторяющиеся стили подписей
+В `BackgroundPanel` и `InfoPanel` одни и те же стили для лейблов. Вынести в общие константы.
 
-В `src/components/editor/BottomSheet.tsx`:
+## Что НЕ дублируется (и это правильно)
+- Панели Фон / Текст / Инфо / Размер — единые для всех форматов, не дублируются под каждый размер
+- `FORMAT_TEXT_DEFAULTS` — единая карта в `SlideCarousel`, адаптация берётся из одного места
+- `FontSection` — переиспользуется для заголовка и основного текста
 
-5. Заменить пропсы `onClose` и `onSaveClose` на один `onClose`, который просто закрывает панель
-6. Убрать передачу `onSaveClose` во все дочерние панели
+## План изменений
 
-## Файлы
+### Файл: `src/components/editor/shared-styles.ts` (новый)
+- Экспортировать `glassBtnStyle`, `labelStyle`, `valStyle` — общие стили
 
-- `src/pages/Index.tsx` — убрать snapshot-логику, упростить закрытие
-- `src/components/editor/BottomSheet.tsx` — убрать `onSaveClose`, использовать единый `onClose`
+### Файл: `src/components/editor/MediaControls.tsx` (новый)
+- Компонент со слайдерами: Масштаб, X, Y, Затемнение
+- Пропсы: `scale, posX, posY, darken, onChange`
+- Используется в BackgroundPanel для фото и видео секций
+
+### Файл: `src/components/editor/BackgroundPanel.tsx`
+- Заменить два дублированных блока слайдеров на `<MediaControls />`
+- Импортировать `labelStyle`, `valStyle` из shared-styles
+
+### Файл: `src/components/editor/SlideCarousel.tsx`
+- Вынести общий стиль позиционирования медиа-фона в функцию `getBgMediaStyle(slide)`
+- Использовать для img и video
+- Импортировать `glassBtnStyle` из shared-styles
+
+### Файл: `src/components/editor/SlideToolbar.tsx`
+- Импортировать `glassBtnStyle` из shared-styles вместо локального определения
+
+### Файл: `src/components/editor/InfoPanel.tsx`
+- Импортировать `labelStyle` из shared-styles
 
