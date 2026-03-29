@@ -455,7 +455,7 @@ const SlideCarousel = ({
                           onTouchEnd={() => handleTextTouchEnd(slide.id)}
                           onMouseDown={(e) => handleTextMouseDown(e, slide, "title")}
                           style={{
-                            transform: `translate(${(dragOffset !== null && textDragTarget.current === "title" && index === activeSlide ? dragOffset.x : slide.titleOffsetX ?? 0)}px, ${(dragOffset !== null && textDragTarget.current === "title" && index === activeSlide ? dragOffset.y : slide.titleOffsetY ?? 0)}px) scale(${(pinchScale !== null && textDragTarget.current === "title" && index === activeSlide ? pinchScale : slide.titleScale ?? 1)})`,
+                            transform: `translate(${(titleDragOffset !== null && index === activeSlide ? titleDragOffset.x : slide.titleOffsetX ?? 0)}px, ${(titleDragOffset !== null && index === activeSlide ? titleDragOffset.y : slide.titleOffsetY ?? 0)}px) scale(${(titlePinchScale !== null && index === activeSlide ? titlePinchScale : slide.titleScale ?? 1)})`,
                             transformOrigin: 'center center',
                             touchAction: 'none',
                             cursor: editorOpen ? 'text' : 'grab',
