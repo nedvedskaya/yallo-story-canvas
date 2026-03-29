@@ -33,7 +33,6 @@ interface FontSectionProps {
 }
 
 const FontSection = ({ label, settings, onChange, customFonts = [], onAddCustomFont }: FontSectionProps) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const allFonts = [...FONT_LIST, ...customFonts];
 
