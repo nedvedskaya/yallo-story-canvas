@@ -101,7 +101,6 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
                   bgMuted={currentSlide.bgMuted}
                   onSave={(partial) => onUpdateSlide(currentSlide.id, partial)}
                   onApplyToAll={() => onApplyBgToAll?.()}
-                  onClose={onSaveClose}
                 />
               ) : isSize && slideFormat && onSlideFormatChange ? (
                 <SizePanel
