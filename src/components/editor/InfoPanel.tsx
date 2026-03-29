@@ -6,10 +6,9 @@ interface InfoPanelProps {
   currentSlide: Slide;
   onSave: (updates: Partial<Slide>) => void;
   onApplyInfoToAll: () => void;
-  onClose: () => void;
 }
 
-const InfoPanel = ({ currentSlide, onSave, onApplyInfoToAll, onClose }: InfoPanelProps) => {
+const InfoPanel = ({ currentSlide, onSave, onApplyInfoToAll }: InfoPanelProps) => {
   const [applyAll, setApplyAll] = useState(false);
 
   const showUsername = currentSlide.showUsername !== false;

@@ -19,10 +19,9 @@ export const FORMAT_OPTIONS: FormatOption[] = [
 interface SizePanelProps {
   currentFormat: SlideFormat;
   onSave: (format: SlideFormat) => void;
-  onClose: () => void;
 }
 
-const SizePanel = ({ currentFormat, onSave, onClose }: SizePanelProps) => {
+const SizePanel = ({ currentFormat, onSave }: SizePanelProps) => {
   return (
     <div className="flex flex-col gap-3 overflow-y-auto max-h-[28vh] scrollbar-hide">
       <div className="flex flex-col gap-1.5">

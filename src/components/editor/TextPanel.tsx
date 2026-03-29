@@ -7,10 +7,9 @@ interface TextPanelProps {
   currentSlide: Slide;
   onSave: (updates: Partial<Slide>) => void;
   onApplyTextToAll: () => void;
-  onClose: () => void;
 }
 
-const TextPanel = ({ currentSlide, onSave, onApplyTextToAll, onClose }: TextPanelProps) => {
+const TextPanel = ({ currentSlide, onSave, onApplyTextToAll }: TextPanelProps) => {
   const [applyAll, setApplyAll] = useState(false);
 
   const titleSettings: FontSettings = {
