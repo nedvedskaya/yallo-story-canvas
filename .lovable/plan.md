@@ -1,70 +1,46 @@
-# Добавить шаблон «Минимализм»
-
-## Дизайн (из референса)
-
-- Белый фон `#FFFFFF`, без сетки (`overlayType: "none"`)
-- Заголовок: жирный, чёрный `#1A1A1A`, шрифт заголовка Songer, uppercase
-- Акцент: фиолетовый `#7C5CFC` — **выделение фоном** (highlight), не цветом текста
-- Тело: обычный Inter, `#1A1A1A`
-- Мета: `#999999`
-- Стрелка внизу справа, username и счётчик вверху
-- Без футера
-
-## Отличие от «Тетрадь»
 
 
-| &nbsp;  | Тетрадь         | Минимализм               |
-| ------- | --------------- | ------------------------ |
-| Фон     | #F3F3F3 + grid  | #FFFFFF, без overlay     |
-| Акцент  | оранжевый текст | фиолетовый highlight-фон |
-| Регистр | none            | uppercase                |
+# Три исправления
 
+## 1. Палитра цвета текста в разделе «Текст»
 
-## Изменения
+**Файл: `src/components/editor/TextPanel.tsx`**
 
-**Файл: `src/components/editor/TemplatesPanel.tsx**`
+Добавить цветовой пикер (круг + HEX-ввод, как в BackgroundPanel) для цвета заголовка и основного текста:
+- В табе «Заголовок» — пикер для `titleColor`
+- В табе «Основной текст» — пикер для `bodyColor`
 
-Добавить второй объект в массив `TEMPLATES`:
+Формат идентичен акцентному цвету в BackgroundPanel: круглый превью цвета с наложенным `<input type="color">` + текстовое поле HEX.
 
+## 2. Глюч при переключении шаблонов (сырой HTML в заголовке)
+
+**Файл: `src/pages/Index.tsx`**, строка 119
+
+Проблема: regex для удаления старых highlight-спанов `/<span style="background:[^"]*;[^"]*">` матчит только одну точку с запятой. Реальный стиль содержит 4 свойства (`background:...;color:...;padding:...;border-radius:...`), поэтому regex не срабатывает, старые спаны не удаляются, и при повторном применении шаблона HTML ломается.
+
+Исправление — заменить обе очистки на универсальный regex:
 ```ts
-{
-  id: "minimalism-clean",
-  name: "Минимализм",
-  accentColor: "#7C5CFC",
-  apply: {
-    bgColor: "#FFFFFF",
-    bgImage: undefined,
-    bgVideo: undefined,
-    bgType: "color",
-    overlayType: "none",
-    overlayOpacity: 0,
-    titleColor: "#1A1A1A",
-    bodyColor: "#1A1A1A",
-    metaColor: "#999999",
-    overlayColor: "rgba(0,0,0,0.08)",
-    showFooter: false,
-    footerText: "",
-    showArrow: true,
-    showUsername: true,
-    showSlideCount: true,
-    bgDarken: 0,
-    titleFont: "'Dela Gothic One', sans-serif",
-    titleSize: 28,
-    titleLineHeight: 1.15,
-    titleLetterSpacing: 0,
-    titleCase: "uppercase",
-    bodyFont: "'Inter', sans-serif",
-    bodySize: 14,
-    bodyLineHeight: 1.65,
-    bodyLetterSpacing: 0,
-    bodyCase: "none",
-    hAlign: "left",
-    vAlign: "center",
-  },
-  preview: /* мини-карточка: белый фон, чёрный заголовок uppercase,
-              слово «СЛАЙДА» с фиолетовым фоном-выделением,
-              тело текстом, стрелка внизу */
-}
+const clean = updated.title
+  .replace(/<span style="[^"]*">([^<]*)<\/span>/g, '$1');
 ```
+Один regex убирает все inline-style спаны. Тот же фикс в `handleAddSlide` (строки ~143-148).
 
-Превью будет без сетки, с чистым белым фоном и фиолетовым highlight на ключевом слове.
+## 3. Undo/Redo кнопки в TopBar
+
+**Файл: `src/pages/Index.tsx`** — добавить стек истории состояний слайдов:
+- `undoStack: Slide[][]` и `redoStack: Slide[][]`
+- Каждое изменение `slides` пушит предыдущее состояние в `undoStack`
+- `handleUndo`: pop из undoStack → push текущее в redo → setSlides
+- `handleRedo`: pop из redoStack → push текущее в undo → setSlides
+- Передать `onUndo`, `onRedo`, `canUndo`, `canRedo` в TopBar
+
+**Файл: `src/components/editor/TopBar.tsx`** — добавить кнопки ← → слева от «Скачать»:
+- Две иконки `Undo2` и `Redo2` из lucide-react
+- Disabled-стиль когда стек пуст
+
+## Файлы для изменения
+
+1. `src/components/editor/TextPanel.tsx` — цветовой пикер
+2. `src/pages/Index.tsx` — фикс regex + undo/redo стек
+3. `src/components/editor/TopBar.tsx` — кнопки undo/redo
+
