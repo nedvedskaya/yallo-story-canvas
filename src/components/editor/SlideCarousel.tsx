@@ -462,7 +462,7 @@ const SlideCarousel = ({
                           }}
                         >
                           <h2
-                            onClick={() => openEditor("title")}
+                            onClick={() => { if (textDragMovedRef.current) return; openEditor("title"); }}
                             className="outline-none font-bold cursor-pointer"
                             style={{
                               color: '#ffffff',
