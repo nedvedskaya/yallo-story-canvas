@@ -73,10 +73,11 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
     if (/^#[0-9a-fA-F]{6}$/.test(val)) setAccentColor(val);
   };
 
-  const handleSave = () => {
-    onSave(editorRef.current?.innerHTML || "");
-    onClose();
-  };
+  const handleInput = useCallback(() => {
+    if (editorRef.current) {
+      onSave(editorRef.current.innerHTML);
+    }
+  }, [onSave]);
 
   if (!open) return null;
 
