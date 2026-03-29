@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import FontSection, { type FontSettings } from "./FontSection";
+import FontSection, { type FontSettings, type CustomFont } from "./FontSection";
 import { Switch } from "@/components/ui/switch";
 import type { Slide } from "./SlideCarousel";
 
@@ -12,6 +12,11 @@ interface TextPanelProps {
 const TextPanel = ({ currentSlide, onSave, onApplyTextToAll }: TextPanelProps) => {
   const [activeSection, setActiveSection] = useState<"title" | "body">("title");
   const [applyAll, setApplyAll] = useState(false);
+  const [customFonts, setCustomFonts] = useState<CustomFont[]>([]);
+
+  const handleAddCustomFont = useCallback((font: CustomFont) => {
+    setCustomFonts(prev => [...prev, font]);
+  }, []);
 
   const titleSettings: FontSettings = {
     font: currentSlide.titleFont || "'Coolvetica', sans-serif",
@@ -76,9 +81,9 @@ const TextPanel = ({ currentSlide, onSave, onApplyTextToAll }: TextPanelProps) =
 
       {/* Active section content */}
       {activeSection === "title" ? (
-        <FontSection label="Шрифт заголовка" settings={titleSettings} onChange={handleTitleChange} />
+        <FontSection label="Шрифт заголовка" settings={titleSettings} onChange={handleTitleChange} customFonts={customFonts} onAddCustomFont={handleAddCustomFont} />
       ) : (
-        <FontSection label="Шрифт основного текста" settings={bodySettings} onChange={handleBodyChange} />
+        <FontSection label="Шрифт основного текста" settings={bodySettings} onChange={handleBodyChange} customFonts={customFonts} onAddCustomFont={handleAddCustomFont} />
       )}
 
       <div className="h-px" style={{ background: 'rgba(26,26,46,0.08)' }} />
