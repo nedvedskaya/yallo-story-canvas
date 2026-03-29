@@ -6,6 +6,7 @@ import BackgroundPanel from "./BackgroundPanel";
 import TextPanel from "./TextPanel";
 import SizePanel, { type SlideFormat } from "./SizePanel";
 import InfoPanel from "./InfoPanel";
+import TemplatesPanel, { type SlideTemplate } from "./TemplatesPanel";
 
 interface BottomSheetProps {
   activeTab: MenuId | null;
@@ -15,25 +16,22 @@ interface BottomSheetProps {
   onApplyBgToAll?: () => void;
   onApplyTextToAll?: () => void;
   onApplyInfoToAll?: () => void;
+  onApplyTemplate?: (tpl: SlideTemplate) => void;
   slideFormat?: SlideFormat;
   onSlideFormatChange?: (format: SlideFormat) => void;
 }
 
-const sheetContent: Record<string, { title: string; icon: React.ElementType; items: string[] }> = {
-  design: { title: "Шаблоны", icon: Palette, items: ["Минимализм", "Градиент", "Ретро", "Неон", "Пастель", "Тёмный"] },
-};
-
-const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyBgToAll, onApplyTextToAll, onApplyInfoToAll, slideFormat, onSlideFormatChange }: BottomSheetProps) => {
+const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyBgToAll, onApplyTextToAll, onApplyInfoToAll, onApplyTemplate, slideFormat, onSlideFormatChange }: BottomSheetProps) => {
   const isBackground = activeTab === "background";
   const isText = activeTab === "text";
   const isSize = activeTab === "size";
   const isInfo = activeTab === "info";
-  const isCustomPanel = isBackground || isText || isSize || isInfo;
-  const content = activeTab && !isCustomPanel ? sheetContent[activeTab] : null;
+  const isDesign = activeTab === "design";
+  const isCustomPanel = isBackground || isText || isSize || isInfo || isDesign;
 
   return (
     <AnimatePresence>
-      {(content || isCustomPanel) && (
+      {isCustomPanel && (
         <>
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -57,7 +55,9 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
           >
             <div className="flex items-center justify-between px-4 pb-1 pt-2">
               <div className="flex items-center gap-2">
-                {isBackground ? (
+                {isDesign ? (
+                  <><Palette size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} /><h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>Шаблоны</h3></>
+                ) : isBackground ? (
                   <><Image size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} /><h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>Фон</h3></>
                 ) : isText ? (
                   <><Type size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} /><h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>Текст</h3></>
@@ -65,9 +65,7 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
                   <><Maximize size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} /><h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>Размер</h3></>
                 ) : isInfo ? (
                   <><Info size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} /><h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>Инфо</h3></>
-                ) : content && (
-                  <><content.icon size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} /><h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>{content.title}</h3></>
-                )}
+                ) : null}
               </div>
               <button onClick={onClose} className="rounded-full p-1.5 transition-colors glass-pill" style={{ color: 'rgba(26, 26, 46, 0.5)' }}>
                 <X size={16} />
@@ -75,7 +73,9 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
             </div>
 
             <div className="px-4 pb-4 pt-1 overflow-y-auto" style={{ maxHeight: 'calc(45vh - 48px)' }}>
-              {isInfo && currentSlide && onUpdateSlide ? (
+              {isDesign && onApplyTemplate ? (
+                <TemplatesPanel onApplyTemplate={(tpl) => { onApplyTemplate(tpl); onClose(); }} />
+              ) : isInfo && currentSlide && onUpdateSlide ? (
                 <InfoPanel
                   currentSlide={currentSlide}
                   onSave={(updates) => onUpdateSlide(currentSlide.id, updates)}
@@ -107,16 +107,7 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
                   currentFormat={slideFormat}
                   onSave={onSlideFormatChange}
                 />
-              ) : content && (
-                <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-1">
-                  {content.items.map((item) => (
-                    <button key={item} className="flex flex-col items-center gap-1.5 glass-pill p-3 text-xs transition-all active:scale-95 flex-shrink-0" style={{ color: '#1a1a2e', minWidth: '72px' }}>
-                      <div className="h-8 w-8 rounded-lg" style={{ background: 'rgba(26, 26, 46, 0.06)' }} />
-                      <span className="text-[10px]">{item}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
+              ) : null}
             </div>
           </motion.div>
         </>

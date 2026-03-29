@@ -7,6 +7,7 @@ import BottomSheet from "@/components/editor/BottomSheet";
 import type { MenuId } from "@/components/editor/BottomMenu";
 import type { SlideFormat } from "@/components/editor/SizePanel";
 import DownloadModal from "@/components/editor/DownloadModal";
+import type { SlideTemplate } from "@/components/editor/TemplatesPanel";
 
 let nextId = 4;
 
@@ -96,6 +97,10 @@ const Index = () => {
     );
   }, [currentSlide]);
 
+  const handleApplyTemplate = useCallback((tpl: SlideTemplate) => {
+    setSlides(prev => prev.map(s => ({ ...s, ...tpl.apply })));
+  }, []);
+
   const handleClosePanel = useCallback(() => {
     setActiveTab(null);
   }, []);
@@ -169,6 +174,7 @@ const Index = () => {
         onApplyBgToAll={handleApplyBgToAll}
         onApplyTextToAll={handleApplyTextToAll}
         onApplyInfoToAll={handleApplyInfoToAll}
+        onApplyTemplate={handleApplyTemplate}
         slideFormat={slideFormat}
         onSlideFormatChange={setSlideFormat}
       />
