@@ -1,48 +1,60 @@
+# Улучшение панелей редактора: навигация, компактность, слайдеры, палитра
 
+## 1. Раздел «Текст» — табы «Заголовок» / «Основной текст»
 
-# Устранение дублирования кода
+**Файл: `TextPanel.tsx**`
 
-## Найденные дубликаты
+- Добавить state `activeSection: "title" | "body"` (по умолчанию `"title"`)
+- Сверху 2 кнопки-табы в стиле как в BackgroundPanel (Цвет/Фото/Видео)
+- При выборе таба показывать только один `FontSection` + switch «Применить ко всем»
+- Убрать разделитель и второй `FontSection` — теперь они переключаются табами
 
-### 1. BackgroundPanel — слайдеры фото/видео (критично)
-Блоки «Масштаб / X / Y / Затемнение» для фото (строки 126-154) и видео (строки 170-213) — практически идентичный код. Нужно вынести в общий компонент `MediaControls`.
+**Файл: `FontSection.tsx**`
 
-### 2. SlideCarousel — рендер bgImage и bgVideo
-Позиционирование фона (position, left, top, transform, scale) одинаковое для картинки и видео (строки 202-256). Вынести стили в общую функцию `getBgMediaStyle(slide)`.
+- Добавить кнопку «+ добавить шрифт» в конце списка шрифтов
+- При нажатии — hidden `<input type="file" accept=".ttf,.otf,.woff,.woff2">`
+- Загруженный шрифт регистрируется через `FontFace API` и добавляется в список
+- Хранить пользовательские шрифты в state (внутри FontSection или поднять в TextPanel)
+- Изменить диапазон слайдера размера: `min={8} max={24}` вместо `max={100}`
 
-### 3. glassBtnStyle — дублирование стилей кнопок
-В `SlideCarousel.tsx` и `SlideToolbar.tsx` одинаковые glass-стили для кнопок. Вынести в общий файл констант.
+## 2. Панели показываются целиком без прокрутки
 
-### 4. labelStyle / valStyle — повторяющиеся стили подписей
-В `BackgroundPanel` и `InfoPanel` одни и те же стили для лейблов. Вынести в общие константы.
+**Файлы: `BackgroundPanel.tsx`, `TextPanel.tsx`, `InfoPanel.tsx**`
 
-## Что НЕ дублируется (и это правильно)
-- Панели Фон / Текст / Инфо / Размер — единые для всех форматов, не дублируются под каждый размер
-- `FORMAT_TEXT_DEFAULTS` — единая карта в `SlideCarousel`, адаптация берётся из одного места
-- `FontSection` — переиспользуется для заголовка и основного текста
+- Убрать `overflow-y-auto max-h-[28vh] scrollbar-hide` / `max-h-[30vh]`
+- Контент будет занимать сколько нужно, а `BottomSheet` ограничит maxHeight
 
-## План изменений
+**Файл: `BottomSheet.tsx**`
 
-### Файл: `src/components/editor/shared-styles.ts` (новый)
-- Экспортировать `glassBtnStyle`, `labelStyle`, `valStyle` — общие стили
+- Увеличить `maxHeight` с `35vh` до `45vh` чтобы всё помещалось
+- Добавить `overflow-y-auto` на контейнер контента если содержимое всё-таки не влезет
 
-### Файл: `src/components/editor/MediaControls.tsx` (новый)
-- Компонент со слайдерами: Масштаб, X, Y, Затемнение
-- Пропсы: `scale, posX, posY, darken, onChange`
-- Используется в BackgroundPanel для фото и видео секций
+## 3. Слайдеры — удобная работа с телефона
 
-### Файл: `src/components/editor/BackgroundPanel.tsx`
-- Заменить два дублированных блока слайдеров на `<MediaControls />`
-- Импортировать `labelStyle`, `valStyle` из shared-styles
+**Файл: `src/components/ui/slider.tsx**`
 
-### Файл: `src/components/editor/SlideCarousel.tsx`
-- Вынести общий стиль позиционирования медиа-фона в функцию `getBgMediaStyle(slide)`
-- Использовать для img и video
-- Импортировать `glassBtnStyle` из shared-styles
+- Увеличить Thumb до `h-6 w-6` (было `h-5 w-5`) для удобного нажатия пальцем
+- Добавить `touch-action: none` на Thumb (уже есть на Root)
+- Track оставить `h-2` — визуально компактно, а зона касания на Thumb достаточная
 
-### Файл: `src/components/editor/SlideToolbar.tsx`
-- Импортировать `glassBtnStyle` из shared-styles вместо локального определения
+## 4. Акцентный цвет — исправить работу палитры на телефоне
 
-### Файл: `src/components/editor/InfoPanel.tsx`
-- Импортировать `labelStyle` из shared-styles
+**Файл: `BackgroundPanel.tsx**`
 
+- Заменить `<input type="color" className="sr-only">` + `button onClick -> click()` на прямой `<input type="color">` стилизованный как кружок
+- На мобильных `sr-only` + programmatic click не всегда открывает native color picker
+- Использовать `opacity: 0` + absolute positioning поверх кнопки-кружка вместо `sr-only`
+
+**Файл: `TextEditorModal.tsx**`
+
+- Та же проблема с `colorInputRef` — применить тот же подход: `<input type="color">` с `opacity: 0` поверх кнопки
+
+## Файлы для изменения
+
+1. `src/components/editor/TextPanel.tsx` — табы, убрать max-h
+2. `src/components/editor/FontSection.tsx` — загрузка шрифтов, диапазон размера
+3. `src/components/editor/BackgroundPanel.tsx` — убрать max-h, починить color picker
+4. `src/components/editor/InfoPanel.tsx` — убрать max-h
+5. `src/components/editor/BottomSheet.tsx` — увеличить maxHeight, overflow на контенте
+6. `src/components/ui/slider.tsx` — увеличить Thumb
+7. `src/components/editor/TextEditorModal.tsx` — починить color picker
