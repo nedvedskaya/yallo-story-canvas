@@ -168,16 +168,16 @@ async function recordVideoSlide(
       });
 
       // Build overlay using SlideFrame (overlay-only mode)
-      const overlayContainer = await renderSlideToDOM(slide, format, slideIndex, totalSlides, ew, eh, previewWidth, true);
+      const overlayResult = await renderSlideToDOM(slide, format, slideIndex, totalSlides, ew, eh, previewWidth, true);
 
       let overlayCanvas: HTMLCanvasElement | null = null;
       try {
-        overlayCanvas = await html2canvas(overlayContainer.firstElementChild as HTMLElement || overlayContainer, {
+        overlayCanvas = await html2canvas(overlayResult.container.firstElementChild as HTMLElement || overlayResult.container, {
           scale: 1, useCORS: true, allowTaint: true, backgroundColor: null,
           width: ew, height: eh, logging: false,
         });
       } catch (e) { console.warn("Overlay capture failed", e); }
-      cleanupContainer(overlayContainer);
+      cleanupContainer(overlayResult.container, overlayResult.root);
 
       const canvas = document.createElement("canvas");
       canvas.width = ew; canvas.height = eh;
