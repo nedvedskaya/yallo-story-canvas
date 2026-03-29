@@ -270,10 +270,10 @@ const SlideCarousel = ({
                       }}
                     >
                       {slide.showUsername !== false ? (
-                        <span className="outline-none text-xs font-normal" style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '12px' }}>{slide.username}</span>
+                        <span className="outline-none font-normal" style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: `${fmt.usernameSize}px` }}>{slide.username}</span>
                       ) : <span />}
                       {slide.showSlideCount !== false ? (
-                        <span className="text-xs font-normal" style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '12px' }}>{index + 1}/{slides.length}</span>
+                        <span className="font-normal" style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: `${fmt.usernameSize}px` }}>{index + 1}/{slides.length}</span>
                       ) : <span />}
                     </div>
                     )}
