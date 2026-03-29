@@ -122,6 +122,7 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
             ref={editorRef}
             contentEditable
             suppressContentEditableWarning
+            onInput={handleInput}
             className="w-full min-h-[80px] max-h-[160px] overflow-y-auto outline-none text-sm p-3"
             style={{
               background: 'rgba(255,255,255,0.6)',
