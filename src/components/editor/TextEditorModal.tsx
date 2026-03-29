@@ -73,10 +73,11 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
     if (/^#[0-9a-fA-F]{6}$/.test(val)) setAccentColor(val);
   };
 
-  const handleSave = () => {
-    onSave(editorRef.current?.innerHTML || "");
-    onClose();
-  };
+  const handleInput = useCallback(() => {
+    if (editorRef.current) {
+      onSave(editorRef.current.innerHTML);
+    }
+  }, [onSave]);
 
   if (!open) return null;
 
@@ -93,7 +94,7 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
       <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.1)', backdropFilter: 'blur(2px)' }} />
 
       <div
-        className="relative w-full max-w-md mx-3 mb-[calc(76px+env(safe-area-inset-bottom))] animate-in slide-in-from-bottom-4 duration-200"
+        className="relative w-full max-w-md mx-3 mb-[calc(12px+env(safe-area-inset-bottom))] animate-in slide-in-from-bottom-4 duration-200"
         onClick={(e) => e.stopPropagation()}
         style={{
           background: 'rgba(255, 255, 255, 0.45)',
@@ -121,6 +122,7 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
             ref={editorRef}
             contentEditable
             suppressContentEditableWarning
+            onInput={handleInput}
             className="w-full min-h-[80px] max-h-[160px] overflow-y-auto outline-none text-sm p-3"
             style={{
               background: 'rgba(255,255,255,0.6)',
@@ -180,20 +182,7 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
           </div>
         </div>
 
-        {/* Save */}
-        <div className="px-4 pb-4 pt-1">
-          <button
-            onClick={handleSave}
-            className="w-full py-2.5 text-[11px] font-medium transition-all active:scale-[0.97]"
-            style={{
-              background: 'rgba(26,26,46,0.85)',
-              color: '#fff',
-              borderRadius: '12px',
-            }}
-          >
-            Сохранить
-          </button>
-        </div>
+        <div className="pb-3" />
       </div>
     </div>
   );

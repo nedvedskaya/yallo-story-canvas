@@ -43,6 +43,7 @@ const Index = () => {
   const [slides, setSlides] = useState<Slide[]>(initialSlides);
   const [slideFormat, setSlideFormat] = useState<SlideFormat>("carousel");
   const [downloadOpen, setDownloadOpen] = useState(false);
+  const [textEditorOpen, setTextEditorOpen] = useState(false);
 
   const currentSlide = slides[activeSlide];
   const handleUpdateSlide = useCallback((id: number, updates: Partial<Slide>) => {
@@ -155,6 +156,7 @@ const Index = () => {
             onMoveSlide={handleMoveSlide}
             onDuplicateSlide={handleDuplicateSlide}
             onDeleteSlide={handleDeleteSlide}
+            onEditorOpenChange={setTextEditorOpen}
           />
         </main>
       </div>
@@ -170,7 +172,7 @@ const Index = () => {
         slideFormat={slideFormat}
         onSlideFormatChange={setSlideFormat}
       />
-      <BottomMenu activeTab={activeTab} onTabChange={setActiveTab} />
+      <BottomMenu activeTab={activeTab} onTabChange={setActiveTab} hidden={textEditorOpen} />
       <DownloadModal open={downloadOpen} onClose={() => setDownloadOpen(false)} slides={slides} slideFormat={slideFormat} />
     </div>
   );
