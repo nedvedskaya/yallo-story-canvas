@@ -7,6 +7,14 @@ import type { OverlayType } from "./BackgroundPanel";
 import TextEditorModal from "./TextEditorModal";
 import { FORMAT_OPTIONS, type SlideFormat } from "./SizePanel";
 
+// Adaptive text sizes per format (used as defaults when slide doesn't override)
+const FORMAT_TEXT_DEFAULTS: Record<SlideFormat, { titleSize: number; bodySize: number; padding: number; usernameSize: number; footerSize: number }> = {
+  carousel:     { titleSize: 22, bodySize: 13, padding: 20, usernameSize: 11, footerSize: 9 },
+  square:       { titleSize: 20, bodySize: 12, padding: 18, usernameSize: 11, footerSize: 9 },
+  stories:      { titleSize: 26, bodySize: 15, padding: 24, usernameSize: 12, footerSize: 10 },
+  presentation: { titleSize: 18, bodySize: 11, padding: 16, usernameSize: 10, footerSize: 8 },
+};
+
 export interface Slide {
   id: number;
   username: string;
@@ -79,8 +87,8 @@ const SlideCarousel = ({
 
   const formatInfo = FORMAT_OPTIONS.find(f => f.id === slideFormat) || FORMAT_OPTIONS[0];
   const slideAspectRatio = `${formatInfo.width}/${formatInfo.height}`;
-  // For landscape formats, use height-based sizing
   const isLandscape = formatInfo.width > formatInfo.height;
+  const fmt = FORMAT_TEXT_DEFAULTS[slideFormat] || FORMAT_TEXT_DEFAULTS.carousel;
 
   const openEditor = (field: "title" | "body") => {
     setEditorField(field);
@@ -179,12 +187,13 @@ const SlideCarousel = ({
               >
                 <div
                   data-slide-id={slide.id}
-                  className="relative flex h-full flex-col p-6 overflow-hidden"
+                  className="relative flex h-full flex-col overflow-hidden"
                   style={{
                     background: slide.bgColor,
                     borderRadius: '16px',
                     justifyContent: vAlignToJustify[slide.vAlign],
                     textAlign: hAlignToText[slide.hAlign] as React.CSSProperties['textAlign'],
+                    padding: `${fmt.padding}px`,
                   }}
                 >
                   {/* Overlay pattern - on bg color only, behind image/video */}
@@ -261,10 +270,10 @@ const SlideCarousel = ({
                       }}
                     >
                       {slide.showUsername !== false ? (
-                        <span className="outline-none text-xs font-normal" style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '12px' }}>{slide.username}</span>
+                        <span className="outline-none font-normal" style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: `${fmt.usernameSize}px` }}>{slide.username}</span>
                       ) : <span />}
                       {slide.showSlideCount !== false ? (
-                        <span className="text-xs font-normal" style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '12px' }}>{index + 1}/{slides.length}</span>
+                        <span className="font-normal" style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: `${fmt.usernameSize}px` }}>{index + 1}/{slides.length}</span>
                       ) : <span />}
                     </div>
                     )}
@@ -275,12 +284,12 @@ const SlideCarousel = ({
                       className="outline-none font-bold cursor-pointer"
                       style={{
                         color: '#ffffff',
-                        fontSize: `${slide.titleSize ?? 24}px`,
+                        fontSize: `${slide.titleSize ?? fmt.titleSize}px`,
                         fontFamily: slide.titleFont || "'Inter', sans-serif",
                         textTransform: (slide.titleCase === 'uppercase' ? 'uppercase' : slide.titleCase === 'lowercase' ? 'lowercase' : 'none') as React.CSSProperties['textTransform'],
                         lineHeight: slide.titleLineHeight ?? 1.1,
                         letterSpacing: `${slide.titleLetterSpacing ?? 0}px`,
-                        marginTop: slide.vAlign === "start" ? "32px" : "0",
+                        marginTop: slide.vAlign === "start" ? `${fmt.padding + 12}px` : "0",
                       }}
                       dangerouslySetInnerHTML={{ __html: slide.title }}
                     />
@@ -289,7 +298,7 @@ const SlideCarousel = ({
                         className="outline-none mt-3 font-normal cursor-pointer"
                         style={{
                           color: 'rgba(255, 255, 255, 0.85)',
-                          fontSize: `${slide.bodySize ?? 14}px`,
+                          fontSize: `${slide.bodySize ?? fmt.bodySize}px`,
                           fontFamily: slide.bodyFont || "'Inter', sans-serif",
                           textTransform: (slide.bodyCase === 'uppercase' ? 'uppercase' : slide.bodyCase === 'lowercase' ? 'lowercase' : 'none') as React.CSSProperties['textTransform'],
                           lineHeight: slide.bodyLineHeight ?? 1.5,
@@ -313,12 +322,12 @@ const SlideCarousel = ({
                         }}
                       >
                         {slide.showFooter ? (
-                          <span className="text-[10px] font-normal" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                          <span className="font-normal" style={{ color: 'rgba(255,255,255,0.6)', fontSize: `${fmt.footerSize}px` }}>
                             {slide.footerText || ""}
                           </span>
                         ) : <span />}
                         {slide.showArrow !== false && index < slides.length - 1 ? (
-                          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>→</span>
+                          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: `${fmt.footerSize + 2}px` }}>→</span>
                         ) : <span />}
                       </div>
                     )}

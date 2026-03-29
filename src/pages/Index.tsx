@@ -18,7 +18,6 @@ const initialSlides: Slide[] = [
     bgType: "color", hAlign: "left", vAlign: "center",
     overlayType: "none", overlayOpacity: 50,
     bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0,
-    titleSize: 24, bodySize: 14,
   },
   {
     id: 2, username: "@username", title: "Расскажите историю",
@@ -27,7 +26,6 @@ const initialSlides: Slide[] = [
     bgType: "color", hAlign: "left", vAlign: "center",
     overlayType: "none", overlayOpacity: 50,
     bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0,
-    titleSize: 24, bodySize: 14,
   },
   {
     id: 3, username: "@username", title: "Призыв к действию",
@@ -36,7 +34,6 @@ const initialSlides: Slide[] = [
     bgType: "color", hAlign: "left", vAlign: "center",
     overlayType: "none", overlayOpacity: 50,
     bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0,
-    titleSize: 24, bodySize: 14,
   },
 ];
 
@@ -109,7 +106,6 @@ const Index = () => {
       bgType: "color", hAlign: "left", vAlign: "center",
       overlayType: "none", overlayOpacity: 50,
       bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0,
-      titleSize: 24, bodySize: 14,
     };
     setSlides(prev => { const next = [...prev]; next.splice(atIndex, 0, newSlide); return next; });
     setActiveSlide(atIndex);
