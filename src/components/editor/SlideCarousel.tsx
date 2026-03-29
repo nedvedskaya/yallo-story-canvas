@@ -47,6 +47,10 @@ export interface Slide {
   bodyOffsetX?: number;
   bodyOffsetY?: number;
   bodyScale?: number;
+  titleColor?: string;
+  bodyColor?: string;
+  metaColor?: string;
+  overlayColor?: string;
 }
 
 const addBtnStyle: React.CSSProperties = { ...glassBtnStyle, width: 32, height: 32, flexShrink: 0 };
