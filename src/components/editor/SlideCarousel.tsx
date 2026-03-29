@@ -49,6 +49,9 @@ export interface Slide {
   showArrow?: boolean;
   showFooter?: boolean;
   footerText?: string;
+  textOffsetX?: number;
+  textOffsetY?: number;
+  textScale?: number;
 }
 
 const hAlignToText: Record<HAlign, string> = { left: "left", center: "center", right: "right" };
@@ -89,6 +92,12 @@ const SlideCarousel = ({
   const [editorOpen, setEditorOpen] = useState(false);
   const [editorField, setEditorField] = useState<"title" | "body">("title");
 
+  // Touch drag & pinch state
+  const touchStartRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number } | null>(null);
+  const pinchStartRef = useRef<{ dist: number; scale: number } | null>(null);
+  const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
+  const [pinchScale, setPinchScale] = useState<number | null>(null);
+
   const formatInfo = FORMAT_OPTIONS.find(f => f.id === slideFormat) || FORMAT_OPTIONS[0];
   const slideAspectRatio = `${formatInfo.width}/${formatInfo.height}`;
   const isLandscape = formatInfo.width > formatInfo.height;
@@ -97,6 +106,59 @@ const SlideCarousel = ({
   const openEditor = (field: "title" | "body") => {
     setEditorField(field);
     setEditorOpen(true);
+  };
+
+  const getTouchDist = (t: React.TouchEvent) => {
+    const [a, b] = [t.touches[0], t.touches[1]];
+    return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+  };
+
+  const handleTextTouchStart = (e: React.TouchEvent, slide: Slide) => {
+    if (editorOpen) return;
+    if (e.touches.length === 1) {
+      touchStartRef.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+        offsetX: slide.textOffsetX ?? 0,
+        offsetY: slide.textOffsetY ?? 0,
+      };
+      pinchStartRef.current = null;
+    } else if (e.touches.length === 2) {
+      touchStartRef.current = null;
+      pinchStartRef.current = { dist: getTouchDist(e), scale: slide.textScale ?? 1 };
+    }
+  };
+
+  const handleTextTouchMove = (e: React.TouchEvent, slideId: number) => {
+    if (editorOpen) return;
+    if (e.touches.length === 1 && touchStartRef.current) {
+      const dx = e.touches[0].clientX - touchStartRef.current.x;
+      const dy = e.touches[0].clientY - touchStartRef.current.y;
+      setDragOffset({ x: touchStartRef.current.offsetX + dx, y: touchStartRef.current.offsetY + dy });
+    } else if (e.touches.length === 2 && pinchStartRef.current) {
+      const dist = getTouchDist(e);
+      const ratio = dist / pinchStartRef.current.dist;
+      setPinchScale(Math.max(0.3, Math.min(3, pinchStartRef.current.scale * ratio)));
+    }
+  };
+
+  const handleTextTouchEnd = (slideId: number, slide: Slide) => {
+    if (editorOpen) return;
+    const updates: Partial<Slide> = {};
+    if (dragOffset !== null) {
+      updates.textOffsetX = dragOffset.x;
+      updates.textOffsetY = dragOffset.y;
+      setDragOffset(null);
+    }
+    if (pinchScale !== null) {
+      updates.textScale = pinchScale;
+      setPinchScale(null);
+    }
+    if (Object.keys(updates).length > 0) {
+      onUpdateSlide(slideId, updates);
+    }
+    touchStartRef.current = null;
+    pinchStartRef.current = null;
   };
 
   const scrollToIndex = (index: number) => {
@@ -232,7 +294,7 @@ const SlideCarousel = ({
                   {/* Content layer */}
                   <div className="relative z-10 flex flex-col h-full w-full">
                     {/* Top bar: username + slide count — always at top */}
-                    <div className="flex items-center justify-between w-full flex-shrink-0">
+                    <div className="flex items-center justify-between w-full flex-shrink-0 mb-2">
                       {slide.showUsername !== false ? (
                         <span className="outline-none font-normal" style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: `${fmt.usernameSize}px` }}>{slide.username}</span>
                       ) : <span />}
@@ -241,9 +303,18 @@ const SlideCarousel = ({
                       ) : <span />}
                     </div>
 
-                    {/* Content area — flex-1, vAlign controls justifyContent */}
+                    {/* Content area — flex-1, vAlign controls justifyContent, draggable */}
                     <div className="flex flex-col flex-1 min-h-0" style={{ justifyContent: vAlignToJustify[slide.vAlign] }}>
-                      <div>
+                      <div
+                        onTouchStart={(e) => handleTextTouchStart(e, slide)}
+                        onTouchMove={(e) => handleTextTouchMove(e, slide.id)}
+                        onTouchEnd={() => handleTextTouchEnd(slide.id, slide)}
+                        style={{
+                          transform: `translate(${(dragOffset !== null && index === activeSlide ? dragOffset.x : slide.textOffsetX ?? 0)}px, ${(dragOffset !== null && index === activeSlide ? dragOffset.y : slide.textOffsetY ?? 0)}px) scale(${(pinchScale !== null && index === activeSlide ? pinchScale : slide.textScale ?? 1)})`,
+                          transformOrigin: 'center center',
+                          touchAction: 'none',
+                        }}
+                      >
                         <h2
                           onClick={() => openEditor("title")}
                           className="outline-none font-bold cursor-pointer"
