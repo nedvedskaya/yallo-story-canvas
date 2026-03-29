@@ -48,10 +48,6 @@ const TextPanel = ({ currentSlide, onSave, onApplyTextToAll }: TextPanelProps) =
     onSave(mapped);
   }, [onSave]);
 
-  const handleSave = () => {
-    if (applyAll) onApplyTextToAll();
-    onClose();
-  };
 
   return (
     <div className="flex flex-col gap-4 overflow-y-auto max-h-[30vh] scrollbar-hide">

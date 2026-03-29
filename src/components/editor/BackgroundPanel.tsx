@@ -87,11 +87,6 @@ const BackgroundPanel = ({
     }
   };
 
-  const handleSave = () => {
-    if (applyToAll) onApplyToAll();
-    onClose();
-  };
-
   const tabItems: { id: BgTab; label: string }[] = [
     { id: "color", label: "Цвет" },
     { id: "photo", label: "Фото" },
