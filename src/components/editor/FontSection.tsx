@@ -16,6 +16,7 @@ export interface CustomFont {
 }
 
 export const FONT_LIST = [
+  { name: "Inter", family: "'Inter', sans-serif" },
   { name: "Abraxas", family: "'Abraxas', serif" },
   { name: "HeadingNow", family: "'HeadingNow Trial', sans-serif" },
   { name: "SouthGhetto", family: "'SouthGhetto', sans-serif" },

@@ -169,9 +169,9 @@ const TEMPLATES: SlideTemplate[] = [
         <div className="flex-1 flex flex-col justify-center gap-1 py-1">
           <h3
             style={{
-              fontFamily: "'Dela Gothic One', sans-serif",
-              fontSize: 8,
-              lineHeight: 1.15,
+              fontFamily: "'SONGER Grotesque', sans-serif",
+              fontSize: 7,
+              lineHeight: 1.2,
               color: "#1A1A1A",
               margin: 0,
               textAlign: "left",
@@ -183,7 +183,7 @@ const TEMPLATES: SlideTemplate[] = [
               style={{
                 background: "#7C5CFC",
                 color: "#FFFFFF",
-                padding: "0 2px",
+                padding: "1px 2px",
                 borderRadius: 1,
               }}
             >
