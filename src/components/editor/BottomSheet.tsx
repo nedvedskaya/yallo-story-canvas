@@ -106,7 +106,6 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
                 <SizePanel
                   currentFormat={slideFormat}
                   onSave={onSlideFormatChange}
-                  onClose={onSaveClose}
                 />
               ) : content && (
                 <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-1">
