@@ -156,6 +156,7 @@ const Index = () => {
             onMoveSlide={handleMoveSlide}
             onDuplicateSlide={handleDuplicateSlide}
             onDeleteSlide={handleDeleteSlide}
+            onEditorOpenChange={setTextEditorOpen}
           />
         </main>
       </div>
