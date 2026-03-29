@@ -14,10 +14,11 @@ type MenuId = (typeof menuItems)[number]["id"];
 interface BottomMenuProps {
   activeTab: MenuId | null;
   onTabChange: (tab: MenuId | null) => void;
+  hidden?: boolean;
 }
 
-const BottomMenu = ({ activeTab, onTabChange }: BottomMenuProps) => {
-  if (activeTab) return null;
+const BottomMenu = ({ activeTab, onTabChange, hidden }: BottomMenuProps) => {
+  if (activeTab || hidden) return null;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-[max(0.5rem,env(safe-area-inset-bottom))]">

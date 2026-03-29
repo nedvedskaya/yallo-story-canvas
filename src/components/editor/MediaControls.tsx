@@ -15,7 +15,7 @@ const MediaControls = ({ scale, posX, posY, darken, onChange }: MediaControlsPro
     <div className="flex items-center gap-2">
       <ZoomIn size={12} style={labelStyle} />
       <span className="text-[10px] flex-shrink-0" style={labelStyle}>Масштаб</span>
-      <Slider value={[scale]} onValueChange={([v]) => onChange({ bgScale: v })} min={50} max={300} step={1} className="flex-1" />
+      <Slider value={[scale]} onValueChange={([v]) => onChange({ bgScale: v })} min={10} max={300} step={1} className="flex-1" />
       <span className="text-[10px] w-8 text-right" style={valStyle}>{scale}%</span>
     </div>
     <div className="flex items-center gap-2">

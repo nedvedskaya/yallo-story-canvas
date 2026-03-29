@@ -182,20 +182,7 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
           </div>
         </div>
 
-        {/* Save */}
-        <div className="px-4 pb-4 pt-1">
-          <button
-            onClick={handleSave}
-            className="w-full py-2.5 text-[11px] font-medium transition-all active:scale-[0.97]"
-            style={{
-              background: 'rgba(26,26,46,0.85)',
-              color: '#fff',
-              borderRadius: '12px',
-            }}
-          >
-            Сохранить
-          </button>
-        </div>
+        <div className="pb-3" />
       </div>
     </div>
   );
