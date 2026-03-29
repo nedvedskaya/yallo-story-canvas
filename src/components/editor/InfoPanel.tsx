@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import type { Slide } from "./SlideCarousel";
+import { labelStyle } from "./shared-styles";
 
 interface InfoPanelProps {
   currentSlide: Slide;
@@ -18,7 +19,7 @@ const InfoPanel = ({ currentSlide, onSave, onApplyInfoToAll }: InfoPanelProps) =
   const footerText = currentSlide.footerText ?? "";
   const username = currentSlide.username ?? "@username";
 
-  const labelStyle = { color: "rgba(26,26,46,0.6)" };
+  
 
 
   return (

@@ -2,6 +2,7 @@ import { useRef, useCallback, useState } from "react";
 import { Plus, ChevronLeft, ChevronRight, Copy, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SlideToolbar, { type HAlign, type VAlign, type BgType } from "./SlideToolbar";
+import { glassBtnStyle } from "./shared-styles";
 import SlideOverlay from "./SlideOverlay";
 import type { OverlayType } from "./BackgroundPanel";
 import TextEditorModal from "./TextEditorModal";
@@ -53,13 +54,16 @@ export interface Slide {
 const hAlignToText: Record<HAlign, string> = { left: "left", center: "center", right: "right" };
 const vAlignToJustify: Record<VAlign, string> = { start: "flex-start", center: "center", end: "flex-end" };
 
-const glassBtnStyle: React.CSSProperties = {
-  width: 36, height: 36, color: "#4a4a6a",
-  background: "rgba(255, 255, 255, 0.5)",
-  backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
-  border: "1px solid rgba(255, 255, 255, 0.7)", borderRadius: "10px",
-  boxShadow: "0 2px 6px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)",
-};
+const getBgMediaStyle = (slide: Slide): React.CSSProperties => ({
+  position: 'absolute',
+  left: `${slide.bgPosX}%`,
+  top: `${slide.bgPosY}%`,
+  transform: `translate(-50%, -50%) scale(${slide.bgScale / 100})`,
+  transformOrigin: 'center center',
+  minWidth: '100%',
+  minHeight: '100%',
+});
+
 
 const addBtnStyle: React.CSSProperties = { ...glassBtnStyle, width: 32, height: 32, flexShrink: 0 };
 
@@ -201,51 +205,23 @@ const SlideCarousel = ({
                   {/* Background image layer */}
                   {slide.bgImage && (
                     <div className="absolute inset-0 z-[2]" style={{ borderRadius: '16px', overflow: 'hidden' }}>
-                      <img
-                        src={slide.bgImage}
-                        alt=""
-                        style={{
-                          position: 'absolute',
-                          left: `${slide.bgPosX}%`,
-                          top: `${slide.bgPosY}%`,
-                          transform: `translate(-50%, -50%) scale(${slide.bgScale / 100})`,
-                          transformOrigin: 'center center',
-                          minWidth: '100%',
-                          minHeight: '100%',
-                          objectFit: 'contain',
-                        }}
-                      />
+                      <img src={slide.bgImage} alt="" style={{ ...getBgMediaStyle(slide), objectFit: 'contain' }} />
                       {slide.bgDarken > 0 && (
                         <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${slide.bgDarken / 100})` }} />
                       )}
                     </div>
                   )}
-                  {/* Background video layer */}
                   {slide.bgVideo && (
                     <div className="absolute inset-0 z-[2]" style={{ borderRadius: '16px', overflow: 'hidden' }}>
                       <video
                         src={slide.bgVideo}
-                        autoPlay
-                        loop
+                        autoPlay loop playsInline
                         muted={slide.bgMuted !== false || index !== activeSlide}
-                        playsInline
-                        style={{
-                          position: 'absolute',
-                          left: `${slide.bgPosX}%`,
-                          top: `${slide.bgPosY}%`,
-                          transform: `translate(-50%, -50%) scale(${slide.bgScale / 100})`,
-                          transformOrigin: 'center center',
-                          minWidth: '100%',
-                          minHeight: '100%',
-                          objectFit: 'cover',
-                        }}
+                        style={{ ...getBgMediaStyle(slide), objectFit: 'cover' }}
                         ref={(el) => {
                           if (el) {
-                            if (index === activeSlide) {
-                              el.play().catch(() => {});
-                            } else {
-                              el.pause();
-                            }
+                            if (index === activeSlide) el.play().catch(() => {});
+                            else el.pause();
                           }
                         }}
                       />
