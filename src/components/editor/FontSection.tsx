@@ -23,6 +23,14 @@ export const FONT_LIST = [
   { name: "Marvin Visions", family: "'Marvin Visions', sans-serif" },
   { name: "SONGER", family: "'SONGER Grotesque', sans-serif" },
   { name: "Coolvetica", family: "'Coolvetica', sans-serif" },
+  { name: "BeerMoney", family: "'BeerMoney', sans-serif" },
+  { name: "Bella Script", family: "'Bella Script CYR', cursive" },
+  { name: "Druk Wide", family: "'Druk Wide Cyr', sans-serif" },
+  { name: "Evolventa", family: "'Evolventa', sans-serif" },
+  { name: "Great Vibes", family: "'Great Vibes', cursive" },
+  { name: "Le Murmure", family: "'Le Murmure', sans-serif" },
+  { name: "Moniqa", family: "'Moniqa', sans-serif" },
+  { name: "Oks Free", family: "'Oks Free', sans-serif" },
 ];
 
 interface FontSectionProps {
