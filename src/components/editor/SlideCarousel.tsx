@@ -327,7 +327,7 @@ const SlideCarousel = ({
                           </span>
                         ) : <span />}
                         {slide.showArrow !== false && index < slides.length - 1 ? (
-                          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>→</span>
+                          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: `${fmt.footerSize + 2}px` }}>→</span>
                         ) : <span />}
                       </div>
                     )}
