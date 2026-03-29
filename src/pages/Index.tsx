@@ -98,32 +98,9 @@ const Index = () => {
     );
   }, [currentSlide]);
 
-  const handleTabChange = useCallback((tab: MenuId | null) => {
-    if (tab && currentSlide) {
-      slideSnapshotRef.current = { ...currentSlide };
-      formatSnapshotRef.current = slideFormat;
-    }
-    setActiveTab(tab);
-  }, [currentSlide, slideFormat]);
-
-  const handleSaveClose = useCallback(() => {
-    slideSnapshotRef.current = null;
-    formatSnapshotRef.current = null;
+  const handleClosePanel = useCallback(() => {
     setActiveTab(null);
   }, []);
-
-  const handleCancelClose = useCallback(() => {
-    if (slideSnapshotRef.current && currentSlide) {
-      const snap = slideSnapshotRef.current;
-      setSlides(prev => prev.map(s => s.id === snap.id ? snap : s));
-    }
-    if (formatSnapshotRef.current !== null) {
-      setSlideFormat(formatSnapshotRef.current);
-    }
-    slideSnapshotRef.current = null;
-    formatSnapshotRef.current = null;
-    setActiveTab(null);
-  }, [currentSlide]);
 
   const handleAddSlide = useCallback((atIndex: number) => {
     const newSlide: Slide = {
