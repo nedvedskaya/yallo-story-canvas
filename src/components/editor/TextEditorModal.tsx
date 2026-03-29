@@ -94,7 +94,7 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
       <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.1)', backdropFilter: 'blur(2px)' }} />
 
       <div
-        className="relative w-full max-w-md mx-3 mb-[calc(76px+env(safe-area-inset-bottom))] animate-in slide-in-from-bottom-4 duration-200"
+        className="relative w-full max-w-md mx-3 mb-[calc(12px+env(safe-area-inset-bottom))] animate-in slide-in-from-bottom-4 duration-200"
         onClick={(e) => e.stopPropagation()}
         style={{
           background: 'rgba(255, 255, 255, 0.45)',
