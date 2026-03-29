@@ -133,14 +133,18 @@ const SlideCarousel = ({
   };
 
   // ── Text touch drag/pinch ──
-  const handleTextTouchStart = (e: React.TouchEvent, slide: Slide) => {
+  const handleTextTouchStart = (e: React.TouchEvent, slide: Slide, target: "title" | "body") => {
     if (editorOpen) return;
+    textDragTarget.current = target;
+    const oxKey = target === "title" ? "titleOffsetX" : "bodyOffsetX";
+    const oyKey = target === "title" ? "titleOffsetY" : "bodyOffsetY";
+    const scaleKey = target === "title" ? "titleScale" : "bodyScale";
     if (e.touches.length === 1) {
-      touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, offsetX: slide.textOffsetX ?? 0, offsetY: slide.textOffsetY ?? 0 };
+      touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, offsetX: slide[oxKey] ?? 0, offsetY: slide[oyKey] ?? 0 };
       pinchStartRef.current = null;
     } else if (e.touches.length === 2) {
       touchStartRef.current = null;
-      pinchStartRef.current = { dist: getTouchDist(e), scale: slide.textScale ?? 1 };
+      pinchStartRef.current = { dist: getTouchDist(e), scale: slide[scaleKey] ?? 1 };
     }
   };
   const handleTextTouchMove = (e: React.TouchEvent) => {
@@ -154,20 +158,26 @@ const SlideCarousel = ({
       setPinchScale(Math.max(0.3, Math.min(3, pinchStartRef.current.scale * (dist / pinchStartRef.current.dist))));
     }
   };
-  const handleTextTouchEnd = (slideId: number, slide: Slide) => {
+  const handleTextTouchEnd = (slideId: number) => {
     if (editorOpen) return;
+    const t = textDragTarget.current;
+    const oxKey = t === "title" ? "titleOffsetX" : "bodyOffsetX";
+    const oyKey = t === "title" ? "titleOffsetY" : "bodyOffsetY";
+    const scaleKey = t === "title" ? "titleScale" : "bodyScale";
     const updates: Partial<Slide> = {};
-    if (dragOffset !== null) { updates.textOffsetX = dragOffset.x; updates.textOffsetY = dragOffset.y; setDragOffset(null); }
-    if (pinchScale !== null) { updates.textScale = pinchScale; setPinchScale(null); }
+    if (dragOffset !== null) { updates[oxKey] = dragOffset.x; updates[oyKey] = dragOffset.y; setDragOffset(null); }
+    if (pinchScale !== null) { updates[scaleKey] = pinchScale; setPinchScale(null); }
     if (Object.keys(updates).length > 0) onUpdateSlide(slideId, updates);
     touchStartRef.current = null; pinchStartRef.current = null;
   };
 
   // ── Text mouse drag (desktop) ──
-  const handleTextMouseDown = (e: React.MouseEvent, slide: Slide) => {
+  const handleTextMouseDown = (e: React.MouseEvent, slide: Slide, target: "title" | "body") => {
     if (editorOpen) return;
     e.preventDefault();
-    mouseDragRef.current = { x: e.clientX, y: e.clientY, offsetX: slide.textOffsetX ?? 0, offsetY: slide.textOffsetY ?? 0, slideId: slide.id };
+    const oxKey = target === "title" ? "titleOffsetX" : "bodyOffsetX";
+    const oyKey = target === "title" ? "titleOffsetY" : "bodyOffsetY";
+    mouseDragRef.current = { x: e.clientX, y: e.clientY, offsetX: slide[oxKey] ?? 0, offsetY: slide[oyKey] ?? 0, slideId: slide.id, target };
   };
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
@@ -179,7 +189,10 @@ const SlideCarousel = ({
     const onMouseUp = () => {
       if (!mouseDragRef.current) return;
       if (dragOffset !== null) {
-        onUpdateSlide(mouseDragRef.current.slideId, { textOffsetX: dragOffset.x, textOffsetY: dragOffset.y });
+        const t = mouseDragRef.current.target;
+        const oxKey = t === "title" ? "titleOffsetX" : "bodyOffsetX";
+        const oyKey = t === "title" ? "titleOffsetY" : "bodyOffsetY";
+        onUpdateSlide(mouseDragRef.current.slideId, { [oxKey]: dragOffset.x, [oyKey]: dragOffset.y });
         setDragOffset(null);
       }
       mouseDragRef.current = null;
