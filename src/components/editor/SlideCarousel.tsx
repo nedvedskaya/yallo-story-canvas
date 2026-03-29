@@ -489,7 +489,7 @@ const SlideCarousel = ({
                           }}
                         >
                           <p
-                            onClick={() => openEditor("body")}
+                            onClick={() => { if (textDragMovedRef.current) return; openEditor("body"); }}
                             className="outline-none mt-3 font-normal cursor-pointer"
                             style={{
                               color: 'rgba(255, 255, 255, 0.85)',
