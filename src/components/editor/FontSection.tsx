@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Plus } from "lucide-react";
 
