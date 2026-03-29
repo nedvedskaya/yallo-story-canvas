@@ -12,7 +12,7 @@ import { FORMAT_OPTIONS, type SlideFormat } from "./SizePanel";
 const FORMAT_TEXT_DEFAULTS: Record<SlideFormat, { titleSize: number; bodySize: number; padding: number; usernameSize: number; footerSize: number }> = {
   carousel:     { titleSize: 22, bodySize: 13, padding: 20, usernameSize: 11, footerSize: 9 },
   square:       { titleSize: 20, bodySize: 12, padding: 18, usernameSize: 11, footerSize: 9 },
-  stories:      { titleSize: 26, bodySize: 15, padding: 24, usernameSize: 12, footerSize: 10 },
+  stories:      { titleSize: 20, bodySize: 12, padding: 24, usernameSize: 12, footerSize: 10 },
   presentation: { titleSize: 18, bodySize: 11, padding: 16, usernameSize: 10, footerSize: 8 },
 };
 
