@@ -15,6 +15,7 @@ const TEMPLATES: SlideTemplate[] = [
   {
     id: "minimalism",
     name: "Минимализм",
+    accentColor: "#FF4200",
     apply: {
       bgColor: "#F3F3F3",
       bgImage: undefined,
