@@ -88,7 +88,7 @@ const TEMPLATES: SlideTemplate[] = [
             }}
           >
             Заголовок{" "}
-            <span style={{ color: "#FF4200" }}>слайда</span>
+            <span style={{ background: "#FF4200", color: "#fff", padding: "0 2px", borderRadius: 1 }}>слайда</span>
           </h3>
           <p style={{ fontSize: 5, color: "#1A1A1A", margin: 0, lineHeight: 1.5, textAlign: "left" }}>
             Основной текст слайда
