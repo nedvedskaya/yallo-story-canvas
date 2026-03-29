@@ -10,6 +10,8 @@ import { Progress } from "@/components/ui/progress";
 import type { Slide } from "./SlideCarousel";
 import { FORMAT_OPTIONS, type SlideFormat } from "./SizePanel";
 import SlideFrame from "./SlideFrame";
+import { loadVideoFrame } from "./export-utils";
+import type { Root } from "react-dom/client";
 
 interface DownloadModalProps {
   open: boolean;
@@ -49,7 +51,7 @@ async function renderSlideToDOM(
   exportHeight: number,
   previewWidth: number,
   overlayOnly = false,
-): Promise<HTMLDivElement> {
+): Promise<{ container: HTMLDivElement; root: Root }> {
   const scale = exportWidth / previewWidth;
 
   const container = document.createElement("div");
@@ -95,16 +97,13 @@ async function renderSlideToDOM(
       if (promises.length > 0) await Promise.all(promises);
       await wait(50);
 
-      resolve(container);
+      resolve({ container, root });
     }));
   });
 }
 
-function cleanupContainer(container: HTMLDivElement) {
-  try {
-    const root = createRoot(container);
-    root.unmount();
-  } catch {}
+function cleanupContainer(container: HTMLDivElement, root: Root) {
+  try { root.unmount(); } catch {}
   try { document.body.removeChild(container); } catch {}
 }
 
@@ -169,16 +168,16 @@ async function recordVideoSlide(
       });
 
       // Build overlay using SlideFrame (overlay-only mode)
-      const overlayContainer = await renderSlideToDOM(slide, format, slideIndex, totalSlides, ew, eh, previewWidth, true);
+      const overlayResult = await renderSlideToDOM(slide, format, slideIndex, totalSlides, ew, eh, previewWidth, true);
 
       let overlayCanvas: HTMLCanvasElement | null = null;
       try {
-        overlayCanvas = await html2canvas(overlayContainer.firstElementChild as HTMLElement || overlayContainer, {
+        overlayCanvas = await html2canvas(overlayResult.container.firstElementChild as HTMLElement || overlayResult.container, {
           scale: 1, useCORS: true, allowTaint: true, backgroundColor: null,
           width: ew, height: eh, logging: false,
         });
       } catch (e) { console.warn("Overlay capture failed", e); }
-      cleanupContainer(overlayContainer);
+      cleanupContainer(overlayResult.container, overlayResult.root);
 
       const canvas = document.createElement("canvas");
       canvas.width = ew; canvas.height = eh;
@@ -274,7 +273,17 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
 
   const captureSlide = useCallback(async (slide: Slide, index: number): Promise<HTMLCanvasElement> => {
     const pw = getPreviewWidth(slideFormat);
-    const container = await renderSlideToDOM(slide, slideFormat, index, slides.length, formatInfo.width, formatInfo.height, pw);
+
+    // For video slides, capture a frame and substitute as bgImage so html2canvas can render it
+    let renderSlide = slide;
+    if (slide.bgVideo) {
+      const frameDataUrl = await loadVideoFrame(slide.bgVideo);
+      if (frameDataUrl) {
+        renderSlide = { ...slide, bgImage: frameDataUrl, bgVideo: undefined };
+      }
+    }
+
+    const { container, root } = await renderSlideToDOM(renderSlide, slideFormat, index, slides.length, formatInfo.width, formatInfo.height, pw);
 
     const canvas = await html2canvas(container.firstElementChild as HTMLElement || container, {
       scale: 1,
@@ -286,7 +295,7 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
       logging: false,
     });
 
-    cleanupContainer(container);
+    cleanupContainer(container, root);
     return canvas;
   }, [formatInfo, slides.length, slideFormat]);
 
