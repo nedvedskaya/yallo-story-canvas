@@ -1,50 +1,48 @@
 
-# План: убрать дубли рендера/сохранения и сделать единый источник отображения
+# Fix: видео-слайды не открываются на телефоне
 
-## Что уже выявлено
-- Дублирование есть: `SlideCarousel.tsx` и `export-utils.ts` оба отдельно описывают один и тот же слайд (типографика, отступы, позиционирование, overlay, медиа).
-- В `export-utils.ts` дублируется контентный слой между `buildExportSlide` и `buildContentOverlay`.
-- Из-за разных путей рендера текст «съезжает» при экспорте относительно того, что видно в редакторе.
+## Проблема
+Из скриншота видно: сохраняется файл `slide-2.webm` (1.3 МБ). **iOS не поддерживает формат WebM** — файл нельзя ни открыть, ни воспроизвести на iPhone. Кроме того, `MediaRecorder` на iOS Safari может вообще не поддерживать запись, и текущий код молча падает.
 
-## Что сделаем
+## Решение
 
-1. **Единый рендер слайда (single source of truth)**
-   - Добавить общий компонент `SlideFrame.tsx`, который рендерит весь слайд (фон, медиа, overlay, top/bottom bar, title/body, offsets/scales).
-   - `SlideCarousel` будет использовать `SlideFrame` вместо локальной разметки.
+**Файл: `src/components/editor/DownloadModal.tsx`**
 
-2. **Единая модель вычислений стилей**
-   - Вынести вычисления в общий модуль (например `slide-render-model.ts`):  
-     `getMediaStyle`, `getTextStyle`, `getLayoutMetrics`, `hAlign/vAlign maps`.
-   - И preview, и export берут параметры только из этого модуля.
+### 1. Определять поддерживаемый формат видео
+- На iOS Safari `MediaRecorder` поддерживает `video/mp4` (если доступен вообще)
+- Порядок проверки MIME: `video/mp4` → `video/webm;codecs=vp9` → `video/webm`
+- Расширение файла выбирать по MIME (`.mp4` или `.webm`)
 
-3. **Убрать дубли в экспорте**
-   - В `DownloadModal.tsx` сделать один pipeline сохранения:
-     - `prepareSlide(index)`  
-     - `renderStaticCanvas(slide)` для PNG/PDF  
-     - `renderVideoWithOverlay(slide)` для видео
-   - Общий прогресс/ошибки/скачивание для всех режимов (`png`, `pdf`, `all`), без повторяющихся циклов.
+### 2. Fallback: скачивать оригинальное видео
+- Если `MediaRecorder` недоступен или запись не удалась — скачивать оригинальный файл видео пользователя напрямую
+- Показывать toast: «Видео сохранено без наложенного текста»
 
-4. **Overlay для видео из того же источника**
-   - Для видео-экспорта оверлей строить тем же `SlideFrame` (режим `overlay-only`), а не отдельной вручную собранной разметкой.
-   - Это устранит расхождение текста между экраном и видео.
+### 3. Исправить скачивание на мобильных
+- Текущий `triggerDownload` использует `link.click()` + `window.open()` — на iOS это ненадёжно
+- Для отдельных файлов (не ZIP): использовать `<a>` с `target="_blank"` и `download`
+- Для видео-слайдов без ZIP: скачивать каждый файл отдельно через `window.open(blobUrl)` (iOS лучше обрабатывает прямое открытие blob)
 
-5. **Корректность и проверка一致**
-   - Прогнать проверку на 4 форматах (carousel/square/stories/presentation):
-     - позиции title/body,
-     - переносы строк,
-     - размер/интервалы/выделение,
-     - медиа (contain/cover, позиция, масштаб, затемнение),
-     - совпадение preview vs PNG/PDF и текст поверх видео.
+### 4. Видео-слайды скачивать отдельными файлами (не в ZIP)
+- ZIP с видео на iOS проблематичен (нет встроенной распаковки для blob-видео)
+- Если есть видео-слайды: скачивать каждый слайд отдельным файлом (PNG или MP4/WebM)
+- Показывать прогресс для каждого файла
 
-## Файлы для изменений
-- `src/components/editor/SlideCarousel.tsx`
-- `src/components/editor/DownloadModal.tsx`
-- `src/components/editor/export-utils.ts` (рефактор/упрощение)
-- `src/components/editor/shared-styles.ts` (если нужно для общих токенов)
-- `src/components/editor/SlideFrame.tsx` (новый)
-- `src/components/editor/slide-render-model.ts` (новый, если отделяем вычисления)
+## Изменения в коде
 
-## Технические детали
-- **Do I know what the issue is?** Да. Корневая проблема — два разных рендера одного и того же слайда (preview и export), плюс дубли в самом export-слое.
-- Дополнительно учтём мобильные ограничения `MediaRecorder` (Safari): без «тихого» fallback — только явное уведомление о режиме сохранения.
-- Цель рефактора: не «подгонять» экспорт, а гарантировать совпадение через один общий рендер-источник.
+```text
+recordVideoSlide():
+  - MIME: проверить mp4 первым → webm вторым
+  - Расширение: .mp4 если mp4, иначе .webm
+  - video.muted = true для iOS autoplay policy
+
+triggerDownload():
+  - iOS: window.open(blobUrl) вместо link.click()
+  - Убрать setTimeout + window.open дубль
+
+downloadAll():
+  - Видео-файлы скачивать отдельно, не в ZIP
+  - Или: оставить ZIP но с правильным расширением (.mp4)
+```
+
+## Файл для изменения
+1. `src/components/editor/DownloadModal.tsx`
