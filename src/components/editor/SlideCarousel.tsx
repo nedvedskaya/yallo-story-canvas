@@ -284,12 +284,12 @@ const SlideCarousel = ({
                       className="outline-none font-bold cursor-pointer"
                       style={{
                         color: '#ffffff',
-                        fontSize: `${slide.titleSize ?? 24}px`,
+                        fontSize: `${slide.titleSize ?? fmt.titleSize}px`,
                         fontFamily: slide.titleFont || "'Inter', sans-serif",
                         textTransform: (slide.titleCase === 'uppercase' ? 'uppercase' : slide.titleCase === 'lowercase' ? 'lowercase' : 'none') as React.CSSProperties['textTransform'],
                         lineHeight: slide.titleLineHeight ?? 1.1,
                         letterSpacing: `${slide.titleLetterSpacing ?? 0}px`,
-                        marginTop: slide.vAlign === "start" ? "32px" : "0",
+                        marginTop: slide.vAlign === "start" ? `${fmt.padding + 12}px` : "0",
                       }}
                       dangerouslySetInnerHTML={{ __html: slide.title }}
                     />
