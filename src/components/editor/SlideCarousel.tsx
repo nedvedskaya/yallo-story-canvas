@@ -81,6 +81,7 @@ interface SlideCarouselProps {
   onMoveSlide: (fromIdx: number, dir: -1 | 1) => void;
   onDuplicateSlide: (idx: number) => void;
   onDeleteSlide: (idx: number) => void;
+  onEditorOpenChange?: (open: boolean) => void;
 }
 
 const SlideCarousel = ({
