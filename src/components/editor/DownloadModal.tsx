@@ -158,7 +158,7 @@ async function recordVideoSlide(
 
       const video = document.createElement("video");
       video.src = slide.bgVideo!;
-      video.crossOrigin = "anonymous";
+      if (!slide.bgVideo!.startsWith("blob:")) video.crossOrigin = "anonymous";
       video.playsInline = true;
       video.muted = true; // muted for iOS autoplay policy
       await new Promise<void>((res, rej) => {

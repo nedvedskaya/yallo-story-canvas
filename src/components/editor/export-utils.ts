@@ -19,7 +19,7 @@ export function captureVideoFrame(video: HTMLVideoElement): string {
 export async function loadVideoFrame(src: string): Promise<string> {
   return new Promise((resolve) => {
     const v = document.createElement("video");
-    v.crossOrigin = "anonymous"; v.playsInline = true; v.muted = true;
+    if (!src.startsWith("blob:")) v.crossOrigin = "anonymous"; v.playsInline = true; v.muted = true;
     v.onloadeddata = () => resolve(captureVideoFrame(v));
     v.onerror = () => resolve("");
     v.src = src; v.load();
