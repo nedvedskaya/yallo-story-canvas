@@ -97,6 +97,10 @@ const Index = () => {
     );
   }, [currentSlide]);
 
+  const handleApplyTemplate = useCallback((tpl: SlideTemplate) => {
+    setSlides(prev => prev.map(s => ({ ...s, ...tpl.apply })));
+  }, []);
+
   const handleClosePanel = useCallback(() => {
     setActiveTab(null);
   }, []);
