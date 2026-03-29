@@ -23,7 +23,7 @@ const sheetContent: Record<string, { title: string; icon: React.ElementType; ite
   design: { title: "Шаблоны", icon: Palette, items: ["Минимализм", "Градиент", "Ретро", "Неон", "Пастель", "Тёмный"] },
 };
 
-const BottomSheet = ({ activeTab, onClose, onSaveClose, currentSlide, onUpdateSlide, onApplyBgToAll, onApplyTextToAll, onApplyInfoToAll, slideFormat, onSlideFormatChange }: BottomSheetProps) => {
+const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyBgToAll, onApplyTextToAll, onApplyInfoToAll, slideFormat, onSlideFormatChange }: BottomSheetProps) => {
   const isBackground = activeTab === "background";
   const isText = activeTab === "text";
   const isSize = activeTab === "size";
