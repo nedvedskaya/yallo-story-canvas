@@ -63,10 +63,10 @@ const SlideOverlay = ({ type, opacity, color, scale = 1 }: SlideOverlayProps) =>
           style={{
             ...style,
             backgroundImage: `
-              linear-gradient(${ca(0.25)} 1px, transparent 1px),
-              linear-gradient(90deg, ${ca(0.25)} 1px, transparent 1px)
+              linear-gradient(${ca(0.25)} ${1 * s}px, transparent ${1 * s}px),
+              linear-gradient(90deg, ${ca(0.25)} ${1 * s}px, transparent ${1 * s}px)
             `,
-            backgroundSize: "20px 20px",
+            backgroundSize: `${20 * s}px ${20 * s}px`,
           }}
         />
       );
