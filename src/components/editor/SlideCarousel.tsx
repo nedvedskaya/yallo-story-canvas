@@ -215,6 +215,7 @@ const SlideCarousel = ({
   };
   const handleMediaTouchMove = (e: React.TouchEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     if (e.touches.length === 1 && mediaTouchRef.current) {
       const dx = e.touches[0].clientX - mediaTouchRef.current.x;
       const dy = e.touches[0].clientY - mediaTouchRef.current.y;
