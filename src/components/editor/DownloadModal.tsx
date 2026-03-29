@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { createRoot } from "react-dom/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Image, FileText, Film, Loader2 } from "lucide-react";
 import html2canvas from "html2canvas";
@@ -8,13 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
 import type { Slide } from "./SlideCarousel";
 import { FORMAT_OPTIONS, type SlideFormat } from "./SizePanel";
-import {
-  buildExportSlide,
-  buildContentOverlay,
-  waitForExportAssets,
-  loadVideoFrame,
-  getDefaultPreviewWidth,
-} from "./export-utils";
+import SlideFrame from "./SlideFrame";
 
 interface DownloadModalProps {
   open: boolean;
@@ -27,9 +22,93 @@ interface DownloadModalProps {
 
 const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
 
-/* ── Record a video slide as WebM with text overlay + audio ── */
+/** Render SlideFrame to an offscreen DOM node at native export resolution */
+async function renderSlideToDOM(
+  slide: Slide,
+  format: SlideFormat,
+  slideIndex: number,
+  totalSlides: number,
+  exportWidth: number,
+  exportHeight: number,
+  previewWidth: number,
+  overlayOnly = false,
+): Promise<HTMLDivElement> {
+  const scale = exportWidth / previewWidth;
+
+  const container = document.createElement("div");
+  container.style.cssText = `position:fixed;left:-9999px;top:0;z-index:-1;pointer-events:none;width:${exportWidth}px;height:${exportHeight}px;`;
+  document.body.appendChild(container);
+
+  const root = createRoot(container);
+
+  return new Promise((resolve) => {
+    root.render(
+      <SlideFrame
+        slide={slide}
+        slideIndex={slideIndex}
+        totalSlides={totalSlides}
+        format={format}
+        scale={scale}
+        width={exportWidth}
+        height={exportHeight}
+        overlayOnly={overlayOnly}
+      />
+    );
+
+    // Wait for React render + fonts + images
+    requestAnimationFrame(() => requestAnimationFrame(async () => {
+      await document.fonts.ready;
+
+      // Wait for all images/backgrounds to load
+      const promises: Promise<void>[] = [];
+      container.querySelectorAll("img").forEach(img => {
+        if (!img.complete) {
+          promises.push(new Promise(res => { img.onload = () => res(); img.onerror = () => res(); }));
+        }
+      });
+      container.querySelectorAll("*").forEach(el => {
+        const bg = (el as HTMLElement).style?.backgroundImage;
+        if (bg && bg.startsWith('url(') && !bg.includes("data:image/svg")) {
+          const match = bg.match(/url\(["']?(.+?)["']?\)/);
+          if (match) {
+            const img = new window.Image();
+            img.crossOrigin = "anonymous";
+            promises.push(new Promise(res => { img.onload = () => res(); img.onerror = () => res(); img.src = match[1]; }));
+          }
+        }
+      });
+      if (promises.length > 0) await Promise.all(promises);
+      await wait(50);
+
+      resolve(container);
+    }));
+  });
+}
+
+function cleanupContainer(container: HTMLDivElement) {
+  try {
+    const root = createRoot(container);
+    root.unmount();
+  } catch {}
+  try { document.body.removeChild(container); } catch {}
+}
+
+/** Get preview width from DOM */
+function getPreviewWidth(format: SlideFormat): number {
+  const el = document.querySelector("[data-slide-id]") as HTMLElement;
+  if (el?.offsetWidth) return el.offsetWidth;
+  switch (format) {
+    case "stories": return 220;
+    case "square": return 270;
+    case "presentation": return 380;
+    default: return 290;
+  }
+}
+
+/** Record video slide with text overlay */
 async function recordVideoSlide(
   slide: Slide,
+  format: SlideFormat,
   formatInfo: (typeof FORMAT_OPTIONS)[0],
   slideIndex: number,
   totalSlides: number,
@@ -41,7 +120,6 @@ async function recordVideoSlide(
       onProgress("Подготовка видео...");
       const ew = formatInfo.width, eh = formatInfo.height;
 
-      // Load video
       const video = document.createElement("video");
       video.src = slide.bgVideo!;
       video.crossOrigin = "anonymous";
@@ -49,27 +127,22 @@ async function recordVideoSlide(
       video.muted = false;
       await new Promise<void>((res, rej) => { video.onloadeddata = () => res(); video.onerror = () => rej(new Error("Video load failed")); video.load(); });
 
-      // Build text overlay at native resolution
-      const overlayEl = buildContentOverlay(slide, formatInfo, slideIndex, totalSlides, previewWidth);
-      overlayEl.style.cssText += "position:fixed;left:-9999px;top:0;pointer-events:none;";
-      document.body.appendChild(overlayEl);
-      await waitForExportAssets(overlayEl);
+      // Build overlay using SlideFrame (overlay-only mode)
+      const overlayContainer = await renderSlideToDOM(slide, format, slideIndex, totalSlides, ew, eh, previewWidth, true);
 
       let overlayCanvas: HTMLCanvasElement | null = null;
       try {
-        overlayCanvas = await html2canvas(overlayEl, {
+        overlayCanvas = await html2canvas(overlayContainer.firstElementChild as HTMLElement || overlayContainer, {
           scale: 1, useCORS: true, allowTaint: true, backgroundColor: null,
           width: ew, height: eh, logging: false,
         });
       } catch (e) { console.warn("Overlay capture failed", e); }
-      document.body.removeChild(overlayEl);
+      cleanupContainer(overlayContainer);
 
-      // Canvas for compositing
       const canvas = document.createElement("canvas");
       canvas.width = ew; canvas.height = eh;
       const ctx = canvas.getContext("2d")!;
 
-      // MediaRecorder setup
       const canvasStream = canvas.captureStream(30);
       try {
         const audioCtx = new AudioContext();
@@ -78,7 +151,7 @@ async function recordVideoSlide(
         source.connect(dest);
         source.connect(audioCtx.destination);
         dest.stream.getAudioTracks().forEach(t => canvasStream.addTrack(t));
-      } catch { /* no audio */ }
+      } catch {}
 
       const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9,opus")
         ? "video/webm;codecs=vp9,opus"
@@ -95,11 +168,9 @@ async function recordVideoSlide(
 
       const drawFrame = () => {
         ctx.clearRect(0, 0, ew, eh);
-        // Background color fill
         if (!slide.bgColor.includes("gradient")) { ctx.fillStyle = slide.bgColor; ctx.fillRect(0, 0, ew, eh); }
         else { ctx.fillStyle = "#333"; ctx.fillRect(0, 0, ew, eh); }
 
-        // Draw video frame (cover)
         const vw = video.videoWidth || ew, vh = video.videoHeight || eh;
         const vAR = vw / vh, cAR = ew / eh;
         let dw: number, dh: number;
@@ -110,10 +181,7 @@ async function recordVideoSlide(
         const dy = (bgPosY / 100) * eh - dh / 2;
         ctx.drawImage(video, dx, dy, dw, dh);
 
-        // Darken
         if (slide.bgDarken > 0) { ctx.fillStyle = `rgba(0,0,0,${slide.bgDarken / 100})`; ctx.fillRect(0, 0, ew, eh); }
-
-        // Text overlay
         if (overlayCanvas) ctx.drawImage(overlayCanvas, 0, 0, ew, eh);
       };
 
@@ -138,8 +206,7 @@ async function recordVideoSlide(
   });
 }
 
-/* ── DownloadModal ── */
-const DownloadModal = ({ open, onClose, slides, slideFormat, activeSlide, onSlideChange }: DownloadModalProps) => {
+const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProps) => {
   const [loading, setLoading] = useState(false);
   const [loadingType, setLoadingType] = useState<"png" | "pdf" | "all" | null>(null);
   const [progress, setProgress] = useState(0);
@@ -148,27 +215,12 @@ const DownloadModal = ({ open, onClose, slides, slideFormat, activeSlide, onSlid
   const formatInfo = FORMAT_OPTIONS.find(f => f.id === slideFormat) || FORMAT_OPTIONS[0];
   const hasVideoSlides = slides.some(s => !!s.bgVideo);
 
-  // Read preview width from DOM or use default
-  const getPreviewWidth = useCallback((): number => {
-    const el = document.querySelector("[data-slide-id]") as HTMLElement;
-    return el?.offsetWidth || getDefaultPreviewWidth(slideFormat);
-  }, [slideFormat]);
-
-  // Capture a single slide at native export resolution
+  /** Capture a single static slide at native export resolution using SlideFrame */
   const captureSlide = useCallback(async (slide: Slide, index: number): Promise<HTMLCanvasElement> => {
-    const pw = getPreviewWidth();
+    const pw = getPreviewWidth(slideFormat);
+    const container = await renderSlideToDOM(slide, slideFormat, index, slides.length, formatInfo.width, formatInfo.height, pw);
 
-    let videoFrameUrl: string | undefined;
-    if (slide.bgVideo) videoFrameUrl = await loadVideoFrame(slide.bgVideo);
-
-    const exportEl = buildExportSlide(slide, formatInfo, index, slides.length, pw, videoFrameUrl);
-    exportEl.style.cssText += "position:fixed;left:-9999px;top:0;pointer-events:none;z-index:-1;";
-    document.body.appendChild(exportEl);
-
-    await waitForExportAssets(exportEl);
-    await wait(50); // extra stabilization
-
-    const canvas = await html2canvas(exportEl, {
+    const canvas = await html2canvas(container.firstElementChild as HTMLElement || container, {
       scale: 1,
       useCORS: true,
       allowTaint: true,
@@ -178,9 +230,9 @@ const DownloadModal = ({ open, onClose, slides, slideFormat, activeSlide, onSlid
       logging: false,
     });
 
-    document.body.removeChild(exportEl);
+    cleanupContainer(container);
     return canvas;
-  }, [formatInfo, slides.length, getPreviewWidth]);
+  }, [formatInfo, slides.length, slideFormat]);
 
   const triggerDownload = (blob: Blob, filename: string) => {
     const url = URL.createObjectURL(blob);
@@ -194,7 +246,6 @@ const DownloadModal = ({ open, onClose, slides, slideFormat, activeSlide, onSlid
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 
-  /* ── PNG export ── */
   const downloadPNG = async () => {
     setLoading(true); setLoadingType("png"); setProgress(0); setProgressText("Начинаем экспорт...");
     try {
@@ -203,8 +254,7 @@ const DownloadModal = ({ open, onClose, slides, slideFormat, activeSlide, onSlid
         setProgressText(`Обработка слайда ${i + 1} из ${slides.length}...`);
         setProgress(Math.round((i / slides.length) * 85));
         const canvas = await captureSlide(slides[i], i);
-        const dataUrl = canvas.toDataURL("image/png");
-        zip.file(`slide-${i + 1}.png`, dataUrl.split(",")[1], { base64: true });
+        zip.file(`slide-${i + 1}.png`, canvas.toDataURL("image/png").split(",")[1], { base64: true });
       }
       setProgressText("Упаковка..."); setProgress(90);
       const blob = await zip.generateAsync({ type: "blob" });
@@ -217,13 +267,11 @@ const DownloadModal = ({ open, onClose, slides, slideFormat, activeSlide, onSlid
     } finally { setLoading(false); setLoadingType(null); setProgress(0); setProgressText(""); }
   };
 
-  /* ── PDF export ── */
   const downloadPDF = async () => {
     setLoading(true); setLoadingType("pdf"); setProgress(0); setProgressText("Начинаем экспорт...");
     try {
       const isLandscape = formatInfo.width > formatInfo.height;
       const pdf = new jsPDF({ orientation: isLandscape ? "landscape" : "portrait", unit: "px", format: [formatInfo.width, formatInfo.height] });
-
       for (let i = 0; i < slides.length; i++) {
         setProgressText(`Обработка слайда ${i + 1} из ${slides.length}...`);
         setProgress(Math.round((i / slides.length) * 85));
@@ -240,29 +288,25 @@ const DownloadModal = ({ open, onClose, slides, slideFormat, activeSlide, onSlid
     } finally { setLoading(false); setLoadingType(null); setProgress(0); setProgressText(""); }
   };
 
-  /* ── Save All (PNG + Video) ── */
   const downloadAll = async () => {
     setLoading(true); setLoadingType("all"); setProgress(0); setProgressText("Начинаем экспорт...");
     try {
       const zip = new JSZip();
-      const pw = getPreviewWidth();
-
+      const pw = getPreviewWidth(slideFormat);
       for (let i = 0; i < slides.length; i++) {
         const slide = slides[i];
         setProgress(Math.round((i / slides.length) * 90));
-
         if (slide.bgVideo) {
           setProgressText(`Обработка видео ${i + 1} из ${slides.length}...`);
-          const blob = await recordVideoSlide(slide, formatInfo, i, slides.length, pw, setProgressText);
+          const blob = await recordVideoSlide(slide, slideFormat, formatInfo, i, slides.length, pw, setProgressText);
           if (blob) {
             zip.file(`slide-${i + 1}.webm`, blob);
           } else {
-            // Fallback: save original video
             try {
               const resp = await fetch(slide.bgVideo);
               const vidBlob = await resp.blob();
               zip.file(`slide-${i + 1}-original.mp4`, vidBlob);
-            } catch { console.warn(`Could not fetch video for slide ${i + 1}`); }
+            } catch {}
             toast({ title: "Внимание", description: `Видео слайда ${i + 1} сохранено без текстового оверлея` });
           }
         } else {
@@ -270,9 +314,7 @@ const DownloadModal = ({ open, onClose, slides, slideFormat, activeSlide, onSlid
           const canvas = await captureSlide(slide, i);
           zip.file(`slide-${i + 1}.png`, canvas.toDataURL("image/png").split(",")[1], { base64: true });
         }
-        setProgress(Math.round(((i + 1) / slides.length) * 90));
       }
-
       setProgressText("Упаковка..."); setProgress(95);
       const blob = await zip.generateAsync({ type: "blob" });
       triggerDownload(blob, "slides.zip");
