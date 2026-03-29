@@ -1,4 +1,5 @@
 import type React from "react";
+import type { SlideFormat } from "./SizePanel";
 
 export const glassBtnStyle: React.CSSProperties = {
   width: 36, height: 36, color: "#4a4a6a",
@@ -10,3 +11,24 @@ export const glassBtnStyle: React.CSSProperties = {
 
 export const labelStyle: React.CSSProperties = { color: "rgba(26,26,46,0.5)" };
 export const valStyle: React.CSSProperties = { color: "rgba(26,26,46,0.6)" };
+
+// Format-specific text defaults
+export const FORMAT_TEXT_DEFAULTS: Record<SlideFormat, { titleSize: number; bodySize: number; padding: number; usernameSize: number; footerSize: number }> = {
+  carousel:     { titleSize: 22, bodySize: 13, padding: 20, usernameSize: 11, footerSize: 9 },
+  square:       { titleSize: 20, bodySize: 12, padding: 18, usernameSize: 11, footerSize: 9 },
+  stories:      { titleSize: 20, bodySize: 12, padding: 24, usernameSize: 12, footerSize: 10 },
+  presentation: { titleSize: 18, bodySize: 11, padding: 16, usernameSize: 10, footerSize: 8 },
+};
+
+// Scale format defaults to export pixel size
+export function getExportTextDefaults(format: SlideFormat, exportWidth: number, previewWidth: number) {
+  const base = FORMAT_TEXT_DEFAULTS[format];
+  const scale = exportWidth / previewWidth;
+  return {
+    titleSize: base.titleSize * scale,
+    bodySize: base.bodySize * scale,
+    padding: base.padding * scale,
+    usernameSize: base.usernameSize * scale,
+    footerSize: base.footerSize * scale,
+  };
+}

@@ -19,15 +19,15 @@ const InfoPanel = ({ currentSlide, onSave, onApplyInfoToAll }: InfoPanelProps) =
   const footerText = currentSlide.footerText ?? "";
   const username = currentSlide.username ?? "@username";
 
-  
-
+  const rowStyle = "flex items-center justify-between py-0.5";
+  const lblStyle = { ...labelStyle, fontSize: "10px" };
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-1.5">
       {/* Username */}
-      <div className="flex flex-col gap-1.5">
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] font-medium" style={labelStyle}>Имя пользователя</span>
+      <div className="flex flex-col gap-1">
+        <div className={rowStyle}>
+          <span className="font-medium" style={lblStyle}>Имя пользователя</span>
           <Switch checked={showUsername} onCheckedChange={(v) => onSave({ showUsername: v })} />
         </div>
         {showUsername && (
@@ -35,7 +35,7 @@ const InfoPanel = ({ currentSlide, onSave, onApplyInfoToAll }: InfoPanelProps) =
             type="text"
             value={username}
             onChange={(e) => onSave({ username: e.target.value })}
-            className="w-full rounded-lg px-3 py-1.5 text-xs outline-none"
+            className="w-full rounded-lg px-3 py-1 text-[11px] outline-none"
             style={{
               background: "rgba(255,255,255,0.6)",
               border: "1px solid rgba(200,200,220,0.5)",
@@ -46,28 +46,20 @@ const InfoPanel = ({ currentSlide, onSave, onApplyInfoToAll }: InfoPanelProps) =
         )}
       </div>
 
-      <div className="h-px" style={{ background: "rgba(26,26,46,0.06)" }} />
-
-      {/* Slide count */}
-      <div className="flex items-center justify-between">
-        <span className="text-[11px] font-medium" style={labelStyle}>Нумерация слайдов</span>
+      <div className={rowStyle}>
+        <span className="font-medium" style={lblStyle}>Нумерация слайдов</span>
         <Switch checked={showSlideCount} onCheckedChange={(v) => onSave({ showSlideCount: v })} />
       </div>
 
-      <div className="h-px" style={{ background: "rgba(26,26,46,0.06)" }} />
-
-      {/* Swipe arrow */}
-      <div className="flex items-center justify-between">
-        <span className="text-[11px] font-medium" style={labelStyle}>Стрелка «листать»</span>
+      <div className={rowStyle}>
+        <span className="font-medium" style={lblStyle}>Стрелка «листать»</span>
         <Switch checked={showArrow} onCheckedChange={(v) => onSave({ showArrow: v })} />
       </div>
 
-      <div className="h-px" style={{ background: "rgba(26,26,46,0.06)" }} />
-
       {/* Footer */}
-      <div className="flex flex-col gap-1.5">
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] font-medium" style={labelStyle}>Подвал</span>
+      <div className="flex flex-col gap-1">
+        <div className={rowStyle}>
+          <span className="font-medium" style={lblStyle}>Подвал</span>
           <Switch checked={showFooter} onCheckedChange={(v) => onSave({ showFooter: v })} />
         </div>
         {showFooter && (
@@ -75,7 +67,7 @@ const InfoPanel = ({ currentSlide, onSave, onApplyInfoToAll }: InfoPanelProps) =
             type="text"
             value={footerText}
             onChange={(e) => onSave({ footerText: e.target.value })}
-            className="w-full rounded-lg px-3 py-1.5 text-xs outline-none"
+            className="w-full rounded-lg px-3 py-1 text-[11px] outline-none"
             style={{
               background: "rgba(255,255,255,0.6)",
               border: "1px solid rgba(200,200,220,0.5)",
@@ -86,11 +78,8 @@ const InfoPanel = ({ currentSlide, onSave, onApplyInfoToAll }: InfoPanelProps) =
         )}
       </div>
 
-      <div className="h-px" style={{ background: "rgba(26,26,46,0.06)" }} />
-
-      {/* Apply to all */}
-      <div className="flex items-center justify-between">
-        <span className="text-[11px]" style={labelStyle}>Применить ко всем слайдам</span>
+      <div className={rowStyle}>
+        <span className="font-medium" style={lblStyle}>Применить ко всем</span>
         <Switch checked={applyAll} onCheckedChange={(v) => { setApplyAll(v); if (v) onApplyInfoToAll(); }} />
       </div>
     </div>
