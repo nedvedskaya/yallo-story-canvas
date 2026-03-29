@@ -491,7 +491,7 @@ const SlideCarousel = ({
           onSave={(html) => {
             onUpdateSlide(currentSlide.id, { [editorField]: html });
           }}
-          onClose={() => setEditorOpen(false)}
+          onClose={closeEditor}
         />
       )}
     </div>
