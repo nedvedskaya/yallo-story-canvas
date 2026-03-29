@@ -6,6 +6,7 @@ import BackgroundPanel from "./BackgroundPanel";
 import TextPanel from "./TextPanel";
 import SizePanel, { type SlideFormat } from "./SizePanel";
 import InfoPanel from "./InfoPanel";
+import TemplatesPanel, { type SlideTemplate } from "./TemplatesPanel";
 
 interface BottomSheetProps {
   activeTab: MenuId | null;
@@ -15,13 +16,10 @@ interface BottomSheetProps {
   onApplyBgToAll?: () => void;
   onApplyTextToAll?: () => void;
   onApplyInfoToAll?: () => void;
+  onApplyTemplate?: (tpl: SlideTemplate) => void;
   slideFormat?: SlideFormat;
   onSlideFormatChange?: (format: SlideFormat) => void;
 }
-
-const sheetContent: Record<string, { title: string; icon: React.ElementType; items: string[] }> = {
-  design: { title: "Шаблоны", icon: Palette, items: ["Минимализм", "Градиент", "Ретро", "Неон", "Пастель", "Тёмный"] },
-};
 
 const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyBgToAll, onApplyTextToAll, onApplyInfoToAll, slideFormat, onSlideFormatChange }: BottomSheetProps) => {
   const isBackground = activeTab === "background";
