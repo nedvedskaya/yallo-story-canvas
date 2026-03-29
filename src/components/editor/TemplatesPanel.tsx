@@ -7,12 +7,15 @@ export interface SlideTemplate {
   apply: Partial<Slide>;
   /** Preview render */
   preview: React.ReactNode;
+  /** Accent color for highlighting last word in titles */
+  accentColor?: string;
 }
 
 const TEMPLATES: SlideTemplate[] = [
   {
     id: "minimalism",
     name: "Минимализм",
+    accentColor: "#FF4200",
     apply: {
       bgColor: "#F3F3F3",
       bgImage: undefined,
