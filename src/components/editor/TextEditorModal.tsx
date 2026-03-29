@@ -12,10 +12,12 @@ interface TextEditorModalProps {
 
 const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEditorModalProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
-  const colorInputRef = useRef<HTMLInputElement>(null);
+  const textColorInputRef = useRef<HTMLInputElement>(null);
+  const highlightColorInputRef = useRef<HTMLInputElement>(null);
   const initializedRef = useRef(false);
-  const [accentColor, setAccentColor] = useState("#4D96FF");
-  const [hexInput, setHexInput] = useState("#4D96FF");
+  const [textColor, setTextColor] = useState("#FF4200");
+  const [highlightColor, setHighlightColor] = useState("#FFF3CD");
+  const selectionRef = useRef<Range | null>(null);
 
   useEffect(() => {
     if (open && editorRef.current && !initializedRef.current) {
@@ -26,14 +28,34 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
     if (!open) initializedRef.current = false;
   }, [open]);
 
+  const saveSelection = useCallback(() => {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      selectionRef.current = sel.getRangeAt(0).cloneRange();
+    }
+  }, []);
+
+  const restoreSelection = useCallback(() => {
+    if (selectionRef.current) {
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(selectionRef.current);
+    }
+  }, []);
+
   const exec = useCallback((command: string, value?: string) => {
     document.execCommand(command, false, value);
     editorRef.current?.focus();
   }, []);
 
+  const handleInput = useCallback(() => {
+    if (editorRef.current) {
+      onSave(editorRef.current.innerHTML);
+    }
+  }, [onSave]);
+
   const handleLight = () => {
     exec("fontSize", "2");
-    // Find the font elements created by fontSize and replace with span
     if (editorRef.current) {
       const fonts = editorRef.current.querySelectorAll('font[size="2"]');
       fonts.forEach((font) => {
@@ -44,10 +66,7 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
       });
     }
     editorRef.current?.focus();
-  };
-
-  const handleHighlight = () => {
-    exec("hiliteColor", accentColor);
+    if (editorRef.current) onSave(editorRef.current.innerHTML);
   };
 
   const handleResetFormatting = () => {
@@ -61,26 +80,40 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
           parent.removeChild(span);
         }
       });
+      onSave(editorRef.current.innerHTML);
     }
     editorRef.current?.focus();
   };
 
-  const handleColorPickerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Apply text color with current textColor
+  const applyTextColor = useCallback(() => {
+    exec("foreColor", textColor);
+    if (editorRef.current) onSave(editorRef.current.innerHTML);
+  }, [exec, textColor, onSave]);
+
+  // Apply highlight with current highlightColor
+  const applyHighlight = useCallback(() => {
+    exec("hiliteColor", highlightColor);
+    if (editorRef.current) onSave(editorRef.current.innerHTML);
+  }, [exec, highlightColor, onSave]);
+
+  const handleTextColorPick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const c = e.target.value;
-    setAccentColor(c);
-    setHexInput(c);
+    setTextColor(c);
+    restoreSelection();
+    document.execCommand("foreColor", false, c);
+    editorRef.current?.focus();
+    if (editorRef.current) onSave(editorRef.current.innerHTML);
   };
 
-  const handleHexInput = (val: string) => {
-    setHexInput(val);
-    if (/^#[0-9a-fA-F]{6}$/.test(val)) setAccentColor(val);
+  const handleHighlightColorPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const c = e.target.value;
+    setHighlightColor(c);
+    restoreSelection();
+    document.execCommand("hiliteColor", false, c);
+    editorRef.current?.focus();
+    if (editorRef.current) onSave(editorRef.current.innerHTML);
   };
-
-  const handleInput = useCallback(() => {
-    if (editorRef.current) {
-      onSave(editorRef.current.innerHTML);
-    }
-  }, [onSave]);
 
   if (!open) return null;
 
@@ -139,58 +172,51 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
         </div>
 
         {/* Toolbar */}
-        <div className="px-4 pb-3 flex flex-col gap-2.5">
-          {/* Format icons — no labels */}
-          <div className="flex items-center gap-1.5">
-            <IconBtn icon={<Bold size={16} strokeWidth={2.5} />} title="Жирный" onClick={() => exec("bold")} style={btnBase} />
-            <IconBtn icon={<Italic size={16} />} title="Курсив" onClick={() => exec("italic")} style={btnBase} />
-            <IconBtn icon={<Type size={16} strokeWidth={1} />} title="Тонкий" onClick={handleLight} style={btnBase} />
-            <IconBtn icon={<Underline size={16} />} title="Подчёркнутый" onClick={() => exec("underline")} style={btnBase} />
-            <IconBtn icon={<Strikethrough size={16} />} title="Зачёркнутый" onClick={() => exec("strikeThrough")} style={btnBase} />
+        <div className="px-4 pb-4 flex items-center gap-1.5">
+          <IconBtn icon={<Bold size={16} strokeWidth={2.5} />} title="Жирный" onClick={() => exec("bold")} style={btnBase} />
+          <IconBtn icon={<Italic size={16} />} title="Курсив" onClick={() => exec("italic")} style={btnBase} />
+          <IconBtn icon={<Type size={16} strokeWidth={1} />} title="Тонкий" onClick={handleLight} style={btnBase} />
+          <IconBtn icon={<Underline size={16} />} title="Подчёркнутый" onClick={() => exec("underline")} style={btnBase} />
+          <IconBtn icon={<Strikethrough size={16} />} title="Зачёркнутый" onClick={() => exec("strikeThrough")} style={btnBase} />
 
-            <div className="w-px h-7 mx-0.5" style={{ background: 'rgba(200,200,220,0.5)' }} />
+          <div className="w-px h-7 mx-0.5" style={{ background: 'rgba(200,200,220,0.5)' }} />
 
-            <IconBtn icon={<Palette size={16} />} title="Цвет текста" onClick={() => exec("foreColor", accentColor)} style={{ ...btnBase, color: accentColor }} />
-            <IconBtn icon={<Highlighter size={16} />} title="Фон текста" onClick={handleHighlight} style={{ ...btnBase, color: accentColor }} />
+          {/* Text color: icon applies last color, strip opens picker */}
+          <ColorActionBtn
+            icon={<Palette size={16} />}
+            title="Цвет текста"
+            color={textColor}
+            onIconClick={applyTextColor}
+            onStripClick={() => { saveSelection(); textColorInputRef.current?.click(); }}
+            style={btnBase}
+          />
 
-            <div className="w-px h-7 mx-0.5" style={{ background: 'rgba(200,200,220,0.5)' }} />
+          {/* Highlight: icon applies last color, strip opens picker */}
+          <ColorActionBtn
+            icon={<Highlighter size={16} />}
+            title="Фон текста"
+            color={highlightColor}
+            onIconClick={applyHighlight}
+            onStripClick={() => { saveSelection(); highlightColorInputRef.current?.click(); }}
+            style={btnBase}
+          />
 
-            <IconBtn icon={<RotateCcw size={14} />} title="Сброс" onClick={handleResetFormatting} style={btnBase} />
-          </div>
+          <div className="w-px h-7 mx-0.5" style={{ background: 'rgba(200,200,220,0.5)' }} />
 
-          {/* Accent color — like BackgroundPanel */}
-          <div className="flex items-center gap-2">
-            <p className="text-[11px] font-medium flex-shrink-0" style={{ color: 'rgba(26,26,46,0.5)' }}>Акцентный цвет</p>
-            <div className="relative w-6 h-6 flex-shrink-0">
-              <div className="w-6 h-6 rounded-full" style={{
-                background: accentColor,
-                border: '2px solid rgba(255,255,255,0.8)',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-              }} />
-              <input ref={colorInputRef} type="color" value={accentColor} onChange={handleColorPickerChange}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-            </div>
-            <input
-              type="text"
-              value={hexInput}
-              onChange={(e) => handleHexInput(e.target.value)}
-              maxLength={7}
-              className="w-20 rounded-lg px-2 py-1 text-xs font-mono outline-none"
-              style={{
-                background: 'rgba(255,255,255,0.6)',
-                border: '1px solid rgba(200,200,220,0.5)',
-                color: '#1a1a2e',
-              }}
-            />
-          </div>
+          <IconBtn icon={<RotateCcw size={14} />} title="Сброс" onClick={handleResetFormatting} style={btnBase} />
         </div>
 
-        <div className="pb-3" />
+        {/* Hidden color pickers */}
+        <input ref={textColorInputRef} type="color" value={textColor} onChange={handleTextColorPick}
+          className="absolute w-0 h-0 opacity-0 pointer-events-none" />
+        <input ref={highlightColorInputRef} type="color" value={highlightColor} onChange={handleHighlightColorPick}
+          className="absolute w-0 h-0 opacity-0 pointer-events-none" />
       </div>
     </div>
   );
 };
 
+/* Simple icon button */
 const IconBtn = ({
   icon, title, onClick, style,
 }: {
@@ -207,6 +233,35 @@ const IconBtn = ({
   >
     {icon}
   </button>
+);
+
+/* Color action button: icon + colored strip underneath */
+const ColorActionBtn = ({
+  icon, title, color, onIconClick, onStripClick, style,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  color: string;
+  onIconClick: () => void;
+  onStripClick: () => void;
+  style: React.CSSProperties;
+}) => (
+  <div className="flex flex-col items-center gap-0.5">
+    <button
+      onClick={onIconClick}
+      title={title}
+      className="flex items-center justify-center transition-all active:scale-90"
+      style={{ ...style, width: 34, height: 30, color }}
+    >
+      {icon}
+    </button>
+    <button
+      onClick={onStripClick}
+      title={`Сменить ${title.toLowerCase()}`}
+      className="rounded-full transition-all active:scale-90"
+      style={{ width: 20, height: 4, background: color, border: '1px solid rgba(0,0,0,0.1)' }}
+    />
+  </div>
 );
 
 export default TextEditorModal;
