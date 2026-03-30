@@ -22,7 +22,7 @@ interface BottomSheetProps {
   onSlideFormatChange?: (format: SlideFormat) => void;
 }
 
-const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyBgToAll, onApplyTextToAll, onApplyInfoToAll, onApplyTemplate, slideFormat, onSlideFormatChange }: BottomSheetProps) => {
+const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onUpdateSlideLive, onApplyBgToAll, onApplyTextToAll, onApplyInfoToAll, onApplyTemplate, slideFormat, onSlideFormatChange }: BottomSheetProps) => {
   const isBackground = activeTab === "background";
   const isText = activeTab === "text";
   const isSize = activeTab === "size";
