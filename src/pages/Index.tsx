@@ -258,7 +258,12 @@ const Index = () => {
         onApplyInfoToAll={handleApplyInfoToAll}
         onApplyTemplate={handleApplyTemplate}
         slideFormat={slideFormat}
-        onSlideFormatChange={setSlideFormat}
+        onSlideFormatChange={(fmt) => {
+          setSlideFormat(fmt);
+          if (fmt === "stories") {
+            setSlidesWithHistory(prev => prev.map(s => ({ ...s, showUsername: false, showSlideCount: false })));
+          }
+        }}
       />
       <BottomMenu activeTab={activeTab} onTabChange={setActiveTab} hidden={textEditorOpen} />
       <DownloadModal open={downloadOpen} onClose={() => setDownloadOpen(false)} slides={slides} slideFormat={slideFormat} activeSlide={activeSlide} onSlideChange={setActiveSlide} />
