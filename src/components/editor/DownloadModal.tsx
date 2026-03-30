@@ -377,33 +377,17 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
 
       setProgressText("Сохранение..."); setProgress(90);
 
-      // If there are video slides, download each file separately (ZIP with video is problematic on iOS)
-      if (videoSlides.length > 0) {
-        // Pack PNG slides into ZIP
-        if (pngSlides.length > 0) {
-          const zip = new JSZip();
-          pngSlides.forEach(s => zip.file(`slide-${s.index + 1}.png`, s.data, { base64: true }));
-          const pngBlob = await zip.generateAsync({ type: "blob" });
-          triggerDownload(pngBlob, "slides-images.zip");
-          await wait(500); // small delay between downloads
+      // Pack everything into a single ZIP
+      const zip = new JSZip();
+      pngSlides.forEach(s => zip.file(`slide-${s.index + 1}.png`, s.data, { base64: true }));
+      videoSlides.forEach(vs => {
+        zip.file(`slide-${vs.index + 1}.${vs.ext}`, vs.blob);
+        if (!vs.hasOverlay) {
+          toast({ title: "Внимание", description: `Видео слайда ${vs.index + 1} сохранено без текста (устройство не поддерживает запись)` });
         }
-
-        // Download each video separately
-        for (const vs of videoSlides) {
-          setProgressText(`Сохранение видео ${vs.index + 1}...`);
-          triggerDownload(vs.blob, `slide-${vs.index + 1}.${vs.ext}`);
-          if (!vs.hasOverlay) {
-            toast({ title: "Внимание", description: `Видео слайда ${vs.index + 1} сохранено без текста (устройство не поддерживает запись)` });
-          }
-          await wait(500);
-        }
-      } else {
-        // All static — single ZIP
-        const zip = new JSZip();
-        pngSlides.forEach(s => zip.file(`slide-${s.index + 1}.png`, s.data, { base64: true }));
-        const blob = await zip.generateAsync({ type: "blob" });
-        triggerDownload(blob, "slides.zip");
-      }
+      });
+      const blob = await zip.generateAsync({ type: "blob" });
+      triggerDownload(blob, "slides.zip");
 
       setProgress(100);
       toast({ title: "Готово!", description: `${slides.length} слайдов сохранены` });
