@@ -358,13 +358,20 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
           if (result) {
             videoSlides.push({ index: i, blob: result.blob, ext: result.ext, hasOverlay: true });
           } else {
-            // Fallback: download original video
+          // Fallback: use original File if available, otherwise fetch blob URL
             try {
-              const resp = await fetch(slide.bgVideo);
-              const vidBlob = await resp.blob();
-              const origExt = slide.bgVideo.includes(".mp4") ? "mp4" : "mp4";
+              let vidBlob: Blob;
+              if (slide.bgVideoFile) {
+                vidBlob = slide.bgVideoFile;
+              } else {
+                const resp = await fetch(slide.bgVideo);
+                vidBlob = await resp.blob();
+              }
+              const origExt = (slide.bgVideoFile?.name || slide.bgVideo || "").includes(".webm") ? "webm" : "mp4";
               videoSlides.push({ index: i, blob: vidBlob, ext: origExt, hasOverlay: false });
-            } catch {
+              console.log(`Slide ${i + 1}: fallback to original video file`);
+            } catch (err) {
+              console.error(`Slide ${i + 1}: video fallback failed`, err);
               toast({ title: "Ошибка", description: `Не удалось сохранить видео слайда ${i + 1}`, variant: "destructive" });
             }
           }
