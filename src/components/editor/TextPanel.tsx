@@ -173,7 +173,7 @@ const TextPanel = ({ currentSlide, onSave, onSaveLive, onApplyTextToAll }: TextP
         </>
       ) : (
         <>
-          <FontSection label="Шрифт основного текста" settings={bodySettings} onChange={handleBodyChange} customFonts={customFonts} onAddCustomFont={handleAddCustomFont} />
+          <FontSection label="Шрифт основного текста" settings={bodySettings} onChange={handleBodyChange} onCommit={handleBodyCommit} customFonts={customFonts} onAddCustomFont={handleAddCustomFont} />
           <div className="h-px" style={{ background: 'rgba(26,26,46,0.08)' }} />
           <ColorPicker
             label="Цвет текста"
