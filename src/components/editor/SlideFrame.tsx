@@ -63,7 +63,7 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
   editorOpen, videoRefCallback, videoMuted = true, overlayOnly = false, dataSlideId,
 }, ref) => {
   const metrics = getSlideMetrics(slide, format, scale);
-  const mediaStyle = getMediaStyle(slide, mediaOverrides);
+  const mediaStyle = getMediaStyle(slide);
   const title = getTitleStyle(slide, metrics, titleOverrides);
   const body = getBodyStyle(slide, metrics, bodyOverrides);
 
