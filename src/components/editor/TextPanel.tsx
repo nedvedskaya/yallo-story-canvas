@@ -163,7 +163,7 @@ const TextPanel = ({ currentSlide, onSave, onSaveLive, onApplyTextToAll }: TextP
       {/* Active section content */}
       {activeSection === "title" ? (
         <>
-          <FontSection label="Шрифт заголовка" settings={titleSettings} onChange={handleTitleChange} customFonts={customFonts} onAddCustomFont={handleAddCustomFont} />
+          <FontSection label="Шрифт заголовка" settings={titleSettings} onChange={handleTitleChange} onCommit={handleTitleCommit} customFonts={customFonts} onAddCustomFont={handleAddCustomFont} />
           <div className="h-px" style={{ background: 'rgba(26,26,46,0.08)' }} />
           <ColorPicker
             label="Цвет заголовка"
