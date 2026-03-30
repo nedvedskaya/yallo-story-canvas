@@ -90,12 +90,6 @@ const SlideCarousel = ({
   const mouseDragRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number; slideId: number; target: "title" | "body" } | null>(null);
   const textDragMovedRef = useRef(false);
 
-  // Media drag state
-  const mediaTouchRef = useRef<{ x: number; y: number; posX: number; posY: number } | null>(null);
-  const mediaPinchRef = useRef<{ dist: number; scale: number } | null>(null);
-  const [mediaDragOffset, setMediaDragOffset] = useState<{ x: number; y: number } | null>(null);
-  const [mediaPinchScale, setMediaPinchScale] = useState<number | null>(null);
-  const mediaMouseRef = useRef<{ x: number; y: number; posX: number; posY: number; slideId: number } | null>(null);
 
   const formatInfo = FORMAT_OPTIONS.find(f => f.id === slideFormat) || FORMAT_OPTIONS[0];
   const slideAspectRatio = `${formatInfo.width}/${formatInfo.height}`;
