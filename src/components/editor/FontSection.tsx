@@ -42,7 +42,7 @@ interface FontSectionProps {
   onAddCustomFont?: (font: CustomFont) => void;
 }
 
-const FontSection = ({ label, settings, onChange, customFonts = [], onAddCustomFont }: FontSectionProps) => {
+const FontSection = ({ label, settings, onChange, onCommit, customFonts = [], onAddCustomFont }: FontSectionProps) => {
 
   const allFonts = [...FONT_LIST, ...customFonts];
 
