@@ -37,6 +37,7 @@ interface FontSectionProps {
   label: string;
   settings: FontSettings;
   onChange: (updates: Partial<FontSettings>) => void;
+  onCommit?: (updates: Partial<FontSettings>) => void;
   customFonts?: CustomFont[];
   onAddCustomFont?: (font: CustomFont) => void;
 }
