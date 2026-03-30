@@ -30,11 +30,6 @@ export interface SlideFrameProps {
   titleOverrides?: { offsetX?: number; offsetY?: number; scale?: number };
   /** Override body drag offsets (for live drag preview) */
   bodyOverrides?: { offsetX?: number; offsetY?: number; scale?: number };
-  /** Event handlers for media drag */
-  onMediaTouchStart?: (e: React.TouchEvent) => void;
-  onMediaTouchMove?: (e: React.TouchEvent) => void;
-  onMediaTouchEnd?: () => void;
-  onMediaMouseDown?: (e: React.MouseEvent) => void;
   /** Event handlers for title drag */
   onTitleTouchStart?: (e: React.TouchEvent) => void;
   onTitleTouchMove?: (e: React.TouchEvent) => void;
