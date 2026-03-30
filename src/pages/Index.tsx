@@ -260,6 +260,7 @@ const Index = () => {
         onClose={handleClosePanel}
         currentSlide={currentSlide}
         onUpdateSlide={handleUpdateSlide}
+        onUpdateSlideLive={handleUpdateSlideLive}
         onApplyBgToAll={handleApplyBgToAll}
         onApplyTextToAll={handleApplyTextToAll}
         onApplyInfoToAll={handleApplyInfoToAll}
