@@ -1,76 +1,76 @@
 
 
-# Исправить экспорт видео-слайдов — комплексный анализ
+# 4 исправления
 
-## Обнаруженные проблемы
+## 1. Удалить перемещение видео/медиа на слайде
 
-После детального анализа кода `downloadAll` (строки 344-413) выявлено **3 причины**, почему видео не скачиваются:
+**Файл: `src/components/editor/SlideCarousel.tsx`**
+- Удалить всё, связанное с media drag: `mediaTouchRef`, `mediaPinchRef`, `mediaDragOffset`, `mediaPinchScale`, `mediaMouseRef` (строки 94-98)
+- Удалить `handleMediaTouchStart`, `handleMediaTouchMove`, `handleMediaTouchEnd` (строки 200-227)
+- Удалить `handleMediaMouseDown` и его useEffect (строки 230-252)
+- Убрать передачу `mediaOverrides`, `onMediaTouchStart/Move/End`, `onMediaMouseDown` в SlideFrame (строки 344-362)
 
-### Причина 1: Chrome/Safari блокируют множественные автоматические скачивания
+**Файл: `src/components/editor/SlideFrame.tsx`**
+- Убрать пропсы `mediaOverrides`, `onMediaTouchStart/Move/End`, `onMediaMouseDown`
+- На контейнерах медиа убрать `cursor: grab`, `touchAction: none`, обработчики событий — оставить просто `pointerEvents: none`
 
-Текущий код скачивает PNG-архив отдельно, затем каждое видео отдельным вызовом `triggerDownload()` с задержкой 500мс. Chrome расценивает это как "автоматическое скачивание множества файлов" и блокирует все файлы после первого. На iOS Safari `window.open()` блокируется, потому что вызывается после длинной цепочки `await` — браузер считает что user gesture уже истёк.
+## 2. Текст двигается при свайпе слайдов на мобильном
 
-### Причина 2: `recordVideoSlide` молча возвращает null
+Проблема: touch-события на тексте перехватываются drag-логикой текста, мешая горизонтальному свайпу карусели.
 
-Функция `recordVideoSlide` использует `MediaRecorder` + `captureStream(30)`. На многих устройствах/браузерах это не работает (особенно мобильные). Когда `getSupportedVideoMime()` возвращает null или запись падает, функция возвращает null без уведомления пользователю.
+**Файл: `src/components/editor/SlideCarousel.tsx`**
+- В `handleTextTouchStart`: добавить проверку — не начинать drag, если `isSheetOpen`
+- В `handleTextTouchMove`: если горизонтальное смещение > вертикального и drag ещё не начат (< 10px суммарно), не перехватывать событие, позволив карусели свайпиться. Убрать `e.stopPropagation()` из touch-move текста
+- Альтернативно (проще и надёжнее): полностью отключить drag текста на touch при неактивном редакторе, оставить только pinch-to-scale. Клик по тексту → открытие редактора. Перетаскивание текста оставить только для мыши (десктоп)
 
-### Причина 3: Fallback fetch blob URL может не работать
+**Рекомендуемый подход**: убрать однопальцевый drag текста на touch полностью. На мобильном перемещение текста неинтуитивно и мешает свайпу. Оставить: pinch-to-scale (2 пальца), клик → редактор, mouse drag (десктоп).
 
-Когда `recordVideoSlide` возвращает null, fallback делает `fetch(slide.bgVideo)` — но blob URL (`blob:...`) может быть уже отозван или fetch может молча упасть. Ошибка ловится пустым `catch {}`.
+## 3. Задержка применения шрифта и параметров
 
-## Решение: Всё в один ZIP
+**Файл: `src/components/editor/FontSection.tsx`**
+- Сейчас `onChange` вызывается при каждом изменении, но Slider может дебаунсить. Проверить что Slider onChange вызывает `onSave` мгновенно
+- Убедиться что `setSlidesWithHistory` в Index.tsx не делает лишних вычислений
 
-Вместо скачивания видео отдельными файлами — **упаковать всё в один ZIP**: и PNG, и видео. Это решает проблему блокировки множественных скачиваний на всех браузерах.
+**Файл: `src/pages/Index.tsx`**
+- В `handleUpdateSlide`: контрастные цвета пересчитываются при каждом `bgColor` изменении через `getContrastColors`. Это нормально. Но `setSlidesWithHistory` создает копию через `pushUndo` на каждый тик слайдера → много undo-записей
+- Для слайдеров (size, lineHeight, letterSpacing) добавить `skipHistory.current = true` во время перетаскивания, `false` на отпускание. Передать `onCommit` callback в FontSection/TextPanel
 
-### Файл: `src/components/editor/DownloadModal.tsx`
+**Файл: `src/components/editor/FontSection.tsx`**
+- Для Slider: использовать `onValueChange` для live preview (без undo), `onValueCommit` для финального сохранения (с undo)
+- Передать в `onChange` два режима: `onChange(updates)` для live, `onCommit?.(updates)` для финального
 
-**Изменение 1:** В `downloadAll` — вместо отдельных скачиваний, добавлять видео-blob прямо в JSZip:
+## 4. Username и нумерация слишком крупные + автоскрытие для Stories
 
+**Файл: `src/components/editor/shared-styles.ts`**
+- Уменьшить `usernameSize` и `footerSize` для всех форматов:
 ```ts
-// Вместо раздельного скачивания:
-const zip = new JSZip();
-pngSlides.forEach(s => zip.file(`slide-${s.index + 1}.png`, s.data, { base64: true }));
-videoSlides.forEach(vs => zip.file(`slide-${vs.index + 1}.${vs.ext}`, vs.blob));
-const blob = await zip.generateAsync({ type: "blob" });
-triggerDownload(blob, "slides.zip");
+carousel:     { ..., usernameSize: 8, footerSize: 7 },
+square:       { ..., usernameSize: 8, footerSize: 7 },
+stories:      { ..., usernameSize: 8, footerSize: 7 },
+presentation: { ..., usernameSize: 7, footerSize: 6 },
 ```
 
-**Изменение 2:** Улучшить fallback для видео — если `recordVideoSlide` вернул null, копировать blob напрямую (не через fetch):
-
+**Файл: `src/pages/Index.tsx`**
+- В обработчике смены формата (`onSlideFormatChange`): когда формат переключается на `stories`, автоматически скрывать username и нумерацию на всех слайдах:
 ```ts
-// Вместо fetch(slide.bgVideo) для blob URL:
-if (slide.bgVideo.startsWith("blob:")) {
-  // Blob URL — получить через XMLHttpRequest (более надёжно)
-  const xhr = new XMLHttpRequest();
-  xhr.open("GET", slide.bgVideo);
-  xhr.responseType = "blob";
-  // ...
-}
+const handleFormatChange = (format: SlideFormat) => {
+  setSlideFormat(format);
+  if (format === "stories") {
+    setSlidesWithHistory(prev => prev.map(s => ({
+      ...s, showUsername: false, showSlideCount: false
+    })));
+  }
+};
 ```
 
-Или ещё проще: хранить оригинальный File-объект видео и добавлять его в ZIP напрямую.
+**Файл: `src/components/editor/BottomSheet.tsx`**
+- Передать `slideFormat` в SizePanel callback, чтобы вызвать авто-скрытие
 
-**Изменение 3:** Добавить `console.log` / `console.error` в ключевые точки для отладки:
-- При проверке `getSupportedVideoMime()`
-- При ошибке `recordVideoSlide`
-- При ошибке fallback fetch
+## Файлы для изменения
 
-**Изменение 4:** Показывать пользователю toast если видео-запись не поддерживается, но оригинал сохранён.
-
-### Файл: `src/components/editor/BackgroundPanel.tsx`
-
-Сохранять оригинальный File-объект при загрузке видео, чтобы при экспорте не зависеть от blob URL:
-
-- Добавить `bgVideoFile?: File` в интерфейс `BgDraft` и `Slide`
-- При загрузке видео: `update({ bgVideo: url, bgVideoFile: file })`
-
-### Файл: `src/components/editor/SlideCarousel.tsx`
-
-- Добавить `bgVideoFile?: File` в интерфейс `Slide`
-
-## Итого: файлы для изменения
-
-1. `src/components/editor/SlideCarousel.tsx` — добавить `bgVideoFile?: File` в Slide
-2. `src/components/editor/BackgroundPanel.tsx` — сохранять File при загрузке видео
-3. `src/components/editor/DownloadModal.tsx` — упаковка всего в один ZIP + fallback через File + логирование
-
+1. `src/components/editor/SlideCarousel.tsx` — удалить media drag, исправить text drag на touch
+2. `src/components/editor/SlideFrame.tsx` — убрать media drag пропсы и обработчики
+3. `src/components/editor/FontSection.tsx` — onValueCommit для слайдеров
+4. `src/components/editor/shared-styles.ts` — уменьшить usernameSize/footerSize
+5. `src/pages/Index.tsx` — автоскрытие username/count при Stories, skipHistory для live slider
+6. `src/components/editor/TextPanel.tsx` — пробросить onCommit
