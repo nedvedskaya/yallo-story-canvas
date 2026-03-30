@@ -179,60 +179,8 @@ const SlideCarousel = ({
     return () => { window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', onMouseUp); };
   }, [titleDragOffset, bodyDragOffset, onUpdateSlide]);
 
-  // Media touch handlers
-  const handleMediaTouchStart = (e: React.TouchEvent, slide: Slide) => {
-    e.stopPropagation();
-    if (e.touches.length === 1) {
-      mediaTouchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, posX: slide.bgPosX, posY: slide.bgPosY };
-      mediaPinchRef.current = null;
-    } else if (e.touches.length === 2) {
-      mediaTouchRef.current = null;
-      mediaPinchRef.current = { dist: getTouchDist(e), scale: slide.bgScale };
-    }
-  };
-  const handleMediaTouchMove = (e: React.TouchEvent) => {
-    e.stopPropagation(); e.preventDefault();
-    if (e.touches.length === 1 && mediaTouchRef.current) {
-      const dx = e.touches[0].clientX - mediaTouchRef.current.x;
-      const dy = e.touches[0].clientY - mediaTouchRef.current.y;
-      setMediaDragOffset({ x: mediaTouchRef.current.posX + (dx / 3), y: mediaTouchRef.current.posY + (dy / 3) });
-    } else if (e.touches.length === 2 && mediaPinchRef.current) {
-      const dist = getTouchDist(e);
-      setMediaPinchScale(Math.max(10, Math.min(300, mediaPinchRef.current.scale * (dist / mediaPinchRef.current.dist))));
-    }
-  };
-  const handleMediaTouchEnd = (slideId: number) => {
-    const updates: Partial<Slide> = {};
-    if (mediaDragOffset !== null) { updates.bgPosX = mediaDragOffset.x; updates.bgPosY = mediaDragOffset.y; setMediaDragOffset(null); }
-    if (mediaPinchScale !== null) { updates.bgScale = mediaPinchScale; setMediaPinchScale(null); }
-    if (Object.keys(updates).length > 0) onUpdateSlide(slideId, updates);
-    mediaTouchRef.current = null; mediaPinchRef.current = null;
-  };
 
-  // Media mouse drag
-  const handleMediaMouseDown = (e: React.MouseEvent, slide: Slide) => {
-    e.preventDefault(); e.stopPropagation();
-    mediaMouseRef.current = { x: e.clientX, y: e.clientY, posX: slide.bgPosX, posY: slide.bgPosY, slideId: slide.id };
-  };
-  useEffect(() => {
-    const onMouseMove = (e: MouseEvent) => {
-      if (!mediaMouseRef.current) return;
-      const dx = e.clientX - mediaMouseRef.current.x;
-      const dy = e.clientY - mediaMouseRef.current.y;
-      setMediaDragOffset({ x: mediaMouseRef.current.posX + (dx / 3), y: mediaMouseRef.current.posY + (dy / 3) });
-    };
-    const onMouseUp = () => {
-      if (!mediaMouseRef.current) return;
-      if (mediaDragOffset !== null) {
-        onUpdateSlide(mediaMouseRef.current.slideId, { bgPosX: mediaDragOffset.x, bgPosY: mediaDragOffset.y });
-        setMediaDragOffset(null);
-      }
-      mediaMouseRef.current = null;
-    };
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-    return () => { window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', onMouseUp); };
-  }, [mediaDragOffset, onUpdateSlide]);
+
 
   const scrollToIndex = (index: number) => {
     setTimeout(() => {
