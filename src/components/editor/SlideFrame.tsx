@@ -26,8 +26,6 @@ export interface SlideFrameProps {
   /** Override width/height for export (px). If not set, uses 100% */
   width?: number;
   height?: number;
-  /** Override media position/scale (for live drag preview) */
-  mediaOverrides?: { posX?: number; posY?: number; scale?: number };
   /** Override title drag offsets (for live drag preview) */
   titleOverrides?: { offsetX?: number; offsetY?: number; scale?: number };
   /** Override body drag offsets (for live drag preview) */
