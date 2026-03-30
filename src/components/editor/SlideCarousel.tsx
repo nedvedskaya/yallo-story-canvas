@@ -272,11 +272,6 @@ const SlideCarousel = ({
                         else el.pause();
                       }
                     }}
-                    mediaOverrides={isActive && (mediaDragOffset !== null || mediaPinchScale !== null) ? {
-                      posX: mediaDragOffset?.x ?? slide.bgPosX,
-                      posY: mediaDragOffset?.y ?? slide.bgPosY,
-                      scale: mediaPinchScale ?? slide.bgScale,
-                    } : undefined}
                     titleOverrides={isActive && (titleDragOffset !== null || titlePinchScale !== null) ? {
                       offsetX: titleDragOffset?.x ?? (slide.titleOffsetX ?? 0),
                       offsetY: titleDragOffset?.y ?? (slide.titleOffsetY ?? 0),
@@ -287,10 +282,6 @@ const SlideCarousel = ({
                       offsetY: bodyDragOffset?.y ?? (slide.bodyOffsetY ?? 0),
                       scale: bodyPinchScale ?? (slide.bodyScale ?? 1),
                     } : undefined}
-                    onMediaTouchStart={(e) => handleMediaTouchStart(e, slide)}
-                    onMediaTouchMove={(e) => handleMediaTouchMove(e)}
-                    onMediaTouchEnd={() => handleMediaTouchEnd(slide.id)}
-                    onMediaMouseDown={(e) => handleMediaMouseDown(e, slide)}
                     onTitleTouchStart={(e) => handleTextTouchStart(e, slide, "title")}
                     onTitleTouchMove={(e) => handleTextTouchMove(e)}
                     onTitleTouchEnd={() => handleTextTouchEnd(slide.id)}
