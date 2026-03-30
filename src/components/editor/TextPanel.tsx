@@ -6,6 +6,7 @@ import type { Slide } from "./SlideCarousel";
 interface TextPanelProps {
   currentSlide: Slide;
   onSave: (updates: Partial<Slide>) => void;
+  onSaveLive?: (updates: Partial<Slide>) => void;
   onApplyTextToAll: () => void;
 }
 
