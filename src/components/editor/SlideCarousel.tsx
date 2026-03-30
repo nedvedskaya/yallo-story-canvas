@@ -111,49 +111,38 @@ const SlideCarousel = ({
     if (target === "title") setTitlePinchScale(val); else setBodyPinchScale(val);
   };
 
-  // Text touch handlers
+  // Text touch handlers — only pinch-to-scale on touch, no single-finger drag (prevents swipe conflict)
   const handleTextTouchStart = (e: React.TouchEvent, slide: Slide, target: "title" | "body") => {
     if (editorOpen) return;
     textDragTarget.current = target;
     textDragMovedRef.current = false;
-    const oxKey = target === "title" ? "titleOffsetX" : "bodyOffsetX";
-    const oyKey = target === "title" ? "titleOffsetY" : "bodyOffsetY";
     const scaleKey = target === "title" ? "titleScale" : "bodyScale";
-    if (e.touches.length === 1) {
-      touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, offsetX: slide[oxKey] ?? 0, offsetY: slide[oyKey] ?? 0 };
-      pinchStartRef.current = null;
-    } else if (e.touches.length === 2) {
-      touchStartRef.current = null;
+    if (e.touches.length === 2) {
       pinchStartRef.current = { dist: getTouchDist(e), scale: slide[scaleKey] ?? 1 };
+    } else {
+      pinchStartRef.current = null;
     }
+    touchStartRef.current = null; // no single-finger drag on touch
   };
   const handleTextTouchMove = (e: React.TouchEvent) => {
     if (editorOpen) return;
     const t = textDragTarget.current;
-    if (e.touches.length === 1 && touchStartRef.current) {
-      const dx = e.touches[0].clientX - touchStartRef.current.x;
-      const dy = e.touches[0].clientY - touchStartRef.current.y;
-      if (Math.abs(dx) + Math.abs(dy) > 5) textDragMovedRef.current = true;
-      setDragForTarget(t, { x: touchStartRef.current.offsetX + dx, y: touchStartRef.current.offsetY + dy });
-    } else if (e.touches.length === 2 && pinchStartRef.current) {
+    if (e.touches.length === 2 && pinchStartRef.current) {
       textDragMovedRef.current = true;
       const dist = getTouchDist(e);
       setPinchForTarget(t, Math.max(0.3, Math.min(3, pinchStartRef.current.scale * (dist / pinchStartRef.current.dist))));
     }
+    // single finger: do nothing, let carousel swipe
   };
   const handleTextTouchEnd = (slideId: number) => {
     if (editorOpen) return;
     const t = textDragTarget.current;
-    const oxKey = t === "title" ? "titleOffsetX" : "bodyOffsetX";
-    const oyKey = t === "title" ? "titleOffsetY" : "bodyOffsetY";
     const scaleKey = t === "title" ? "titleScale" : "bodyScale";
-    const currentDrag = t === "title" ? titleDragOffset : bodyDragOffset;
     const currentPinch = t === "title" ? titlePinchScale : bodyPinchScale;
     const updates: Partial<Slide> = {};
-    if (currentDrag !== null) { updates[oxKey] = currentDrag.x; updates[oyKey] = currentDrag.y; setDragForTarget(t, null); }
     if (currentPinch !== null) { updates[scaleKey] = currentPinch; setPinchForTarget(t, null); }
     if (Object.keys(updates).length > 0) onUpdateSlide(slideId, updates);
-    touchStartRef.current = null; pinchStartRef.current = null;
+    pinchStartRef.current = null;
   };
 
   // Text mouse drag
