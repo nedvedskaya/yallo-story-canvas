@@ -29,6 +29,7 @@ export interface BgDraft {
   bgPosY: number;
   bgDarken: number;
   bgMuted?: boolean;
+  bgVideoFile?: File;
 }
 
 interface BackgroundPanelProps {
