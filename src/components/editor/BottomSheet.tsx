@@ -13,6 +13,7 @@ interface BottomSheetProps {
   onClose: () => void;
   currentSlide?: Slide;
   onUpdateSlide?: (id: number, updates: Partial<Slide>) => void;
+  onUpdateSlideLive?: (id: number, updates: Partial<Slide>) => void;
   onApplyBgToAll?: () => void;
   onApplyTextToAll?: () => void;
   onApplyInfoToAll?: () => void;
