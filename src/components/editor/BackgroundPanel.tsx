@@ -29,6 +29,7 @@ export interface BgDraft {
   bgPosY: number;
   bgDarken: number;
   bgMuted?: boolean;
+  bgVideoFile?: File;
 }
 
 interface BackgroundPanelProps {
@@ -85,7 +86,7 @@ const BackgroundPanel = ({
     const file = e.target.files?.[0];
     if (file) {
       const url = URL.createObjectURL(file);
-      update({ bgImage: undefined, bgVideo: url, bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0, bgMuted: false });
+      update({ bgImage: undefined, bgVideo: url, bgVideoFile: file, bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0, bgMuted: false });
     }
   };
 

@@ -51,6 +51,7 @@ export interface Slide {
   bodyColor?: string;
   metaColor?: string;
   overlayColor?: string;
+  bgVideoFile?: File;
 }
 
 const addBtnStyle: React.CSSProperties = { ...glassBtnStyle, width: 32, height: 32, flexShrink: 0 };
