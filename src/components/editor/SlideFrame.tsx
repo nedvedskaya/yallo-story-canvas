@@ -89,11 +89,7 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
       {!overlayOnly && slide.bgImage && (
         <div
           className="absolute inset-0 z-[2]"
-          style={{ overflow: 'hidden', cursor: 'grab', touchAction: 'none' }}
-          onTouchStart={onMediaTouchStart}
-          onTouchMove={onMediaTouchMove}
-          onTouchEnd={onMediaTouchEnd}
-          onMouseDown={onMediaMouseDown}
+          style={{ overflow: 'hidden', pointerEvents: 'none' }}
         >
           <img src={slide.bgImage} alt="" style={{ ...mediaStyle, objectFit: 'contain' }} />
           {slide.bgDarken > 0 && (
