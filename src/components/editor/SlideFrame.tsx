@@ -57,8 +57,7 @@ export interface SlideFrameProps {
 const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
   slide, slideIndex, totalSlides, format, scale = 1,
   width, height,
-  mediaOverrides, titleOverrides, bodyOverrides,
-  onMediaTouchStart, onMediaTouchMove, onMediaTouchEnd, onMediaMouseDown,
+  titleOverrides, bodyOverrides,
   onTitleTouchStart, onTitleTouchMove, onTitleTouchEnd, onTitleMouseDown, onTitleClick,
   onBodyTouchStart, onBodyTouchMove, onBodyTouchEnd, onBodyMouseDown, onBodyClick,
   editorOpen, videoRefCallback, videoMuted = true, overlayOnly = false, dataSlideId,
