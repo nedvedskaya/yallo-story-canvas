@@ -105,6 +105,13 @@ const Index = () => {
     }));
   }, [setSlidesWithHistory]);
 
+  // Live update without undo history (for slider dragging)
+  const handleUpdateSlideLive = useCallback((id: number, updates: Partial<Slide>) => {
+    skipHistory.current = true;
+    setSlides(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
+    skipHistory.current = false;
+  }, []);
+
   const handleApplyBgToAll = useCallback(() => {
     if (!currentSlide) return;
     setSlidesWithHistory(prev =>

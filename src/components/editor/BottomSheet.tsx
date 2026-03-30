@@ -86,6 +86,7 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onUpdate
                 <TextPanel
                   currentSlide={currentSlide}
                   onSave={(updates) => onUpdateSlide(currentSlide.id, updates)}
+                  onSaveLive={onUpdateSlideLive ? (updates) => onUpdateSlideLive(currentSlide.id, updates) : undefined}
                   onApplyTextToAll={() => onApplyTextToAll?.()}
                 />
               ) : isBackground && currentSlide && onUpdateSlide ? (
