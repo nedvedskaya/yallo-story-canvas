@@ -6,6 +6,7 @@ import type { Slide } from "./SlideCarousel";
 interface TextPanelProps {
   currentSlide: Slide;
   onSave: (updates: Partial<Slide>) => void;
+  onSaveLive?: (updates: Partial<Slide>) => void;
   onApplyTextToAll: () => void;
 }
 
@@ -71,7 +72,7 @@ const ColorPicker = ({
   );
 };
 
-const TextPanel = ({ currentSlide, onSave, onApplyTextToAll }: TextPanelProps) => {
+const TextPanel = ({ currentSlide, onSave, onSaveLive, onApplyTextToAll }: TextPanelProps) => {
   const [activeSection, setActiveSection] = useState<"title" | "body">("title");
   const [applyAll, setApplyAll] = useState(false);
   const [customFonts, setCustomFonts] = useState<CustomFont[]>([]);
@@ -96,24 +97,42 @@ const TextPanel = ({ currentSlide, onSave, onApplyTextToAll }: TextPanelProps) =
     letterSpacing: currentSlide.bodyLetterSpacing ?? 0,
   };
 
-  const handleTitleChange = useCallback((updates: Partial<FontSettings>) => {
+  const mapTitle = (updates: Partial<FontSettings>): Partial<Slide> => {
     const mapped: Partial<Slide> = {};
     if (updates.font !== undefined) mapped.titleFont = updates.font;
     if (updates.size !== undefined) mapped.titleSize = updates.size;
     if (updates.case !== undefined) mapped.titleCase = updates.case;
     if (updates.lineHeight !== undefined) mapped.titleLineHeight = updates.lineHeight;
     if (updates.letterSpacing !== undefined) mapped.titleLetterSpacing = updates.letterSpacing;
-    onSave(mapped);
+    return mapped;
+  };
+
+  const handleTitleChange = useCallback((updates: Partial<FontSettings>) => {
+    const mapped = mapTitle(updates);
+    if (onSaveLive) onSaveLive(mapped); else onSave(mapped);
+  }, [onSave, onSaveLive]);
+
+  const handleTitleCommit = useCallback((updates: Partial<FontSettings>) => {
+    onSave(mapTitle(updates));
   }, [onSave]);
 
-  const handleBodyChange = useCallback((updates: Partial<FontSettings>) => {
+  const mapBody = (updates: Partial<FontSettings>): Partial<Slide> => {
     const mapped: Partial<Slide> = {};
     if (updates.font !== undefined) mapped.bodyFont = updates.font;
     if (updates.size !== undefined) mapped.bodySize = updates.size;
     if (updates.case !== undefined) mapped.bodyCase = updates.case;
     if (updates.lineHeight !== undefined) mapped.bodyLineHeight = updates.lineHeight;
     if (updates.letterSpacing !== undefined) mapped.bodyLetterSpacing = updates.letterSpacing;
-    onSave(mapped);
+    return mapped;
+  };
+
+  const handleBodyChange = useCallback((updates: Partial<FontSettings>) => {
+    const mapped = mapBody(updates);
+    if (onSaveLive) onSaveLive(mapped); else onSave(mapped);
+  }, [onSave, onSaveLive]);
+
+  const handleBodyCommit = useCallback((updates: Partial<FontSettings>) => {
+    onSave(mapBody(updates));
   }, [onSave]);
 
   const tabs = [
@@ -144,7 +163,7 @@ const TextPanel = ({ currentSlide, onSave, onApplyTextToAll }: TextPanelProps) =
       {/* Active section content */}
       {activeSection === "title" ? (
         <>
-          <FontSection label="Шрифт заголовка" settings={titleSettings} onChange={handleTitleChange} customFonts={customFonts} onAddCustomFont={handleAddCustomFont} />
+          <FontSection label="Шрифт заголовка" settings={titleSettings} onChange={handleTitleChange} onCommit={handleTitleCommit} customFonts={customFonts} onAddCustomFont={handleAddCustomFont} />
           <div className="h-px" style={{ background: 'rgba(26,26,46,0.08)' }} />
           <ColorPicker
             label="Цвет заголовка"
@@ -154,7 +173,7 @@ const TextPanel = ({ currentSlide, onSave, onApplyTextToAll }: TextPanelProps) =
         </>
       ) : (
         <>
-          <FontSection label="Шрифт основного текста" settings={bodySettings} onChange={handleBodyChange} customFonts={customFonts} onAddCustomFont={handleAddCustomFont} />
+          <FontSection label="Шрифт основного текста" settings={bodySettings} onChange={handleBodyChange} onCommit={handleBodyCommit} customFonts={customFonts} onAddCustomFont={handleAddCustomFont} />
           <div className="h-px" style={{ background: 'rgba(26,26,46,0.08)' }} />
           <ColorPicker
             label="Цвет текста"

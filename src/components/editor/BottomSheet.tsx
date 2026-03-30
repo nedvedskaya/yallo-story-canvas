@@ -13,6 +13,7 @@ interface BottomSheetProps {
   onClose: () => void;
   currentSlide?: Slide;
   onUpdateSlide?: (id: number, updates: Partial<Slide>) => void;
+  onUpdateSlideLive?: (id: number, updates: Partial<Slide>) => void;
   onApplyBgToAll?: () => void;
   onApplyTextToAll?: () => void;
   onApplyInfoToAll?: () => void;
@@ -21,7 +22,7 @@ interface BottomSheetProps {
   onSlideFormatChange?: (format: SlideFormat) => void;
 }
 
-const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyBgToAll, onApplyTextToAll, onApplyInfoToAll, onApplyTemplate, slideFormat, onSlideFormatChange }: BottomSheetProps) => {
+const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onUpdateSlideLive, onApplyBgToAll, onApplyTextToAll, onApplyInfoToAll, onApplyTemplate, slideFormat, onSlideFormatChange }: BottomSheetProps) => {
   const isBackground = activeTab === "background";
   const isText = activeTab === "text";
   const isSize = activeTab === "size";
@@ -85,6 +86,7 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onApplyB
                 <TextPanel
                   currentSlide={currentSlide}
                   onSave={(updates) => onUpdateSlide(currentSlide.id, updates)}
+                  onSaveLive={onUpdateSlideLive ? (updates) => onUpdateSlideLive(currentSlide.id, updates) : undefined}
                   onApplyTextToAll={() => onApplyTextToAll?.()}
                 />
               ) : isBackground && currentSlide && onUpdateSlide ? (

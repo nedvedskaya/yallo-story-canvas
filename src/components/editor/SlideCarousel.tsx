@@ -90,12 +90,6 @@ const SlideCarousel = ({
   const mouseDragRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number; slideId: number; target: "title" | "body" } | null>(null);
   const textDragMovedRef = useRef(false);
 
-  // Media drag state
-  const mediaTouchRef = useRef<{ x: number; y: number; posX: number; posY: number } | null>(null);
-  const mediaPinchRef = useRef<{ dist: number; scale: number } | null>(null);
-  const [mediaDragOffset, setMediaDragOffset] = useState<{ x: number; y: number } | null>(null);
-  const [mediaPinchScale, setMediaPinchScale] = useState<number | null>(null);
-  const mediaMouseRef = useRef<{ x: number; y: number; posX: number; posY: number; slideId: number } | null>(null);
 
   const formatInfo = FORMAT_OPTIONS.find(f => f.id === slideFormat) || FORMAT_OPTIONS[0];
   const slideAspectRatio = `${formatInfo.width}/${formatInfo.height}`;
@@ -117,49 +111,38 @@ const SlideCarousel = ({
     if (target === "title") setTitlePinchScale(val); else setBodyPinchScale(val);
   };
 
-  // Text touch handlers
+  // Text touch handlers — only pinch-to-scale on touch, no single-finger drag (prevents swipe conflict)
   const handleTextTouchStart = (e: React.TouchEvent, slide: Slide, target: "title" | "body") => {
     if (editorOpen) return;
     textDragTarget.current = target;
     textDragMovedRef.current = false;
-    const oxKey = target === "title" ? "titleOffsetX" : "bodyOffsetX";
-    const oyKey = target === "title" ? "titleOffsetY" : "bodyOffsetY";
     const scaleKey = target === "title" ? "titleScale" : "bodyScale";
-    if (e.touches.length === 1) {
-      touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, offsetX: slide[oxKey] ?? 0, offsetY: slide[oyKey] ?? 0 };
-      pinchStartRef.current = null;
-    } else if (e.touches.length === 2) {
-      touchStartRef.current = null;
+    if (e.touches.length === 2) {
       pinchStartRef.current = { dist: getTouchDist(e), scale: slide[scaleKey] ?? 1 };
+    } else {
+      pinchStartRef.current = null;
     }
+    touchStartRef.current = null; // no single-finger drag on touch
   };
   const handleTextTouchMove = (e: React.TouchEvent) => {
     if (editorOpen) return;
     const t = textDragTarget.current;
-    if (e.touches.length === 1 && touchStartRef.current) {
-      const dx = e.touches[0].clientX - touchStartRef.current.x;
-      const dy = e.touches[0].clientY - touchStartRef.current.y;
-      if (Math.abs(dx) + Math.abs(dy) > 5) textDragMovedRef.current = true;
-      setDragForTarget(t, { x: touchStartRef.current.offsetX + dx, y: touchStartRef.current.offsetY + dy });
-    } else if (e.touches.length === 2 && pinchStartRef.current) {
+    if (e.touches.length === 2 && pinchStartRef.current) {
       textDragMovedRef.current = true;
       const dist = getTouchDist(e);
       setPinchForTarget(t, Math.max(0.3, Math.min(3, pinchStartRef.current.scale * (dist / pinchStartRef.current.dist))));
     }
+    // single finger: do nothing, let carousel swipe
   };
   const handleTextTouchEnd = (slideId: number) => {
     if (editorOpen) return;
     const t = textDragTarget.current;
-    const oxKey = t === "title" ? "titleOffsetX" : "bodyOffsetX";
-    const oyKey = t === "title" ? "titleOffsetY" : "bodyOffsetY";
     const scaleKey = t === "title" ? "titleScale" : "bodyScale";
-    const currentDrag = t === "title" ? titleDragOffset : bodyDragOffset;
     const currentPinch = t === "title" ? titlePinchScale : bodyPinchScale;
     const updates: Partial<Slide> = {};
-    if (currentDrag !== null) { updates[oxKey] = currentDrag.x; updates[oyKey] = currentDrag.y; setDragForTarget(t, null); }
     if (currentPinch !== null) { updates[scaleKey] = currentPinch; setPinchForTarget(t, null); }
     if (Object.keys(updates).length > 0) onUpdateSlide(slideId, updates);
-    touchStartRef.current = null; pinchStartRef.current = null;
+    pinchStartRef.current = null;
   };
 
   // Text mouse drag
@@ -196,60 +179,8 @@ const SlideCarousel = ({
     return () => { window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', onMouseUp); };
   }, [titleDragOffset, bodyDragOffset, onUpdateSlide]);
 
-  // Media touch handlers
-  const handleMediaTouchStart = (e: React.TouchEvent, slide: Slide) => {
-    e.stopPropagation();
-    if (e.touches.length === 1) {
-      mediaTouchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, posX: slide.bgPosX, posY: slide.bgPosY };
-      mediaPinchRef.current = null;
-    } else if (e.touches.length === 2) {
-      mediaTouchRef.current = null;
-      mediaPinchRef.current = { dist: getTouchDist(e), scale: slide.bgScale };
-    }
-  };
-  const handleMediaTouchMove = (e: React.TouchEvent) => {
-    e.stopPropagation(); e.preventDefault();
-    if (e.touches.length === 1 && mediaTouchRef.current) {
-      const dx = e.touches[0].clientX - mediaTouchRef.current.x;
-      const dy = e.touches[0].clientY - mediaTouchRef.current.y;
-      setMediaDragOffset({ x: mediaTouchRef.current.posX + (dx / 3), y: mediaTouchRef.current.posY + (dy / 3) });
-    } else if (e.touches.length === 2 && mediaPinchRef.current) {
-      const dist = getTouchDist(e);
-      setMediaPinchScale(Math.max(10, Math.min(300, mediaPinchRef.current.scale * (dist / mediaPinchRef.current.dist))));
-    }
-  };
-  const handleMediaTouchEnd = (slideId: number) => {
-    const updates: Partial<Slide> = {};
-    if (mediaDragOffset !== null) { updates.bgPosX = mediaDragOffset.x; updates.bgPosY = mediaDragOffset.y; setMediaDragOffset(null); }
-    if (mediaPinchScale !== null) { updates.bgScale = mediaPinchScale; setMediaPinchScale(null); }
-    if (Object.keys(updates).length > 0) onUpdateSlide(slideId, updates);
-    mediaTouchRef.current = null; mediaPinchRef.current = null;
-  };
 
-  // Media mouse drag
-  const handleMediaMouseDown = (e: React.MouseEvent, slide: Slide) => {
-    e.preventDefault(); e.stopPropagation();
-    mediaMouseRef.current = { x: e.clientX, y: e.clientY, posX: slide.bgPosX, posY: slide.bgPosY, slideId: slide.id };
-  };
-  useEffect(() => {
-    const onMouseMove = (e: MouseEvent) => {
-      if (!mediaMouseRef.current) return;
-      const dx = e.clientX - mediaMouseRef.current.x;
-      const dy = e.clientY - mediaMouseRef.current.y;
-      setMediaDragOffset({ x: mediaMouseRef.current.posX + (dx / 3), y: mediaMouseRef.current.posY + (dy / 3) });
-    };
-    const onMouseUp = () => {
-      if (!mediaMouseRef.current) return;
-      if (mediaDragOffset !== null) {
-        onUpdateSlide(mediaMouseRef.current.slideId, { bgPosX: mediaDragOffset.x, bgPosY: mediaDragOffset.y });
-        setMediaDragOffset(null);
-      }
-      mediaMouseRef.current = null;
-    };
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-    return () => { window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', onMouseUp); };
-  }, [mediaDragOffset, onUpdateSlide]);
+
 
   const scrollToIndex = (index: number) => {
     setTimeout(() => {
@@ -341,11 +272,6 @@ const SlideCarousel = ({
                         else el.pause();
                       }
                     }}
-                    mediaOverrides={isActive && (mediaDragOffset !== null || mediaPinchScale !== null) ? {
-                      posX: mediaDragOffset?.x ?? slide.bgPosX,
-                      posY: mediaDragOffset?.y ?? slide.bgPosY,
-                      scale: mediaPinchScale ?? slide.bgScale,
-                    } : undefined}
                     titleOverrides={isActive && (titleDragOffset !== null || titlePinchScale !== null) ? {
                       offsetX: titleDragOffset?.x ?? (slide.titleOffsetX ?? 0),
                       offsetY: titleDragOffset?.y ?? (slide.titleOffsetY ?? 0),
@@ -356,10 +282,6 @@ const SlideCarousel = ({
                       offsetY: bodyDragOffset?.y ?? (slide.bodyOffsetY ?? 0),
                       scale: bodyPinchScale ?? (slide.bodyScale ?? 1),
                     } : undefined}
-                    onMediaTouchStart={(e) => handleMediaTouchStart(e, slide)}
-                    onMediaTouchMove={(e) => handleMediaTouchMove(e)}
-                    onMediaTouchEnd={() => handleMediaTouchEnd(slide.id)}
-                    onMediaMouseDown={(e) => handleMediaMouseDown(e, slide)}
                     onTitleTouchStart={(e) => handleTextTouchStart(e, slide, "title")}
                     onTitleTouchMove={(e) => handleTextTouchMove(e)}
                     onTitleTouchEnd={() => handleTextTouchEnd(slide.id)}

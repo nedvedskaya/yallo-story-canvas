@@ -105,6 +105,13 @@ const Index = () => {
     }));
   }, [setSlidesWithHistory]);
 
+  // Live update without undo history (for slider dragging)
+  const handleUpdateSlideLive = useCallback((id: number, updates: Partial<Slide>) => {
+    skipHistory.current = true;
+    setSlides(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
+    skipHistory.current = false;
+  }, []);
+
   const handleApplyBgToAll = useCallback(() => {
     if (!currentSlide) return;
     setSlidesWithHistory(prev =>
@@ -253,12 +260,18 @@ const Index = () => {
         onClose={handleClosePanel}
         currentSlide={currentSlide}
         onUpdateSlide={handleUpdateSlide}
+        onUpdateSlideLive={handleUpdateSlideLive}
         onApplyBgToAll={handleApplyBgToAll}
         onApplyTextToAll={handleApplyTextToAll}
         onApplyInfoToAll={handleApplyInfoToAll}
         onApplyTemplate={handleApplyTemplate}
         slideFormat={slideFormat}
-        onSlideFormatChange={setSlideFormat}
+        onSlideFormatChange={(fmt) => {
+          setSlideFormat(fmt);
+          if (fmt === "stories") {
+            setSlidesWithHistory(prev => prev.map(s => ({ ...s, showUsername: false, showSlideCount: false })));
+          }
+        }}
       />
       <BottomMenu activeTab={activeTab} onTabChange={setActiveTab} hidden={textEditorOpen} />
       <DownloadModal open={downloadOpen} onClose={() => setDownloadOpen(false)} slides={slides} slideFormat={slideFormat} activeSlide={activeSlide} onSlideChange={setActiveSlide} />

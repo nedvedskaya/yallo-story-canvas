@@ -26,17 +26,10 @@ export interface SlideFrameProps {
   /** Override width/height for export (px). If not set, uses 100% */
   width?: number;
   height?: number;
-  /** Override media position/scale (for live drag preview) */
-  mediaOverrides?: { posX?: number; posY?: number; scale?: number };
   /** Override title drag offsets (for live drag preview) */
   titleOverrides?: { offsetX?: number; offsetY?: number; scale?: number };
   /** Override body drag offsets (for live drag preview) */
   bodyOverrides?: { offsetX?: number; offsetY?: number; scale?: number };
-  /** Event handlers for media drag */
-  onMediaTouchStart?: (e: React.TouchEvent) => void;
-  onMediaTouchMove?: (e: React.TouchEvent) => void;
-  onMediaTouchEnd?: () => void;
-  onMediaMouseDown?: (e: React.MouseEvent) => void;
   /** Event handlers for title drag */
   onTitleTouchStart?: (e: React.TouchEvent) => void;
   onTitleTouchMove?: (e: React.TouchEvent) => void;
@@ -64,14 +57,13 @@ export interface SlideFrameProps {
 const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
   slide, slideIndex, totalSlides, format, scale = 1,
   width, height,
-  mediaOverrides, titleOverrides, bodyOverrides,
-  onMediaTouchStart, onMediaTouchMove, onMediaTouchEnd, onMediaMouseDown,
+  titleOverrides, bodyOverrides,
   onTitleTouchStart, onTitleTouchMove, onTitleTouchEnd, onTitleMouseDown, onTitleClick,
   onBodyTouchStart, onBodyTouchMove, onBodyTouchEnd, onBodyMouseDown, onBodyClick,
   editorOpen, videoRefCallback, videoMuted = true, overlayOnly = false, dataSlideId,
 }, ref) => {
   const metrics = getSlideMetrics(slide, format, scale);
-  const mediaStyle = getMediaStyle(slide, mediaOverrides);
+  const mediaStyle = getMediaStyle(slide);
   const title = getTitleStyle(slide, metrics, titleOverrides);
   const body = getBodyStyle(slide, metrics, bodyOverrides);
 
@@ -97,11 +89,7 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
       {!overlayOnly && slide.bgImage && (
         <div
           className="absolute inset-0 z-[2]"
-          style={{ overflow: 'hidden', cursor: 'grab', touchAction: 'none' }}
-          onTouchStart={onMediaTouchStart}
-          onTouchMove={onMediaTouchMove}
-          onTouchEnd={onMediaTouchEnd}
-          onMouseDown={onMediaMouseDown}
+          style={{ overflow: 'hidden', pointerEvents: 'none' }}
         >
           <img src={slide.bgImage} alt="" style={{ ...mediaStyle, objectFit: 'contain' }} />
           {slide.bgDarken > 0 && (
@@ -114,11 +102,7 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
       {!overlayOnly && slide.bgVideo && (
         <div
           className="absolute inset-0 z-[2]"
-          style={{ overflow: 'hidden', cursor: 'grab', touchAction: 'none' }}
-          onTouchStart={onMediaTouchStart}
-          onTouchMove={onMediaTouchMove}
-          onTouchEnd={onMediaTouchEnd}
-          onMouseDown={onMediaMouseDown}
+          style={{ overflow: 'hidden', pointerEvents: 'none' }}
         >
           <video
             src={slide.bgVideo}
