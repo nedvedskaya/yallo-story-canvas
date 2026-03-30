@@ -116,14 +116,23 @@ const TextPanel = ({ currentSlide, onSave, onSaveLive, onApplyTextToAll }: TextP
     onSave(mapTitle(updates));
   }, [onSave]);
 
-  const handleBodyChange = useCallback((updates: Partial<FontSettings>) => {
+  const mapBody = (updates: Partial<FontSettings>): Partial<Slide> => {
     const mapped: Partial<Slide> = {};
     if (updates.font !== undefined) mapped.bodyFont = updates.font;
     if (updates.size !== undefined) mapped.bodySize = updates.size;
     if (updates.case !== undefined) mapped.bodyCase = updates.case;
     if (updates.lineHeight !== undefined) mapped.bodyLineHeight = updates.lineHeight;
     if (updates.letterSpacing !== undefined) mapped.bodyLetterSpacing = updates.letterSpacing;
-    onSave(mapped);
+    return mapped;
+  };
+
+  const handleBodyChange = useCallback((updates: Partial<FontSettings>) => {
+    const mapped = mapBody(updates);
+    if (onSaveLive) onSaveLive(mapped); else onSave(mapped);
+  }, [onSave, onSaveLive]);
+
+  const handleBodyCommit = useCallback((updates: Partial<FontSettings>) => {
+    onSave(mapBody(updates));
   }, [onSave]);
 
   const tabs = [
