@@ -1,76 +1,64 @@
 
 
-# 4 исправления
+# Исправить экспорт PNG и PDF на мобильных
 
-## 1. Удалить перемещение видео/медиа на слайде
+## Проблема 1: PNG не скачивается на мобильном
 
-**Файл: `src/components/editor/SlideCarousel.tsx`**
-- Удалить всё, связанное с media drag: `mediaTouchRef`, `mediaPinchRef`, `mediaDragOffset`, `mediaPinchScale`, `mediaMouseRef` (строки 94-98)
-- Удалить `handleMediaTouchStart`, `handleMediaTouchMove`, `handleMediaTouchEnd` (строки 200-227)
-- Удалить `handleMediaMouseDown` и его useEffect (строки 230-252)
-- Убрать передачу `mediaOverrides`, `onMediaTouchStart/Move/End`, `onMediaMouseDown` в SlideFrame (строки 344-362)
+`triggerDownload()` вызывается после длинной цепочки `await` (рендер → html2canvas → ZIP). К этому моменту браузер считает user gesture утраченным:
+- iOS Safari: `window.open()` блокируется popup-блокером
+- Android Chrome: `<a>.click()` может быть проигнорирован
 
-**Файл: `src/components/editor/SlideFrame.tsx`**
-- Убрать пропсы `mediaOverrides`, `onMediaTouchStart/Move/End`, `onMediaMouseDown`
-- На контейнерах медиа убрать `cursor: grab`, `touchAction: none`, обработчики событий — оставить просто `pointerEvents: none`
+**Решение**: Создать промежуточный `<a>` элемент сразу при клике пользователя (пока gesture ещё активен), а после завершения async-работы присвоить ему `href` и вызвать `click()`. Альтернативно — использовать `navigator.share()` API на мобильных (поддерживается и iOS и Android), что не требует user gesture в момент вызова для blob-файлов.
 
-## 2. Текст двигается при свайпе слайдов на мобильном
+## Проблема 2: PDF сохраняется криво
 
-Проблема: touch-события на тексте перехватываются drag-логикой текста, мешая горизонтальному свайпу карусели.
+`getPreviewWidth()` берёт ширину текущего видимого слайда через `document.querySelector("[data-slide-id]")`. На мобильном:
+- Модальное окно скачивания перекрывает слайд
+- Слайд может быть скрыт/сжат
+- Возвращается неверная ширина (или fallback 220-290px)
 
-**Файл: `src/components/editor/SlideCarousel.tsx`**
-- В `handleTextTouchStart`: добавить проверку — не начинать drag, если `isSheetOpen`
-- В `handleTextTouchMove`: если горизонтальное смещение > вертикального и drag ещё не начат (< 10px суммарно), не перехватывать событие, позволив карусели свайпиться. Убрать `e.stopPropagation()` из touch-move текста
-- Альтернативно (проще и надёжнее): полностью отключить drag текста на touch при неактивном редакторе, оставить только pinch-to-scale. Клик по тексту → открытие редактора. Перетаскивание текста оставить только для мыши (десктоп)
+Масштаб `scale = exportWidth / previewWidth` получается неправильным → все размеры текста, отступы, оверлеи искажаются.
 
-**Рекомендуемый подход**: убрать однопальцевый drag текста на touch полностью. На мобильном перемещение текста неинтуитивно и мешает свайпу. Оставить: pinch-to-scale (2 пальца), клик → редактор, mouse drag (десктоп).
-
-## 3. Задержка применения шрифта и параметров
-
-**Файл: `src/components/editor/FontSection.tsx`**
-- Сейчас `onChange` вызывается при каждом изменении, но Slider может дебаунсить. Проверить что Slider onChange вызывает `onSave` мгновенно
-- Убедиться что `setSlidesWithHistory` в Index.tsx не делает лишних вычислений
-
-**Файл: `src/pages/Index.tsx`**
-- В `handleUpdateSlide`: контрастные цвета пересчитываются при каждом `bgColor` изменении через `getContrastColors`. Это нормально. Но `setSlidesWithHistory` создает копию через `pushUndo` на каждый тик слайдера → много undo-записей
-- Для слайдеров (size, lineHeight, letterSpacing) добавить `skipHistory.current = true` во время перетаскивания, `false` на отпускание. Передать `onCommit` callback в FontSection/TextPanel
-
-**Файл: `src/components/editor/FontSection.tsx`**
-- Для Slider: использовать `onValueChange` для live preview (без undo), `onValueCommit` для финального сохранения (с undo)
-- Передать в `onChange` два режима: `onChange(updates)` для live, `onCommit?.(updates)` для финального
-
-## 4. Username и нумерация слишком крупные + автоскрытие для Stories
-
-**Файл: `src/components/editor/shared-styles.ts`**
-- Уменьшить `usernameSize` и `footerSize` для всех форматов:
-```ts
-carousel:     { ..., usernameSize: 8, footerSize: 7 },
-square:       { ..., usernameSize: 8, footerSize: 7 },
-stories:      { ..., usernameSize: 8, footerSize: 7 },
-presentation: { ..., usernameSize: 7, footerSize: 6 },
-```
-
-**Файл: `src/pages/Index.tsx`**
-- В обработчике смены формата (`onSlideFormatChange`): когда формат переключается на `stories`, автоматически скрывать username и нумерацию на всех слайдах:
-```ts
-const handleFormatChange = (format: SlideFormat) => {
-  setSlideFormat(format);
-  if (format === "stories") {
-    setSlidesWithHistory(prev => prev.map(s => ({
-      ...s, showUsername: false, showSlideCount: false
-    })));
-  }
-};
-```
-
-**Файл: `src/components/editor/BottomSheet.tsx`**
-- Передать `slideFormat` в SizePanel callback, чтобы вызвать авто-скрытие
+**Решение**: Заменить динамический `getPreviewWidth()` на фиксированные значения per-format. Размеры в `FORMAT_TEXT_DEFAULTS` рассчитаны под конкретные превью-ширины, которые фиксированы в CSS.
 
 ## Файлы для изменения
 
-1. `src/components/editor/SlideCarousel.tsx` — удалить media drag, исправить text drag на touch
-2. `src/components/editor/SlideFrame.tsx` — убрать media drag пропсы и обработчики
-3. `src/components/editor/FontSection.tsx` — onValueCommit для слайдеров
-4. `src/components/editor/shared-styles.ts` — уменьшить usernameSize/footerSize
-5. `src/pages/Index.tsx` — автоскрытие username/count при Stories, skipHistory для live slider
-6. `src/components/editor/TextPanel.tsx` — пробросить onCommit
+### `src/components/editor/DownloadModal.tsx`
+
+1. **`getPreviewWidth()`** — заменить DOM-запрос на фиксированные значения:
+```ts
+function getPreviewWidth(format: SlideFormat): number {
+  switch (format) {
+    case "stories": return 220;
+    case "square": return 270;
+    case "presentation": return 380;
+    default: return 290; // carousel
+  }
+}
+```
+
+2. **`triggerDownload()`** — использовать `navigator.share()` на мобильных как основной метод, с fallback на `<a>`:
+```ts
+async function triggerDownload(blob: Blob, filename: string) {
+  // Мобильные: используем share API если доступен
+  if (navigator.share && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+    try {
+      const file = new File([blob], filename, { type: blob.type });
+      await navigator.share({ files: [file] });
+      return;
+    } catch {}
+  }
+  // Fallback: download link
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.download = filename;
+  link.href = url;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
+```
+
+Два изменения в одном файле. Убирает зависимость от DOM-состояния и решает проблему скачивания на мобильных.
+
