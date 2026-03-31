@@ -1,64 +1,69 @@
 
 
-# Исправить экспорт PNG и PDF на мобильных
+# Сохранение слайдов напрямую в фотогалерею на мобильном
 
-## Проблема 1: PNG не скачивается на мобильном
+## Проблема
 
-`triggerDownload()` вызывается после длинной цепочки `await` (рендер → html2canvas → ZIP). К этому моменту браузер считает user gesture утраченным:
-- iOS Safari: `window.open()` блокируется popup-блокером
-- Android Chrome: `<a>.click()` может быть проигнорирован
+Сейчас PNG экспорт упаковывает всё в ZIP → `navigator.share()` шарит ZIP-файл → iOS/Android предлагает сохранить в "Файлы", а не в фотогалерею. Картинки в ZIP не распознаются как изображения. PDF тоже сохраняется через `pdf.save()` (скрытый `<a>` клик), что на мобильном ненадёжно.
 
-**Решение**: Создать промежуточный `<a>` элемент сразу при клике пользователя (пока gesture ещё активен), а после завершения async-работы присвоить ему `href` и вызвать `click()`. Альтернативно — использовать `navigator.share()` API на мобильных (поддерживается и iOS и Android), что не требует user gesture в момент вызова для blob-файлов.
+## Решение
 
-## Проблема 2: PDF сохраняется криво
+На мобильных устройствах — **не создавать ZIP для PNG**. Вместо этого шарить изображения напрямую через `navigator.share({ files: [...] })`, где каждый файл — это `File` с типом `image/png`. iOS и Android распознают PNG-файлы и предлагают "Сохранить в фото".
 
-`getPreviewWidth()` берёт ширину текущего видимого слайда через `document.querySelector("[data-slide-id]")`. На мобильном:
-- Модальное окно скачивания перекрывает слайд
-- Слайд может быть скрыт/сжат
-- Возвращается неверная ширина (или fallback 220-290px)
+Для PDF — вместо `pdf.save()` использовать `navigator.share()` с PDF-blob.
 
-Масштаб `scale = exportWidth / previewWidth` получается неправильным → все размеры текста, отступы, оверлеи искажаются.
+## Файл: `src/components/editor/DownloadModal.tsx`
 
-**Решение**: Заменить динамический `getPreviewWidth()` на фиксированные значения per-format. Размеры в `FORMAT_TEXT_DEFAULTS` рассчитаны под конкретные превью-ширины, которые фиксированы в CSS.
+### Изменение 1: `downloadPNG` — на мобильном шарить PNG напрямую без ZIP
 
-## Файлы для изменения
-
-### `src/components/editor/DownloadModal.tsx`
-
-1. **`getPreviewWidth()`** — заменить DOM-запрос на фиксированные значения:
 ```ts
-function getPreviewWidth(format: SlideFormat): number {
-  switch (format) {
-    case "stories": return 220;
-    case "square": return 270;
-    case "presentation": return 380;
-    default: return 290; // carousel
+const downloadPNG = async () => {
+  // ... render slides ...
+  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+  
+  if (isMobile && navigator.share) {
+    // Создать File[] из canvas → PNG blob
+    const files: File[] = [];
+    for (let i = 0; i < slides.length; i++) {
+      const canvas = await captureSlide(slides[i], i);
+      const blob = await new Promise<Blob>((res) => 
+        canvas.toBlob(b => res(b!), "image/png")
+      );
+      files.push(new File([blob], `slide-${i+1}.png`, { type: "image/png" }));
+    }
+    await navigator.share({ files });
+  } else {
+    // Десктоп: ZIP как раньше
+    const zip = new JSZip();
+    // ...
   }
-}
+};
 ```
 
-2. **`triggerDownload()`** — использовать `navigator.share()` на мобильных как основной метод, с fallback на `<a>`:
+Когда `navigator.share` получает файлы с `type: "image/png"`, iOS покажет опцию "Сохранить изображение" (в фотогалерею), а Android — "Сохранить в Галерею".
+
+### Изменение 2: `downloadPDF` — на мобильном шарить PDF через share API
+
 ```ts
-async function triggerDownload(blob: Blob, filename: string) {
-  // Мобильные: используем share API если доступен
-  if (navigator.share && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
-    try {
-      const file = new File([blob], filename, { type: blob.type });
-      await navigator.share({ files: [file] });
-      return;
-    } catch {}
+const downloadPDF = async () => {
+  // ... render PDF ...
+  const pdfBlob = pdf.output("blob");
+  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+  
+  if (isMobile && navigator.share) {
+    const file = new File([pdfBlob], "slides.pdf", { type: "application/pdf" });
+    await navigator.share({ files: [file] });
+  } else {
+    pdf.save("slides.pdf");
   }
-  // Fallback: download link
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.download = filename;
-  link.href = url;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  setTimeout(() => URL.revokeObjectURL(url), 30000);
-}
+};
 ```
 
-Два изменения в одном файле. Убирает зависимость от DOM-состояния и решает проблему скачивания на мобильных.
+### Изменение 3: Обработка ошибок share
+
+Если `navigator.share()` выбрасывает ошибку (пользователь отменил или не поддерживается), делать fallback на ZIP/download как сейчас.
+
+## Один файл для изменения
+
+`src/components/editor/DownloadModal.tsx` — переписать `downloadPNG` и `downloadPDF` с mobile-first подходом через `navigator.share` для прямого сохранения в галерею.
 
