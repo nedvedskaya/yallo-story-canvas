@@ -307,14 +307,46 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
   const downloadPNG = async () => {
     setLoading(true); setLoadingType("png"); setProgress(0); setProgressText("Начинаем экспорт...");
     try {
-      const zip = new JSZip();
+      const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+      const canShareFiles = isMobile && navigator.share && navigator.canShare;
+
+      // Render all slides to canvas
+      const canvases: HTMLCanvasElement[] = [];
       for (let i = 0; i < slides.length; i++) {
         setProgressText(`Обработка слайда ${i + 1} из ${slides.length}...`);
         setProgress(Math.round((i / slides.length) * 85));
-        const canvas = await captureSlide(slides[i], i);
-        zip.file(`slide-${i + 1}.png`, canvas.toDataURL("image/png").split(",")[1], { base64: true });
+        canvases.push(await captureSlide(slides[i], i));
       }
+
+      if (canShareFiles) {
+        // Mobile: share PNG files directly (saves to Photos/Gallery)
+        setProgressText("Подготовка изображений...");
+        const files: File[] = [];
+        for (let i = 0; i < canvases.length; i++) {
+          const blob = await new Promise<Blob>((res) =>
+            canvases[i].toBlob(b => res(b!), "image/png")
+          );
+          files.push(new File([blob], `slide-${i + 1}.png`, { type: "image/png" }));
+        }
+        setProgress(95);
+        try {
+          if (navigator.canShare({ files })) {
+            await navigator.share({ files });
+            setProgress(100);
+            toast({ title: "Готово!", description: `${slides.length} слайдов сохранены как PNG` });
+            return;
+          }
+        } catch (e) {
+          console.log("Share cancelled or failed, falling back to ZIP", e);
+        }
+      }
+
+      // Desktop or fallback: ZIP
       setProgressText("Упаковка..."); setProgress(90);
+      const zip = new JSZip();
+      for (let i = 0; i < canvases.length; i++) {
+        zip.file(`slide-${i + 1}.png`, canvases[i].toDataURL("image/png").split(",")[1], { base64: true });
+      }
       const blob = await zip.generateAsync({ type: "blob" });
       triggerDownload(blob, "slides.zip");
       setProgress(100);
