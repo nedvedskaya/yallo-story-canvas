@@ -108,8 +108,6 @@ function cleanupContainer(container: HTMLDivElement, root: Root) {
 }
 
 function getPreviewWidth(format: SlideFormat): number {
-  const el = document.querySelector("[data-slide-id]") as HTMLElement;
-  if (el?.offsetWidth) return el.offsetWidth;
   switch (format) {
     case "stories": return 220;
     case "square": return 270;
@@ -118,20 +116,27 @@ function getPreviewWidth(format: SlideFormat): number {
   }
 }
 
-/** Mobile-friendly download */
-function triggerDownload(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
-  if (isIOS()) {
-    // iOS: open blob in new tab, user can save from there
-    window.open(url, "_blank");
-  } else {
-    const link = document.createElement("a");
-    link.download = filename;
-    link.href = url;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+/** Mobile-friendly download using share API or fallback */
+async function triggerDownload(blob: Blob, filename: string) {
+  // Mobile: use navigator.share if available
+  if (navigator.share && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+    try {
+      const file = new File([blob], filename, { type: blob.type });
+      await navigator.share({ files: [file] });
+      return;
+    } catch (e) {
+      // User cancelled or share failed — fall through to download link
+      console.log("Share cancelled, falling back to download link");
+    }
   }
+  // Fallback: download link
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.download = filename;
+  link.href = url;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
   setTimeout(() => URL.revokeObjectURL(url), 30000);
 }
 
