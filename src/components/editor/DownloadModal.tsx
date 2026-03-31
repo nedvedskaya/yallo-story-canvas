@@ -360,6 +360,7 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
   const downloadPDF = async () => {
     setLoading(true); setLoadingType("pdf"); setProgress(0); setProgressText("Начинаем экспорт...");
     try {
+      const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
       const isLandscape = formatInfo.width > formatInfo.height;
       const pdf = new jsPDF({ orientation: isLandscape ? "landscape" : "portrait", unit: "px", format: [formatInfo.width, formatInfo.height] });
       for (let i = 0; i < slides.length; i++) {
@@ -369,8 +370,27 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
         const canvas = await captureSlide(slides[i], i);
         pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, formatInfo.width, formatInfo.height);
       }
-      setProgress(100);
+      setProgress(95);
+
+      if (isMobile && navigator.share && navigator.canShare) {
+        // Mobile: share PDF directly
+        const pdfBlob = pdf.output("blob");
+        const file = new File([pdfBlob], "slides.pdf", { type: "application/pdf" });
+        try {
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file] });
+            setProgress(100);
+            toast({ title: "Готово!", description: "Слайды сохранены как PDF" });
+            return;
+          }
+        } catch (e) {
+          console.log("PDF share cancelled, falling back to save", e);
+        }
+      }
+
+      // Desktop or fallback
       pdf.save("slides.pdf");
+      setProgress(100);
       toast({ title: "Готово!", description: "Слайды сохранены как PDF" });
     } catch (e) {
       console.error("PDF export error:", e);
