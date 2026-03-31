@@ -307,14 +307,46 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
   const downloadPNG = async () => {
     setLoading(true); setLoadingType("png"); setProgress(0); setProgressText("Начинаем экспорт...");
     try {
-      const zip = new JSZip();
+      const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+      const canShareFiles = isMobile && navigator.share && navigator.canShare;
+
+      // Render all slides to canvas
+      const canvases: HTMLCanvasElement[] = [];
       for (let i = 0; i < slides.length; i++) {
         setProgressText(`Обработка слайда ${i + 1} из ${slides.length}...`);
         setProgress(Math.round((i / slides.length) * 85));
-        const canvas = await captureSlide(slides[i], i);
-        zip.file(`slide-${i + 1}.png`, canvas.toDataURL("image/png").split(",")[1], { base64: true });
+        canvases.push(await captureSlide(slides[i], i));
       }
+
+      if (canShareFiles) {
+        // Mobile: share PNG files directly (saves to Photos/Gallery)
+        setProgressText("Подготовка изображений...");
+        const files: File[] = [];
+        for (let i = 0; i < canvases.length; i++) {
+          const blob = await new Promise<Blob>((res) =>
+            canvases[i].toBlob(b => res(b!), "image/png")
+          );
+          files.push(new File([blob], `slide-${i + 1}.png`, { type: "image/png" }));
+        }
+        setProgress(95);
+        try {
+          if (navigator.canShare({ files })) {
+            await navigator.share({ files });
+            setProgress(100);
+            toast({ title: "Готово!", description: `${slides.length} слайдов сохранены как PNG` });
+            return;
+          }
+        } catch (e) {
+          console.log("Share cancelled or failed, falling back to ZIP", e);
+        }
+      }
+
+      // Desktop or fallback: ZIP
       setProgressText("Упаковка..."); setProgress(90);
+      const zip = new JSZip();
+      for (let i = 0; i < canvases.length; i++) {
+        zip.file(`slide-${i + 1}.png`, canvases[i].toDataURL("image/png").split(",")[1], { base64: true });
+      }
       const blob = await zip.generateAsync({ type: "blob" });
       triggerDownload(blob, "slides.zip");
       setProgress(100);
@@ -328,6 +360,7 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
   const downloadPDF = async () => {
     setLoading(true); setLoadingType("pdf"); setProgress(0); setProgressText("Начинаем экспорт...");
     try {
+      const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
       const isLandscape = formatInfo.width > formatInfo.height;
       const pdf = new jsPDF({ orientation: isLandscape ? "landscape" : "portrait", unit: "px", format: [formatInfo.width, formatInfo.height] });
       for (let i = 0; i < slides.length; i++) {
@@ -337,8 +370,27 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
         const canvas = await captureSlide(slides[i], i);
         pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, formatInfo.width, formatInfo.height);
       }
-      setProgress(100);
+      setProgress(95);
+
+      if (isMobile && navigator.share && navigator.canShare) {
+        // Mobile: share PDF directly
+        const pdfBlob = pdf.output("blob");
+        const file = new File([pdfBlob], "slides.pdf", { type: "application/pdf" });
+        try {
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file] });
+            setProgress(100);
+            toast({ title: "Готово!", description: "Слайды сохранены как PDF" });
+            return;
+          }
+        } catch (e) {
+          console.log("PDF share cancelled, falling back to save", e);
+        }
+      }
+
+      // Desktop or fallback
       pdf.save("slides.pdf");
+      setProgress(100);
       toast({ title: "Готово!", description: "Слайды сохранены как PDF" });
     } catch (e) {
       console.error("PDF export error:", e);
