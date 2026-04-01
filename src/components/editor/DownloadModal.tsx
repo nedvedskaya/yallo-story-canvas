@@ -95,7 +95,8 @@ async function renderSlideToDOM(
         }
       });
       if (promises.length > 0) await Promise.all(promises);
-      await wait(50);
+      const isMobileSafari = /iPhone|iPad|iPod/.test(navigator.userAgent);
+      await wait(isMobileSafari ? 300 : 80);
 
       resolve({ container, root });
     }));
