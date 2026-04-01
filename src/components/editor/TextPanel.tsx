@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import FontSection, { type FontSettings, type CustomFont } from "./FontSection";
-import { Switch } from "@/components/ui/switch";
+import type { Slide } from "./SlideCarousel";
 import type { Slide } from "./SlideCarousel";
 
 interface TextPanelProps {

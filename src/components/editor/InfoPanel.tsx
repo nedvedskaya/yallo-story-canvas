@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Switch } from "@/components/ui/switch";
+import type { Slide } from "./SlideCarousel";
 import type { Slide } from "./SlideCarousel";
 import { labelStyle } from "./shared-styles";
 
