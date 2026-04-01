@@ -1,6 +1,5 @@
 import { useState, useCallback, useRef } from "react";
 import FontSection, { type FontSettings, type CustomFont } from "./FontSection";
-import { Switch } from "@/components/ui/switch";
 import type { Slide } from "./SlideCarousel";
 
 interface TextPanelProps {
@@ -20,23 +19,7 @@ const ColorPicker = ({
   onChange: (color: string) => void;
 }) => {
   const ref = useRef<HTMLInputElement>(null);
-  const [hex, setHex] = useState(value);
-
-  const handlePicker = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const c = e.target.value;
-    setHex(c);
-    onChange(c);
-  };
-
-  const handleHex = (val: string) => {
-    setHex(val);
-    if (/^#[0-9a-fA-F]{6}$/.test(val)) onChange(val);
-  };
-
-  // Sync external changes
-  if (value !== hex && /^#[0-9a-fA-F]{6}$/.test(value)) {
-    // Only sync if it's a valid hex that differs
-  }
+  const normalizedValue = /^#[0-9a-fA-F]{6}$/.test(value) ? value : '#ffffff';
 
   return (
     <div className="flex items-center justify-between">
@@ -44,22 +27,21 @@ const ColorPicker = ({
       <div className="flex items-center gap-2">
         <div
           className="relative w-7 h-7 rounded-full cursor-pointer border"
-          style={{ backgroundColor: value, borderColor: 'rgba(200,200,220,0.5)' }}
+          style={{ backgroundColor: normalizedValue, borderColor: 'rgba(200,200,220,0.5)' }}
           onClick={() => ref.current?.click()}
         >
           <input
             ref={ref}
             type="color"
-            value={value}
-            onChange={handlePicker}
+            value={normalizedValue}
+            onChange={(e) => onChange(e.target.value)}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
         </div>
         <input
           type="text"
-          value={hex}
-          onChange={(e) => handleHex(e.target.value)}
-          onBlur={() => { if (!/^#[0-9a-fA-F]{6}$/.test(hex)) setHex(value); }}
+          value={normalizedValue}
+          onChange={(e) => { if (/^#[0-9a-fA-F]{6}$/.test(e.target.value)) onChange(e.target.value); }}
           className="w-[72px] rounded-lg px-2 py-1 text-[11px] font-mono text-center"
           style={{
             background: 'rgba(255,255,255,0.6)',
@@ -74,7 +56,7 @@ const ColorPicker = ({
 
 const TextPanel = ({ currentSlide, onSave, onSaveLive, onApplyTextToAll }: TextPanelProps) => {
   const [activeSection, setActiveSection] = useState<"title" | "body">("title");
-  const [applyAll, setApplyAll] = useState(false);
+  
   const [customFonts, setCustomFonts] = useState<CustomFont[]>([]);
 
   const handleAddCustomFont = useCallback((font: CustomFont) => {
@@ -184,9 +166,18 @@ const TextPanel = ({ currentSlide, onSave, onSaveLive, onApplyTextToAll }: TextP
       )}
 
       <div className="h-px" style={{ background: 'rgba(26,26,46,0.08)' }} />
-      <div className="flex items-center justify-between">
-        <span className="text-xs" style={{ color: 'rgba(26,26,46,0.6)' }}>Применить ко всем слайдам</span>
-        <Switch checked={applyAll} onCheckedChange={(v) => { setApplyAll(v); if (v) onApplyTextToAll(); }} />
+      <div className="flex items-center justify-end">
+        <button
+          onClick={onApplyTextToAll}
+          className="px-4 py-1.5 rounded-lg text-xs font-medium transition-all active:scale-95"
+          style={{
+            background: 'rgba(26,26,46,0.08)',
+            border: '1px solid rgba(26,26,46,0.15)',
+            color: '#1a1a2e',
+          }}
+        >
+          Применить ко всем слайдам
+        </button>
       </div>
     </div>
   );

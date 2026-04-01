@@ -191,14 +191,29 @@ const SlideCarousel = ({
     }, 50);
   };
 
-  const handleScroll = () => {
+  const handleScroll = useCallback(() => {
     if (!scrollRef.current) return;
     const container = scrollRef.current;
-    const slideWidth = container.firstElementChild ? (container.firstElementChild as HTMLElement).offsetWidth : 0;
-    if (slideWidth === 0) return;
-    const index = Math.round(container.scrollLeft / slideWidth);
-    if (index !== activeSlide && index < slides.length) onSlideChange(index);
-  };
+    const children = Array.from(container.children) as HTMLElement[];
+    if (children.length === 0) return;
+
+    const containerCenter = container.scrollLeft + container.offsetWidth / 2;
+    let closestIndex = 0;
+    let closestDist = Infinity;
+
+    children.forEach((child, i) => {
+      const childCenter = child.offsetLeft + child.offsetWidth / 2;
+      const dist = Math.abs(containerCenter - childCenter);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closestIndex = i;
+      }
+    });
+
+    if (closestIndex !== activeSlide && closestIndex < slides.length) {
+      onSlideChange(closestIndex);
+    }
+  }, [activeSlide, slides.length, onSlideChange]);
 
   const handleAdd = useCallback((idx: number) => { onAddSlide(idx); scrollToIndex(idx); }, [onAddSlide]);
   const handleMove = useCallback((fromIdx: number, dir: -1 | 1) => { onMoveSlide(fromIdx, dir); scrollToIndex(Math.max(0, Math.min(fromIdx + dir, slides.length - 1))); }, [onMoveSlide, slides.length]);

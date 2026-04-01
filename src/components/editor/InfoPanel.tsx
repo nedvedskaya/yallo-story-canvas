@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import type { Slide } from "./SlideCarousel";
 import { labelStyle } from "./shared-styles";
@@ -10,7 +9,7 @@ interface InfoPanelProps {
 }
 
 const InfoPanel = ({ currentSlide, onSave, onApplyInfoToAll }: InfoPanelProps) => {
-  const [applyAll, setApplyAll] = useState(false);
+  
 
   const showUsername = currentSlide.showUsername !== false;
   const showSlideCount = currentSlide.showSlideCount !== false;
@@ -78,9 +77,18 @@ const InfoPanel = ({ currentSlide, onSave, onApplyInfoToAll }: InfoPanelProps) =
         )}
       </div>
 
-      <div className={rowStyle}>
-        <span className="font-medium" style={lblStyle}>Применить ко всем</span>
-        <Switch checked={applyAll} onCheckedChange={(v) => { setApplyAll(v); if (v) onApplyInfoToAll(); }} />
+      <div className="flex items-center justify-end py-0.5">
+        <button
+          onClick={onApplyInfoToAll}
+          className="px-4 py-1.5 rounded-lg text-xs font-medium transition-all active:scale-95"
+          style={{
+            background: 'rgba(26,26,46,0.08)',
+            border: '1px solid rgba(26,26,46,0.15)',
+            color: '#1a1a2e',
+          }}
+        >
+          Применить ко всем
+        </button>
       </div>
     </div>
   );
