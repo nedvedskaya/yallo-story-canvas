@@ -1,4 +1,4 @@
-import type { Slide } from "./SlideCarousel";
+import { Switch } from "@/components/ui/switch";
 import type { Slide } from "./SlideCarousel";
 import { labelStyle } from "./shared-styles";
 
