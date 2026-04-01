@@ -57,7 +57,7 @@ const ColorPicker = ({
 
 const TextPanel = ({ currentSlide, onSave, onSaveLive, onApplyTextToAll }: TextPanelProps) => {
   const [activeSection, setActiveSection] = useState<"title" | "body">("title");
-  const [applyAll, setApplyAll] = useState(false);
+  
   const [customFonts, setCustomFonts] = useState<CustomFont[]>([]);
 
   const handleAddCustomFont = useCallback((font: CustomFont) => {
