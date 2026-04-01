@@ -167,9 +167,18 @@ const TextPanel = ({ currentSlide, onSave, onSaveLive, onApplyTextToAll }: TextP
       )}
 
       <div className="h-px" style={{ background: 'rgba(26,26,46,0.08)' }} />
-      <div className="flex items-center justify-between">
-        <span className="text-xs" style={{ color: 'rgba(26,26,46,0.6)' }}>Применить ко всем слайдам</span>
-        <Switch checked={applyAll} onCheckedChange={(v) => { setApplyAll(v); if (v) onApplyTextToAll(); }} />
+      <div className="flex items-center justify-end">
+        <button
+          onClick={onApplyTextToAll}
+          className="px-4 py-1.5 rounded-lg text-xs font-medium transition-all active:scale-95"
+          style={{
+            background: 'rgba(26,26,46,0.08)',
+            border: '1px solid rgba(26,26,46,0.15)',
+            color: '#1a1a2e',
+          }}
+        >
+          Применить ко всем слайдам
+        </button>
       </div>
     </div>
   );

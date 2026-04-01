@@ -23,21 +23,30 @@ export function getLuminance(hex: string): number {
 }
 
 export function getContrastColors(bgColor: string) {
-  const match = bgColor.match(/#[0-9a-fA-F]{6}/);
-  const hex = match ? match[0] : "#667eea";
-  const isLight = getLuminance(hex) > 0.45;
+  const hexMatches = bgColor.match(/#[0-9a-fA-F]{6}/g);
+  if (!hexMatches || hexMatches.length === 0) {
+    return {
+      titleColor: '#ffffff',
+      bodyColor: 'rgba(255,255,255,0.85)',
+      metaColor: 'rgba(255,255,255,0.7)',
+      overlayColor: 'rgba(255,255,255,0.25)',
+    };
+  }
+
+  const avgLuminance = hexMatches.reduce((sum, hex) => sum + getLuminance(hex), 0) / hexMatches.length;
+  const isLight = avgLuminance > 0.45;
 
   return isLight
     ? {
-        titleColor: "#1A1A1A",
-        bodyColor: "#1A1A1A",
-        metaColor: "#999999",
-        overlayColor: "rgba(0,0,0,0.08)",
+        titleColor: '#1A1A1A',
+        bodyColor: '#1A1A1A',
+        metaColor: '#999999',
+        overlayColor: 'rgba(0,0,0,0.08)',
       }
     : {
-        titleColor: "#ffffff",
-        bodyColor: "rgba(255,255,255,0.85)",
-        metaColor: "rgba(255,255,255,0.7)",
-        overlayColor: "rgba(255,255,255,0.25)",
+        titleColor: '#ffffff',
+        bodyColor: 'rgba(255,255,255,0.85)',
+        metaColor: 'rgba(255,255,255,0.7)',
+        overlayColor: 'rgba(255,255,255,0.25)',
       };
 }
