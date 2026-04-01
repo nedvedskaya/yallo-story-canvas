@@ -14,7 +14,7 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
   const editorRef = useRef<HTMLDivElement>(null);
   const textColorInputRef = useRef<HTMLInputElement>(null);
   const highlightColorInputRef = useRef<HTMLInputElement>(null);
-  const initializedRef = useRef(false);
+  
   const [textColor, setTextColor] = useState("#FF4200");
   const [highlightColor, setHighlightColor] = useState("#FFF3CD");
   const selectionRef = useRef<Range | null>(null);
