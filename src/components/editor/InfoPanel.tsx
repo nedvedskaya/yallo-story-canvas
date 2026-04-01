@@ -10,7 +10,7 @@ interface InfoPanelProps {
 }
 
 const InfoPanel = ({ currentSlide, onSave, onApplyInfoToAll }: InfoPanelProps) => {
-  const [applyAll, setApplyAll] = useState(false);
+  
 
   const showUsername = currentSlide.showUsername !== false;
   const showSlideCount = currentSlide.showSlideCount !== false;
