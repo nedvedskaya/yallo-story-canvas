@@ -92,7 +92,7 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
           className="absolute inset-0 z-[2]"
           style={{ overflow: 'hidden', pointerEvents: 'none' }}
         >
-          <img src={slide.bgImage} alt="" style={{ ...mediaStyle, objectFit: 'contain' }} />
+          <img src={slide.bgImage} alt="" style={{ ...mediaStyle, objectFit: 'cover' }} />
           {slide.bgDarken > 0 && (
             <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${slide.bgDarken / 100})`, pointerEvents: 'none' }} />
           )}
