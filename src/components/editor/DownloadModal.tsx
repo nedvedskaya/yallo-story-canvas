@@ -347,18 +347,20 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
           const blob = await new Promise<Blob>((res) =>
             canvases[i].toBlob(b => res(b!), "image/png")
           );
-          files.push(new File([blob], `slide-${i + 1}.png`, { type: "image/png" }));
+          files.push(new File([blob], `yalo-slide-${i + 1}.png`, { type: "image/png" }));
         }
         setProgress(95);
         try {
-          if (navigator.canShare({ files })) {
+          if (navigator.canShare && navigator.canShare({ files })) {
             await navigator.share({ files });
             setProgress(100);
-            toast({ title: "Готово!", description: `${slides.length} слайдов сохранены как PNG` });
+            toast({ title: "Готово!", description: `${slides.length} слайдов сохранены` });
             return;
           }
-        } catch (e) {
-          console.log("Share cancelled or failed, falling back to ZIP", e);
+        } catch (shareErr: unknown) {
+          const isCancel = shareErr instanceof Error && shareErr.name === 'AbortError';
+          if (isCancel) return;
+          console.log("Share failed, falling back to ZIP", shareErr);
         }
       }
 

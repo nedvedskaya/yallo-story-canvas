@@ -29,10 +29,38 @@ export function getSlideMetrics(slide: Slide, format: SlideFormat, scale = 1): S
   };
 }
 
-export function getMediaStyle(slide: Slide, overrides?: { posX?: number; posY?: number; scale?: number }): React.CSSProperties {
+export function getMediaStyle(
+  slide: Slide,
+  overrides?: { posX?: number; posY?: number; scale?: number },
+  containerWidth?: number,
+  containerHeight?: number,
+): React.CSSProperties {
   const posX = overrides?.posX ?? slide.bgPosX;
   const posY = overrides?.posY ?? slide.bgPosY;
   const sc = overrides?.scale ?? slide.bgScale;
+
+  // If container dimensions provided — use absolute px (for export)
+  if (containerWidth && containerHeight) {
+    const scaleFactor = sc / 100;
+    const w = Math.max(containerWidth, containerHeight * 2) * scaleFactor;
+    const h = w;
+    const left = (posX / 100) * containerWidth - w / 2;
+    const top = (posY / 100) * containerHeight - h / 2;
+    return {
+      position: 'absolute',
+      left: `${left}px`,
+      top: `${top}px`,
+      width: `${w}px`,
+      height: `${h}px`,
+      minWidth: 'unset',
+      minHeight: 'unset',
+      transform: 'none',
+      transformOrigin: 'unset',
+      objectFit: 'cover' as const,
+    };
+  }
+
+  // Without dimensions — old behavior for preview
   return {
     position: 'absolute',
     left: `${posX}%`,
