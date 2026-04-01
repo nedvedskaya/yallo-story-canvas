@@ -95,7 +95,8 @@ async function renderSlideToDOM(
         }
       });
       if (promises.length > 0) await Promise.all(promises);
-      await wait(50);
+      const isMobileSafari = /iPhone|iPad|iPod/.test(navigator.userAgent);
+      await wait(isMobileSafari ? 300 : 80);
 
       resolve({ container, root });
     }));
@@ -288,20 +289,40 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
       }
     }
 
-    const { container, root } = await renderSlideToDOM(renderSlide, slideFormat, index, slides.length, formatInfo.width, formatInfo.height, pw);
+    // Render at 2× for antialiasing, then downscale
+    const exportW = formatInfo.width;
+    const exportH = formatInfo.height;
+    const renderW = exportW * 2;
+    const renderH = exportH * 2;
 
-    const canvas = await html2canvas(container.firstElementChild as HTMLElement || container, {
-      scale: 1,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: null,
-      width: formatInfo.width,
-      height: formatInfo.height,
-      logging: false,
-    });
+    const { container, root } = await renderSlideToDOM(renderSlide, slideFormat, index, slides.length, renderW, renderH, pw);
+
+    const rawCanvas = await html2canvas(
+      (container.firstElementChild as HTMLElement) || container,
+      {
+        scale: 1,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+        width: renderW,
+        height: renderH,
+        logging: false,
+        imageTimeout: 15000,
+      }
+    );
 
     cleanupContainer(container, root);
-    return canvas;
+
+    // Downscale 2× → 1× for crisp antialiasing
+    const finalCanvas = document.createElement('canvas');
+    finalCanvas.width = exportW;
+    finalCanvas.height = exportH;
+    const ctx = finalCanvas.getContext('2d')!;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(rawCanvas, 0, 0, exportW, exportH);
+
+    return finalCanvas;
   }, [formatInfo, slides.length, slideFormat]);
 
   const downloadPNG = async () => {
@@ -326,18 +347,20 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
           const blob = await new Promise<Blob>((res) =>
             canvases[i].toBlob(b => res(b!), "image/png")
           );
-          files.push(new File([blob], `slide-${i + 1}.png`, { type: "image/png" }));
+          files.push(new File([blob], `yalo-slide-${i + 1}.png`, { type: "image/png" }));
         }
         setProgress(95);
         try {
-          if (navigator.canShare({ files })) {
+          if (navigator.canShare && navigator.canShare({ files })) {
             await navigator.share({ files });
             setProgress(100);
-            toast({ title: "Готово!", description: `${slides.length} слайдов сохранены как PNG` });
+            toast({ title: "Готово!", description: `${slides.length} слайдов сохранены` });
             return;
           }
-        } catch (e) {
-          console.log("Share cancelled or failed, falling back to ZIP", e);
+        } catch (shareErr: unknown) {
+          const isCancel = shareErr instanceof Error && shareErr.name === 'AbortError';
+          if (isCancel) return;
+          console.log("Share failed, falling back to ZIP", shareErr);
         }
       }
 
