@@ -85,6 +85,8 @@ const BackgroundPanel = ({
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (bgImage && bgImage.startsWith('blob:')) URL.revokeObjectURL(bgImage);
+      if (bgVideo && bgVideo.startsWith('blob:')) URL.revokeObjectURL(bgVideo);
       const url = URL.createObjectURL(file);
       update({ bgImage: undefined, bgVideo: url, bgVideoFile: file, bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0, bgMuted: false });
     }
