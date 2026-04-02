@@ -1,6 +1,5 @@
 import { useState, useRef, useCallback } from "react";
 import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
 import { Upload, Volume2, VolumeX } from "lucide-react";
 import MediaControls from "./MediaControls";
 import { labelStyle, valStyle } from "./shared-styles";
