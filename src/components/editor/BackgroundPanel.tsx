@@ -210,10 +210,17 @@ const BackgroundPanel = ({
               <span className="text-[10px] w-6 text-right" style={valStyle}>{overlayOpacity}</span>
             </div>
 
-            <div className="mt-2 flex items-center justify-between">
-              <span className="text-[11px]" style={valStyle}>Применить ко всем слайдам</span>
-              <Switch checked={applyToAll} onCheckedChange={(v) => { setApplyToAll(v); if (v) onApplyToAll(); }} />
-            </div>
+            <button
+              onClick={() => onApplyToAll()}
+              className="w-full rounded-xl py-2 text-xs font-medium transition-all active:scale-[0.97] mt-2"
+              style={{
+                background: 'rgba(255,255,255,0.6)',
+                border: '1px solid rgba(200,200,220,0.5)',
+                color: '#1a1a2e',
+              }}
+            >
+              Применить фон ко всем слайдам
+            </button>
           </div>
         </>
       )}
