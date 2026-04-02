@@ -19,7 +19,19 @@ const ColorPicker = ({
   onChange: (color: string) => void;
 }) => {
   const ref = useRef<HTMLInputElement>(null);
-  const normalizedValue = /^#[0-9a-fA-F]{6}$/.test(value) ? value : '#ffffff';
+  const rgbaToHex = (rgba: string): string => {
+    const match = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    if (!match) return '#ffffff';
+    const r = parseInt(match[1]).toString(16).padStart(2, '0');
+    const g = parseInt(match[2]).toString(16).padStart(2, '0');
+    const b = parseInt(match[3]).toString(16).padStart(2, '0');
+    return `#${r}${g}${b}`;
+  };
+  const normalizedValue = /^#[0-9a-fA-F]{6}$/.test(value)
+    ? value
+    : value.startsWith('rgb')
+      ? rgbaToHex(value)
+      : '#ffffff';
 
   return (
     <div className="flex items-center justify-between">
