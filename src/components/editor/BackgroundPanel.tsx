@@ -20,6 +20,7 @@ export interface BgDraft {
   bgColor: string;
   overlayType: OverlayType;
   overlayOpacity: number;
+  overlayColor?: string;
   bgImage?: string;
   bgVideo?: string;
   bgScale: number;
