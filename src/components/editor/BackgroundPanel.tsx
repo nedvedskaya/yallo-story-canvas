@@ -14,7 +14,6 @@ const overlayOptions: { id: OverlayType; label: string }[] = [
   { id: "grid", label: "Сетка" },
   { id: "cells", label: "Ячейки" },
   { id: "blobs", label: "Блики" },
-  { id: "noise", label: "Шум" },
 ];
 
 export interface BgDraft {
