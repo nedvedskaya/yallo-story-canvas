@@ -120,6 +120,7 @@ const Index = () => {
         bgColor: currentSlide.bgColor,
         overlayType: currentSlide.overlayType,
         overlayOpacity: currentSlide.overlayOpacity,
+        overlayColor: currentSlide.overlayColor,
       }))
     );
   }, [currentSlide, setSlidesWithHistory]);
