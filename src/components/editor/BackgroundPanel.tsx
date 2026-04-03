@@ -54,6 +54,15 @@ const BackgroundPanel = ({
 }: BackgroundPanelProps) => {
   const [bgTab, setBgTab] = useState<BgTab>(bgVideo ? "video" : bgImage ? "photo" : "color");
   const [hexInput, setHexInput] = useState(bgColor.startsWith("#") ? bgColor : "#667eea");
+
+  // Compute overlay color hex for color picker
+  const overlayColorHex = (() => {
+    const c = overlayColor || "rgba(255,255,255,1)";
+    if (c.startsWith("#")) return c.slice(0, 7);
+    const m = c.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    if (m) return `#${parseInt(m[1]).toString(16).padStart(2,'0')}${parseInt(m[2]).toString(16).padStart(2,'0')}${parseInt(m[3]).toString(16).padStart(2,'0')}`;
+    return "#ffffff";
+  })();
   const colorRef = useRef<HTMLInputElement>(null);
   const photoRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
