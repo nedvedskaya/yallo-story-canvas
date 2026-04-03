@@ -4,7 +4,7 @@ import { Upload, Volume2, VolumeX } from "lucide-react";
 import MediaControls from "./MediaControls";
 import { labelStyle, valStyle } from "./shared-styles";
 
-export type OverlayType = "none" | "dots" | "lines" | "grid" | "cells" | "blobs" | "noise";
+export type OverlayType = "none" | "dots" | "lines" | "grid" | "cells" | "blobs";
 type BgTab = "color" | "photo" | "video";
 
 const overlayOptions: { id: OverlayType; label: string }[] = [
