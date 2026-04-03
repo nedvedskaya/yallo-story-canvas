@@ -211,17 +211,35 @@ const BackgroundPanel = ({
               <span className="text-[10px] w-6 text-right" style={valStyle}>{overlayOpacity}</span>
             </div>
 
-            <button
-              onClick={() => onApplyToAll()}
-              className="w-full rounded-xl py-2 text-xs font-medium transition-all active:scale-[0.97] mt-2"
-              style={{
-                background: 'rgba(255,255,255,0.6)',
-                border: '1px solid rgba(200,200,220,0.5)',
-                color: '#1a1a2e',
-              }}
-            >
-              Применить фон ко всем слайдам
-            </button>
+            {overlayType !== "none" && (
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-[10px] flex-shrink-0" style={{ color: "rgba(26,26,46,0.45)" }}>Цвет элементов</span>
+                <div className="relative w-6 h-6 flex-shrink-0">
+                  <div className="w-6 h-6 rounded-full" style={{ background: overlayColorHex, border: "2px solid rgba(255,255,255,0.8)", boxShadow: "0 1px 4px rgba(0,0,0,0.1)" }} />
+                  <input type="color" value={overlayColorHex} onChange={(e) => {
+                    const hex = e.target.value;
+                    const r = parseInt(hex.slice(1,3),16);
+                    const g = parseInt(hex.slice(3,5),16);
+                    const b = parseInt(hex.slice(5,7),16);
+                    update({ overlayColor: `rgba(${r},${g},${b},1)` });
+                  }} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-end mt-2">
+              <button
+                onClick={() => onApplyToAll()}
+                className="px-4 py-1.5 rounded-lg text-xs font-medium transition-all active:scale-95"
+                style={{
+                  background: 'rgba(26,26,46,0.08)',
+                  border: '1px solid rgba(26,26,46,0.15)',
+                  color: '#1a1a2e',
+                }}
+              >
+                Применить ко всем
+              </button>
+            </div>
           </div>
         </>
       )}
