@@ -35,6 +35,7 @@ interface BackgroundPanelProps {
   bgColor: string;
   overlayType: OverlayType;
   overlayOpacity: number;
+  overlayColor?: string;
   bgImage?: string;
   bgVideo?: string;
   bgScale: number;
@@ -47,7 +48,7 @@ interface BackgroundPanelProps {
 }
 
 const BackgroundPanel = ({
-  bgColor, overlayType, overlayOpacity,
+  bgColor, overlayType, overlayOpacity, overlayColor,
   bgImage, bgVideo, bgScale, bgPosX, bgPosY, bgDarken, bgMuted,
   onSave, onApplyToAll,
 }: BackgroundPanelProps) => {
