@@ -74,12 +74,12 @@ const SlideOverlay = ({ type, opacity, color, scale = 1 }: SlideOverlayProps) =>
       return (
         <svg style={{ ...style, width: "100%", height: "100%" }}>
           <defs>
-            <pattern id="cells" width={30 * s} height={26 * s} patternUnits="userSpaceOnUse">
+            <pattern id="cells" width={24 * s} height={24 * s} patternUnits="userSpaceOnUse">
               <path
-                d={`M${15 * s} 0 L${30 * s} ${8 * s} L${30 * s} ${22 * s} L${15 * s} ${26 * s} L0 ${22 * s} L0 ${8 * s} Z`}
+                d={`M${12 * s} 0 L${24 * s} ${12 * s} L${12 * s} ${24 * s} L0 ${12 * s} Z`}
                 fill="none"
-                stroke={ca(0.3)}
-                strokeWidth={0.8 * s}
+                stroke={ca(0.2)}
+                strokeWidth={0.5 * s}
               />
             </pattern>
           </defs>
@@ -92,39 +92,40 @@ const SlideOverlay = ({ type, opacity, color, scale = 1 }: SlideOverlayProps) =>
           <div
             style={{
               position: "absolute",
-              width: "60%",
-              height: "50%",
-              top: "10%",
-              left: "5%",
+              width: "45%",
+              height: "40%",
+              top: "5%",
+              left: "10%",
               borderRadius: "50%",
-              background: ca(0.2),
-              filter: "blur(30px)",
+              background: ca(0.15),
+              filter: `blur(${40 * s}px)`,
             }}
           />
           <div
             style={{
               position: "absolute",
-              width: "50%",
-              height: "45%",
-              bottom: "15%",
-              right: "10%",
+              width: "35%",
+              height: "35%",
+              top: "40%",
+              right: "5%",
               borderRadius: "50%",
-              background: ca(0.15),
-              filter: "blur(25px)",
+              background: ca(0.12),
+              filter: `blur(${35 * s}px)`,
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              width: "30%",
+              height: "30%",
+              bottom: "10%",
+              left: "25%",
+              borderRadius: "50%",
+              background: ca(0.1),
+              filter: `blur(${30 * s}px)`,
             }}
           />
         </div>
-      );
-    case "noise":
-      return (
-        <div
-          style={{
-            ...style,
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E")`,
-            backgroundSize: "128px 128px",
-            mixBlendMode: "overlay",
-          }}
-        />
       );
     default:
       return null;

@@ -4,7 +4,7 @@ import { Upload, Volume2, VolumeX } from "lucide-react";
 import MediaControls from "./MediaControls";
 import { labelStyle, valStyle } from "./shared-styles";
 
-export type OverlayType = "none" | "dots" | "lines" | "grid" | "cells" | "blobs" | "noise";
+export type OverlayType = "none" | "dots" | "lines" | "grid" | "cells" | "blobs";
 type BgTab = "color" | "photo" | "video";
 
 const overlayOptions: { id: OverlayType; label: string }[] = [
@@ -14,13 +14,13 @@ const overlayOptions: { id: OverlayType; label: string }[] = [
   { id: "grid", label: "Сетка" },
   { id: "cells", label: "Ячейки" },
   { id: "blobs", label: "Блики" },
-  { id: "noise", label: "Шум" },
 ];
 
 export interface BgDraft {
   bgColor: string;
   overlayType: OverlayType;
   overlayOpacity: number;
+  overlayColor?: string;
   bgImage?: string;
   bgVideo?: string;
   bgScale: number;
@@ -35,6 +35,7 @@ interface BackgroundPanelProps {
   bgColor: string;
   overlayType: OverlayType;
   overlayOpacity: number;
+  overlayColor?: string;
   bgImage?: string;
   bgVideo?: string;
   bgScale: number;
@@ -47,12 +48,21 @@ interface BackgroundPanelProps {
 }
 
 const BackgroundPanel = ({
-  bgColor, overlayType, overlayOpacity,
+  bgColor, overlayType, overlayOpacity, overlayColor,
   bgImage, bgVideo, bgScale, bgPosX, bgPosY, bgDarken, bgMuted,
   onSave, onApplyToAll,
 }: BackgroundPanelProps) => {
   const [bgTab, setBgTab] = useState<BgTab>(bgVideo ? "video" : bgImage ? "photo" : "color");
   const [hexInput, setHexInput] = useState(bgColor.startsWith("#") ? bgColor : "#667eea");
+
+  // Compute overlay color hex for color picker
+  const overlayColorHex = (() => {
+    const c = overlayColor || "rgba(255,255,255,1)";
+    if (c.startsWith("#")) return c.slice(0, 7);
+    const m = c.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    if (m) return `#${parseInt(m[1]).toString(16).padStart(2,'0')}${parseInt(m[2]).toString(16).padStart(2,'0')}${parseInt(m[3]).toString(16).padStart(2,'0')}`;
+    return "#ffffff";
+  })();
   const colorRef = useRef<HTMLInputElement>(null);
   const photoRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
@@ -212,17 +222,35 @@ const BackgroundPanel = ({
               <span className="text-[10px] w-6 text-right" style={valStyle}>{overlayOpacity}</span>
             </div>
 
-            <button
-              onClick={() => onApplyToAll()}
-              className="w-full rounded-xl py-2 text-xs font-medium transition-all active:scale-[0.97] mt-2"
-              style={{
-                background: 'rgba(255,255,255,0.6)',
-                border: '1px solid rgba(200,200,220,0.5)',
-                color: '#1a1a2e',
-              }}
-            >
-              Применить фон ко всем слайдам
-            </button>
+            {overlayType !== "none" && (
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-[10px] flex-shrink-0" style={{ color: "rgba(26,26,46,0.45)" }}>Цвет элементов</span>
+                <div className="relative w-6 h-6 flex-shrink-0">
+                  <div className="w-6 h-6 rounded-full" style={{ background: overlayColorHex, border: "2px solid rgba(255,255,255,0.8)", boxShadow: "0 1px 4px rgba(0,0,0,0.1)" }} />
+                  <input type="color" value={overlayColorHex} onChange={(e) => {
+                    const hex = e.target.value;
+                    const r = parseInt(hex.slice(1,3),16);
+                    const g = parseInt(hex.slice(3,5),16);
+                    const b = parseInt(hex.slice(5,7),16);
+                    update({ overlayColor: `rgba(${r},${g},${b},1)` });
+                  }} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-end mt-2">
+              <button
+                onClick={() => onApplyToAll()}
+                className="px-4 py-1.5 rounded-lg text-xs font-medium transition-all active:scale-95"
+                style={{
+                  background: 'rgba(26,26,46,0.08)',
+                  border: '1px solid rgba(26,26,46,0.15)',
+                  color: '#1a1a2e',
+                }}
+              >
+                Применить ко всем
+              </button>
+            </div>
           </div>
         </>
       )}

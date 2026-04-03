@@ -94,6 +94,7 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onUpdate
                   bgColor={currentSlide.bgColor}
                   overlayType={currentSlide.overlayType}
                   overlayOpacity={currentSlide.overlayOpacity}
+                  overlayColor={currentSlide.overlayColor}
                   bgImage={currentSlide.bgImage}
                   bgVideo={currentSlide.bgVideo}
                   bgScale={currentSlide.bgScale}

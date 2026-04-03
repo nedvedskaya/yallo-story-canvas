@@ -88,6 +88,7 @@ const InfoPanel = ({ currentSlide, onSave, onApplyInfoToAll }: InfoPanelProps) =
           }}
         >
           Применить ко всем
+
         </button>
       </div>
     </div>

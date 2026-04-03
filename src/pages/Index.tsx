@@ -120,6 +120,7 @@ const Index = () => {
         bgColor: currentSlide.bgColor,
         overlayType: currentSlide.overlayType,
         overlayOpacity: currentSlide.overlayOpacity,
+        overlayColor: currentSlide.overlayColor,
       }))
     );
   }, [currentSlide, setSlidesWithHistory]);
@@ -161,7 +162,28 @@ const Index = () => {
   const handleApplyTemplate = useCallback((tpl: SlideTemplate) => {
     setActiveTemplate(tpl);
     setSlidesWithHistory(prev => prev.map(s => {
-      const updated = { ...s, ...tpl.apply };
+      // Build style-only updates: skip media & text content fields
+      const styleOnly = { ...tpl.apply };
+      // Preserve user's media if present
+      if (s.bgImage || s.bgVideo) {
+        delete styleOnly.bgImage;
+        delete styleOnly.bgVideo;
+        delete (styleOnly as any).bgVideoFile;
+        delete styleOnly.bgScale;
+        delete styleOnly.bgPosX;
+        delete styleOnly.bgPosY;
+        delete styleOnly.bgDarken;
+        delete styleOnly.bgColor;
+        delete styleOnly.bgType;
+        delete styleOnly.overlayType;
+        delete styleOnly.overlayOpacity;
+      }
+      // Preserve user's text content (only restyle)
+      delete (styleOnly as any).title;
+      delete (styleOnly as any).body;
+
+      const updated = { ...s, ...styleOnly };
+      // Apply accent to existing title
       if (tpl.accentColor && updated.title) {
         const clean = stripAccentSpans(updated.title);
         if (tpl.accentMode === "highlight") {

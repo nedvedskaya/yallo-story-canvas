@@ -188,7 +188,7 @@ const TextPanel = ({ currentSlide, onSave, onSaveLive, onApplyTextToAll }: TextP
             color: '#1a1a2e',
           }}
         >
-          Применить ко всем слайдам
+          Применить ко всем
         </button>
       </div>
     </div>

@@ -16,7 +16,7 @@ export const valStyle: React.CSSProperties = { color: "rgba(26,26,46,0.6)" };
 export const FORMAT_TEXT_DEFAULTS: Record<SlideFormat, { titleSize: number; bodySize: number; padding: number; usernameSize: number; footerSize: number }> = {
   carousel:     { titleSize: 22, bodySize: 13, padding: 20, usernameSize: 8, footerSize: 7 },
   square:       { titleSize: 20, bodySize: 12, padding: 18, usernameSize: 8, footerSize: 7 },
-  stories:      { titleSize: 20, bodySize: 12, padding: 24, usernameSize: 8, footerSize: 7 },
+  stories:      { titleSize: 16, bodySize: 10, padding: 24, usernameSize: 8, footerSize: 7 },
   presentation: { titleSize: 18, bodySize: 11, padding: 16, usernameSize: 7, footerSize: 6 },
 };
 

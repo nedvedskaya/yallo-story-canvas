@@ -42,8 +42,11 @@ export function getMediaStyle(
   // If container dimensions provided — use absolute px (for export)
   if (containerWidth && containerHeight) {
     const scaleFactor = sc / 100;
-    const w = Math.max(containerWidth, containerHeight * 2) * scaleFactor;
-    const h = w;
+    // Cover-fit: scale image so it covers the entire container
+    const coverSize = Math.max(containerWidth, containerHeight);
+    const w = coverSize * scaleFactor;
+    const h = coverSize * scaleFactor;
+    // Position: posX/posY are 0-100%, map to container offset
     const left = (posX / 100) * containerWidth - w / 2;
     const top = (posY / 100) * containerHeight - h / 2;
     return {
