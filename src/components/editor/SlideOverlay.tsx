@@ -15,7 +15,7 @@ const SlideOverlay = ({ type, opacity, color, scale = 1 }: SlideOverlayProps) =>
   const style: React.CSSProperties = {
     position: "absolute",
     inset: 0,
-    zIndex: 1,
+    zIndex: 2,
     pointerEvents: "none",
     opacity: alpha,
   };
