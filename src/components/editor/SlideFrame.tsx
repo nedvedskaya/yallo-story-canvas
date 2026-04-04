@@ -83,13 +83,10 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
 
   return (
     <div ref={ref} style={rootStyle} data-slide-id={dataSlideId}>
-      {/* Overlay pattern */}
-      {!overlayOnly && <SlideOverlay type={slide.overlayType} opacity={slide.overlayOpacity} color={slide.overlayColor} scale={scale} />}
-
       {/* Background image */}
       {!overlayOnly && slide.bgImage && (
         <div
-          className="absolute inset-0 z-[2]"
+          className="absolute inset-0 z-[1]"
           style={{ overflow: 'hidden', pointerEvents: 'none' }}
         >
           <img src={slide.bgImage} alt="" style={{ ...mediaStyle, objectFit: 'cover' }} />
