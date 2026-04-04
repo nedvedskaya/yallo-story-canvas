@@ -99,7 +99,7 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
       {/* Background video */}
       {!overlayOnly && slide.bgVideo && (
         <div
-          className="absolute inset-0 z-[2]"
+          className="absolute inset-0 z-[1]"
           style={{ overflow: 'hidden', pointerEvents: 'none' }}
         >
           <video
@@ -114,6 +114,9 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
           )}
         </div>
       )}
+
+      {/* Overlay pattern — on top of media but below content */}
+      {!overlayOnly && <SlideOverlay type={slide.overlayType} opacity={slide.overlayOpacity} color={slide.overlayColor} scale={scale} />}
 
       {/* Content layer */}
       <div className="relative z-10 flex flex-col h-full w-full">
