@@ -11,6 +11,7 @@ import SlideFrame from "./SlideFrame";
 export interface Slide {
   id: number;
   layoutType?: 'default' | 'title-only' | 'photo-top' | 'quote';
+  authorStyle?: 'v1' | 'v2' | 'v3' | 'v4';
   username: string;
   title: string;
   body: string;
