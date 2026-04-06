@@ -10,7 +10,6 @@ import SlideFrame from "./SlideFrame";
 
 export interface Slide {
   id: number;
-  layoutType?: 'default' | 'title-only' | 'photo-top' | 'quote';
   username: string;
   title: string;
   body: string;
