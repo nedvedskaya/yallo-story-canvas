@@ -75,7 +75,15 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onUpdate
 
             <div className="px-4 pb-4 pt-1 overflow-y-auto" style={{ maxHeight: 'calc(45vh - 48px)' }}>
               {isDesign && onApplyTemplate ? (
-                <TemplatesPanel onApplyTemplate={(tpl) => { onApplyTemplate(tpl); onClose(); }} />
+                <TemplatesPanel
+                  onApplyTemplate={(tpl) => { onApplyTemplate(tpl); onClose(); }}
+                  currentLayoutType={currentSlide?.layoutType}
+                  onLayoutChange={(layout) => {
+                    if (currentSlide && onUpdateSlide) {
+                      onUpdateSlide(currentSlide.id, { layoutType: layout });
+                    }
+                  }}
+                />
               ) : isInfo && currentSlide && onUpdateSlide ? (
                 <InfoPanel
                   currentSlide={currentSlide}
