@@ -202,8 +202,14 @@ const Index = () => {
 
   const handleAddSlide = useCallback((atIndex: number) => {
     const templateProps = activeTemplate?.apply ?? {};
+    const getAutoLayout = (index: number): 'default' | 'title-only' | 'quote' => {
+      if (index === 0) return 'title-only';
+      if (index >= slides.length) return 'quote';
+      return 'default';
+    };
     const baseSlide: Slide = {
       id: nextId++, username: "@username", title: "Новый слайд", body: "Введите текст...",
+      layoutType: getAutoLayout(atIndex),
       bgColor: "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)",
       bgType: "color", hAlign: "left", vAlign: "center",
       overlayType: "none", overlayOpacity: 50,

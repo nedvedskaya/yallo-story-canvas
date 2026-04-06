@@ -132,38 +132,73 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
 
         {/* Content area */}
         <div className="flex flex-col flex-1 min-h-0" style={{ justifyContent: V_ALIGN_TO_JUSTIFY[slide.vAlign] || 'center' }}>
-          <div>
-            {/* Title */}
-            <div
-              onTouchStart={onTitleTouchStart}
-              onTouchMove={onTitleTouchMove}
-              onTouchEnd={onTitleTouchEnd}
-              onMouseDown={onTitleMouseDown}
-              style={{ ...title.wrapperStyle, touchAction: 'none', cursor: editorOpen ? 'text' : 'grab' }}
-            >
-              <h2
-                onClick={onTitleClick}
-                className="outline-none cursor-pointer"
-                style={title.textStyle}
-                dangerouslySetInnerHTML={{ __html: slide.title }}
-              />
+
+          {/* LAYOUT: photo-top */}
+          {slide.layoutType === 'photo-top' && (
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <div style={{
+                flex: '0 0 52%',
+                overflow: 'hidden',
+                marginLeft: `-${metrics.padding}px`,
+                marginRight: `-${metrics.padding}px`,
+                marginTop: `-${metrics.padding}px`,
+                borderRadius: '0px',
+              }}>
+                {slide.bgImage ? (
+                  <img src={slide.bgImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: `${metrics.bodySize}px` }}>+ фото</span>
+                  </div>
+                )}
+              </div>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingTop: `${metrics.padding * 0.6}px` }}>
+                <div onTouchStart={onTitleTouchStart} onTouchMove={onTitleTouchMove} onTouchEnd={onTitleTouchEnd} onMouseDown={onTitleMouseDown} style={{ ...title.wrapperStyle, touchAction: 'none', cursor: editorOpen ? 'text' : 'grab' }}>
+                  <h2 onClick={onTitleClick} className="outline-none cursor-pointer" style={title.textStyle} dangerouslySetInnerHTML={{ __html: slide.title }} />
+                </div>
+                <div onTouchStart={onBodyTouchStart} onTouchMove={onBodyTouchMove} onTouchEnd={onBodyTouchEnd} onMouseDown={onBodyMouseDown} style={{ ...body.wrapperStyle, touchAction: 'none', cursor: editorOpen ? 'text' : 'grab', marginTop: `${8 * scale}px` }}>
+                  <p onClick={onBodyClick} className="outline-none cursor-pointer" style={body.textStyle} dangerouslySetInnerHTML={{ __html: slide.body }} />
+                </div>
+              </div>
             </div>
-            {/* Body */}
-            <div
-              onTouchStart={onBodyTouchStart}
-              onTouchMove={onBodyTouchMove}
-              onTouchEnd={onBodyTouchEnd}
-              onMouseDown={onBodyMouseDown}
-              style={{ ...body.wrapperStyle, touchAction: 'none', cursor: editorOpen ? 'text' : 'grab', marginTop: `${12 * scale}px` }}
-            >
-              <p
-                onClick={onBodyClick}
-                className="outline-none cursor-pointer"
-                style={body.textStyle}
-                dangerouslySetInnerHTML={{ __html: slide.body }}
-              />
+          )}
+
+          {/* LAYOUT: title-only */}
+          {slide.layoutType === 'title-only' && (
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+              <div onTouchStart={onTitleTouchStart} onTouchMove={onTitleTouchMove} onTouchEnd={onTitleTouchEnd} onMouseDown={onTitleMouseDown} style={{ ...title.wrapperStyle, touchAction: 'none', cursor: editorOpen ? 'text' : 'grab' }}>
+                <h2 onClick={onTitleClick} className="outline-none cursor-pointer" style={{ ...title.textStyle, fontSize: `${metrics.titleSize * 1.35}px`, lineHeight: 1.05 }} dangerouslySetInnerHTML={{ __html: slide.title }} />
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* LAYOUT: quote */}
+          {slide.layoutType === 'quote' && (
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+              <div style={{ fontSize: `${metrics.titleSize * 3}px`, lineHeight: 0.75, color: slide.titleColor || '#ffffff', opacity: 0.25, fontFamily: 'Georgia, serif', userSelect: 'none' }}>"</div>
+              <div onTouchStart={onBodyTouchStart} onTouchMove={onBodyTouchMove} onTouchEnd={onBodyTouchEnd} onMouseDown={onBodyMouseDown} style={{ ...body.wrapperStyle, touchAction: 'none', cursor: editorOpen ? 'text' : 'grab', marginTop: `${6 * scale}px` }}>
+                <p onClick={onBodyClick} className="outline-none cursor-pointer" style={{ ...body.textStyle, fontSize: `${metrics.bodySize * 1.2}px`, fontStyle: 'italic', lineHeight: 1.55 }} dangerouslySetInnerHTML={{ __html: slide.body }} />
+              </div>
+              {slide.title && (
+                <div style={{ marginTop: `${14 * scale}px`, color: slide.metaColor || 'rgba(255,255,255,0.55)', fontSize: `${metrics.footerSize * 1.3}px`, fontFamily: "'Inter', sans-serif" }}>
+                  — <span dangerouslySetInnerHTML={{ __html: slide.title }} />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* LAYOUT: default */}
+          {(!slide.layoutType || slide.layoutType === 'default') && (
+            <div>
+              <div onTouchStart={onTitleTouchStart} onTouchMove={onTitleTouchMove} onTouchEnd={onTitleTouchEnd} onMouseDown={onTitleMouseDown} style={{ ...title.wrapperStyle, touchAction: 'none', cursor: editorOpen ? 'text' : 'grab' }}>
+                <h2 onClick={onTitleClick} className="outline-none cursor-pointer" style={title.textStyle} dangerouslySetInnerHTML={{ __html: slide.title }} />
+              </div>
+              <div onTouchStart={onBodyTouchStart} onTouchMove={onBodyTouchMove} onTouchEnd={onBodyTouchEnd} onMouseDown={onBodyMouseDown} style={{ ...body.wrapperStyle, touchAction: 'none', cursor: editorOpen ? 'text' : 'grab', marginTop: `${12 * scale}px` }}>
+                <p onClick={onBodyClick} className="outline-none cursor-pointer" style={body.textStyle} dangerouslySetInnerHTML={{ __html: slide.body }} />
+              </div>
+            </div>
+          )}
+
         </div>
 
         {/* Bottom bar */}
