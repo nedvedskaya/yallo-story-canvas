@@ -30,18 +30,35 @@ const InfoPanel = ({ currentSlide, onSave, onApplyInfoToAll }: InfoPanelProps) =
           <Switch checked={showUsername} onCheckedChange={(v) => onSave({ showUsername: v })} />
         </div>
         {showUsername && (
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => onSave({ username: e.target.value })}
-            className="w-full rounded-lg px-3 py-1 text-[11px] outline-none"
-            style={{
-              background: "rgba(255,255,255,0.6)",
-              border: "1px solid rgba(200,200,220,0.5)",
-              color: "#1a1a2e",
-            }}
-            placeholder="@username"
-          />
+          <>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => onSave({ username: e.target.value })}
+              className="w-full rounded-lg px-3 py-1 text-[11px] outline-none"
+              style={{
+                background: "rgba(255,255,255,0.6)",
+                border: "1px solid rgba(200,200,220,0.5)",
+                color: "#1a1a2e",
+              }}
+              placeholder="@username"
+            />
+            {/* Стиль блока автора */}
+            <div className="flex gap-1.5 mt-1">
+              {(['v1', 'v2', 'v3', 'v4'] as const).map((v) => (
+                <button
+                  key={v}
+                  onClick={() => onSave({ authorStyle: v })}
+                  className="flex-1 py-1 rounded-lg text-[10px] font-medium transition-all"
+                  style={{
+                    background: (currentSlide.authorStyle || 'v1') === v ? 'rgba(26,26,46,0.1)' : 'rgba(255,255,255,0.35)',
+                    border: (currentSlide.authorStyle || 'v1') === v ? '1.5px solid rgba(26,26,46,0.3)' : '1px solid rgba(255,255,255,0.6)',
+                    color: '#1a1a2e',
+                  }}
+                >{v.toUpperCase()}</button>
+              ))}
+            </div>
+          </>
         )}
       </div>
 
