@@ -120,50 +120,15 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
 
       {/* Content layer */}
       <div className="relative z-10 flex flex-col h-full w-full">
-        {/* Top bar — author style variants */}
-        {slide.showUsername !== false && (
-          <>
-            {/* V1: username слева, счётчик справа */}
-            {(!slide.authorStyle || slide.authorStyle === 'v1') && (
-              <div className="flex items-center justify-between w-full flex-shrink-0 mb-2">
-                <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.7)', fontSize: `${metrics.usernameSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>{slide.username}</span>
-                {slide.showSlideCount !== false && (
-                  <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.7)', fontSize: `${metrics.usernameSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>[ {slideIndex + 1}/{totalSlides} ]</span>
-                )}
-              </div>
-            )}
-            {/* V2: username по центру */}
-            {slide.authorStyle === 'v2' && (
-              <div className="flex items-center justify-center w-full flex-shrink-0 mb-2">
-                <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.7)', fontSize: `${metrics.usernameSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>{slide.username}</span>
-              </div>
-            )}
-            {/* V3: username · счётчик по центру */}
-            {slide.authorStyle === 'v3' && (
-              <div className="flex items-center justify-center gap-1 w-full flex-shrink-0 mb-2">
-                <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.7)', fontSize: `${metrics.usernameSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>{slide.username}</span>
-                <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.7)', fontSize: `${metrics.usernameSize}px` }}>·</span>
-                {slide.showSlideCount !== false && (
-                  <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.7)', fontSize: `${metrics.usernameSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>{slideIndex + 1}/{totalSlides}</span>
-                )}
-              </div>
-            )}
-            {/* V4: только счётчик по центру */}
-            {slide.authorStyle === 'v4' && (
-              <div className="flex items-center justify-center w-full flex-shrink-0 mb-2">
-                {slide.showSlideCount !== false && (
-                  <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.7)', fontSize: `${metrics.usernameSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>{slideIndex + 1} / {totalSlides}</span>
-                )}
-              </div>
-            )}
-          </>
-        )}
-        {/* Fallback: username hidden but slide count shown */}
-        {slide.showUsername === false && slide.showSlideCount !== false && (
-          <div className="flex items-center justify-end w-full flex-shrink-0 mb-2">
+        {/* Top bar */}
+        <div className="flex items-center justify-between w-full flex-shrink-0 mb-2">
+          {slide.showUsername !== false ? (
+            <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.7)', fontSize: `${metrics.usernameSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>{slide.username}</span>
+          ) : <span />}
+          {slide.showSlideCount !== false ? (
             <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.7)', fontSize: `${metrics.usernameSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>[ {slideIndex + 1}/{totalSlides} ]</span>
-          </div>
-        )}
+          ) : <span />}
+        </div>
 
         {/* Content area */}
         <div className="flex flex-col flex-1 min-h-0" style={{ justifyContent: V_ALIGN_TO_JUSTIFY[slide.vAlign] || 'center' }}>
