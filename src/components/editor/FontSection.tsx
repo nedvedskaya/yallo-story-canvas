@@ -31,6 +31,10 @@ export const FONT_LIST = [
   { name: "Le Murmure", family: "'Le Murmure', sans-serif" },
   { name: "Moniqa", family: "'Moniqa', sans-serif" },
   { name: "Oks Free", family: "'Oks Free', sans-serif" },
+  { name: "Forum", family: "'Forum', serif" },
+  { name: "Cera Pro", family: "'Cera Pro', sans-serif" },
+  { name: "Gilroy", family: "'Gilroy', sans-serif" },
+  { name: "Montserrat", family: "'Montserrat', sans-serif" },
 ];
 
 interface FontSectionProps {
