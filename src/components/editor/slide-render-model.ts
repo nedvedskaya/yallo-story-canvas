@@ -42,23 +42,20 @@ export function getMediaStyle(
   // If container dimensions provided — use absolute px (for export)
   if (containerWidth && containerHeight) {
     const scaleFactor = sc / 100;
-    // Cover-fit: scale image so it covers the entire container
-    const coverSize = Math.max(containerWidth, containerHeight);
-    const w = coverSize * scaleFactor;
-    const h = coverSize * scaleFactor;
-    // Position: posX/posY are 0-100%, map to container offset
-    const left = (posX / 100) * containerWidth - w / 2;
-    const top = (posY / 100) * containerHeight - h / 2;
+    // Use container dimensions scaled by user's bgScale
+    // objectFit:cover on the <img> handles aspect ratio
+    const w = containerWidth * scaleFactor;
+    const h = containerHeight * scaleFactor;
+    // Position center point at posX/posY % of container
+    const cx = (posX / 100) * containerWidth;
+    const cy = (posY / 100) * containerHeight;
     return {
       position: 'absolute',
-      left: `${left}px`,
-      top: `${top}px`,
+      left: `${cx}px`,
+      top: `${cy}px`,
       width: `${w}px`,
       height: `${h}px`,
-      minWidth: 'unset',
-      minHeight: 'unset',
-      transform: 'none',
-      transformOrigin: 'unset',
+      transform: 'translate(-50%, -50%)',
       objectFit: 'cover' as const,
     };
   }
