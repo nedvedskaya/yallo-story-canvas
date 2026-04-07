@@ -88,8 +88,33 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
     }
     editorRef.current?.focus();
   };
+  const handleListPrefix = useCallback((symbol: string) => {
+    if (!editorRef.current) return;
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const range = sel.getRangeAt(0);
+    const text = range.toString();
+    if (text) {
+      const lines = text.split(/\n/);
+      const prefixed = lines.map(l => {
+        const trimmed = l.replace(/^[•→]\s*/, '');
+        return trimmed ? `${symbol} ${trimmed}` : l;
+      }).join('\n');
+      range.deleteContents();
+      const frag = document.createDocumentFragment();
+      prefixed.split('\n').forEach((line, i, arr) => {
+        frag.appendChild(document.createTextNode(line));
+        if (i < arr.length - 1) frag.appendChild(document.createElement('br'));
+      });
+      range.insertNode(frag);
+    } else {
+      document.execCommand('insertText', false, `${symbol} `);
+    }
+    editorRef.current.focus();
+    if (editorRef.current) onSave(editorRef.current.innerHTML);
+  }, [onSave]);
 
-  // Apply text color with current textColor
+
   const applyTextColor = useCallback(() => {
     exec("foreColor", textColor);
     if (editorRef.current) onSave(editorRef.current.innerHTML);
