@@ -290,9 +290,12 @@ const Index = () => {
         slideFormat={slideFormat}
         onSlideFormatChange={(fmt) => {
           setSlideFormat(fmt);
-          if (fmt === "stories") {
-            setSlidesWithHistory(prev => prev.map(s => ({ ...s, showUsername: false, showSlideCount: false })));
-          }
+          setSlidesWithHistory(prev => prev.map(s => ({
+            ...s,
+            titleSize: undefined,
+            bodySize: undefined,
+            ...(fmt === "stories" ? { showUsername: false, showSlideCount: false } : {}),
+          })));
         }}
       />
       <BottomMenu activeTab={activeTab} onTabChange={setActiveTab} hidden={textEditorOpen} />
