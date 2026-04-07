@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from "react";
-import { Bold, Italic, Underline, Type, Palette, Highlighter, X, RotateCcw, Strikethrough } from "lucide-react";
+import { Bold, Italic, Underline, Type, Palette, Highlighter, X, RotateCcw, Strikethrough, List, ArrowRight } from "lucide-react";
 
 interface TextEditorModalProps {
   open: boolean;
