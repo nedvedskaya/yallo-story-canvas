@@ -210,6 +210,11 @@ const TextEditorModal = ({ open, field, initialHtml, onSave, onClose }: TextEdit
 
           <div className="w-px h-7 mx-0.5" style={{ background: 'rgba(200,200,220,0.5)' }} />
 
+          <IconBtn icon={<List size={16} />} title="Список •" onClick={() => handleListPrefix('•')} style={btnBase} />
+          <IconBtn icon={<ArrowRight size={16} />} title="Список →" onClick={() => handleListPrefix('→')} style={btnBase} />
+
+          <div className="w-px h-7 mx-0.5" style={{ background: 'rgba(200,200,220,0.5)' }} />
+
           {/* Text color: icon applies last color, strip opens picker */}
           <ColorActionBtn
             icon={<Palette size={16} />}
