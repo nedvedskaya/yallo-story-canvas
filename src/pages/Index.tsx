@@ -10,7 +10,7 @@ import type { SlideFormat } from "@/components/editor/SizePanel";
 import DownloadModal from "@/components/editor/DownloadModal";
 import type { SlideTemplate } from "@/components/editor/TemplatesPanel";
 
-let nextId = 4;
+let nextId = 2;
 
 const MAX_UNDO = 50;
 
@@ -21,25 +21,9 @@ function stripAccentSpans(html: string): string {
 
 const initialSlides: Slide[] = [
   {
-    id: 1, username: "@username", title: "Заголовок слайда",
-    body: "Основной текст слайда. Начните редактирование прямо сейчас.",
+    id: 1, username: "@username", title: "Заголовок",
+    body: "Текст слайда",
     bgColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-    bgType: "color", hAlign: "left", vAlign: "center",
-    overlayType: "none", overlayOpacity: 50,
-    bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0,
-  },
-  {
-    id: 2, username: "@username", title: "Расскажите историю",
-    body: "Каждый слайд — это возможность передать вашу идею красиво и лаконично.",
-    bgColor: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-    bgType: "color", hAlign: "left", vAlign: "center",
-    overlayType: "none", overlayOpacity: 50,
-    bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0,
-  },
-  {
-    id: 3, username: "@username", title: "Призыв к действию",
-    body: "Подписывайтесь, ставьте лайк и делитесь с друзьями ✨",
-    bgColor: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
     bgType: "color", hAlign: "left", vAlign: "center",
     overlayType: "none", overlayOpacity: 50,
     bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0,
