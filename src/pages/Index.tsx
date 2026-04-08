@@ -39,6 +39,13 @@ const Index = () => {
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [textEditorOpen, setTextEditorOpen] = useState(false);
   const [activeTemplate, setActiveTemplate] = useState<SlideTemplate | null>(null);
+  const [onboardingActive, setOnboardingActive] = useState(false);
+
+  useEffect(() => {
+    if (!localStorage.getItem("onboarding_done")) {
+      setOnboardingActive(true);
+    }
+  }, []);
 
   // Undo/Redo stacks
   const undoStack = useRef<Slide[][]>([]);
