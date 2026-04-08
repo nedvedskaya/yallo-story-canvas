@@ -1,58 +1,63 @@
+# Plan: Label overflow fix + clean initial state + onboarding tutorial
 
+## 1. Slider labels clipped behind thumb
 
-# Plan: Desktop carousel fix + collapsible spacing controls + Telegram Mini App guidance
+**File**: `src/components/editor/FontSection.tsx`
 
-## 1. Desktop: first slide not editable / not centered
+The labels "Межстрочный" and "Межбуквенный" use `w-16` (64px) which is too narrow — text gets hidden behind the slider thumb.
 
-**Problem**: The carousel uses CSS scroll-snap with `scrollIntoView({ inline: "center" })`. On desktop (817px viewport), the first slide can't scroll to center because there's not enough left padding — it stays stuck at the left edge.
+**Fix**: Change `w-16` → `w-24` (96px) on the advanced labels (lines 163, 173) that contain longer text. Keep `w-16` for short labels like "Размер" and "Регистр" — those fit fine. Also remove the SVG icons from the labels to save space and reduce visual clutter.
 
-**Fix** in `src/components/editor/SlideCarousel.tsx`:
-- Add horizontal padding to the scroll container equal to ~50% of the viewport width minus half a slide width. This creates enough space for the first and last slides to scroll to center.
-- Replace `px-8` with dynamic padding: `paddingLeft: 'calc(50vw - 160px)'` and `paddingRight: 'calc(50vw - 160px)'` (adjusting for slide width). This ensures any slide, including the first, can be centered.
+## 2. Remove 3 example slides, start with 1 blank slide
 
-Specifically, change the scroll container div:
-```tsx
-// Before:
-className="... px-8 ..."
+**File**: `src/pages/Index.tsx`
 
-// After: remove px-8, add inline style padding
-style={{
-  ...existing styles,
-  paddingLeft: 'calc(50% - 160px)',
-  paddingRight: 'calc(50% - 160px)',
-}}
+Replace the 3 `initialSlides` with a single blank slide:
+
+```ts
+const initialSlides: Slide[] = [
+  {
+    id: 1, username: "@username", title: "Заголовок",
+    body: "Текст слайда",
+    bgColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    bgType: "color", hAlign: "left", vAlign: "center",
+    overlayType: "none", overlayOpacity: 50,
+    bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0,
+  },
+];
 ```
-The `160px` = half of the default slide width (~320px for carousel). This centers the first/last slides.
 
-## 2. Hide line height & tracking behind "Advanced" toggle
+Set `nextId = 2`.
 
-**Problem**: "Высота строки" and "Трекинг" labels are confusing. User wants them hidden under an expandable "extra settings" section, renamed to "Межстрочный интервал" and "Межбуквенный интервал".
+## 3. Onboarding tutorial (step-by-step overlay)
 
-**Fix** in `src/components/editor/FontSection.tsx`:
-- Add a `useState<boolean>(false)` for `showAdvanced`
-- Keep Size and Case rows always visible
-- Wrap line-height and letter-spacing rows in a collapsible section
-- Add a small "Ещё" / "Скрыть" toggle button below Case
-- Rename labels: "Высота строки" → "Межстрочный" and "Трекинг" → "Межбуквенный"
+**New file**: `src/components/editor/OnboardingOverlay.tsx`  
+  
+`Когда пользователь нажимает на логотип с левой стороны наверху, то включается функуция обучения (об этом должна быть пометка)`
 
-Also reduce default `bodyLineHeight` in templates and initial slides:
-- In `src/components/editor/TemplatesPanel.tsx`: change `bodyLineHeight: 1.65` → `1.4` (both templates)
-- In `src/components/editor/TextPanel.tsx`: change default `bodyLineHeight` fallback from `1.5` → `1.4` (line 90)
+A lightweight 5-step tooltip overlay using absolute positioning:
 
-## 3. Telegram Mini App + Timeweb Cloud guidance
+1. **Слайд** — "Нажми на текст, чтобы изменить его. Перетаскивай элементы, чтобы расположить как тебе нужно"
+2. **Шаблоны** — "Выбери любой готовый шаблон, который тебе нравится"
+3. **Фон** — "Загрузи фото или видео, либо выбери подходящий цвет фона"
+4. **Текст** — "Меняй шрифт, размер и цвет заголовка и основного текста"
+5. **Экспорт** — "Экспортируй слайд в PNG, PDF или видео"
 
-This is an informational answer, not a code change. Key points:
-- The app is already a client-side SPA — it can run inside Telegram Mini App via `WebApp.init()` from `@twa-dev/sdk`
-- Need to add `<script src="https://telegram.org/js/telegram-web-app.js">` to `index.html`
-- For Timeweb Cloud DB: add a backend API (e.g. Supabase or a simple Express server hosted on Timeweb) and call it from the frontend
-- The current Lovable project can be published and used as the Mini App URL in BotFather
+Implementation:
 
-## Files changed
+- Each step highlights a target area with a dark semi-transparent backdrop (using CSS `clip-path` to cut a hole around the target)
+- Arrow pointer + tooltip card positioned near the highlighted element
+- "Далее" / "Готово" button to advance steps
+- Store `onboarding_done` in `localStorage` to show only once
+- Add a `?` button in TopBar to re-trigger onboarding
 
-| # | File | Change |
-|---|------|--------|
-| 1 | `SlideCarousel.tsx` | Add centering padding to scroll container |
-| 2 | `FontSection.tsx` | Collapsible advanced section, rename labels |
-| 3 | `TemplatesPanel.tsx` | Reduce bodyLineHeight 1.65 → 1.4 |
-| 4 | `TextPanel.tsx` | Reduce default bodyLineHeight 1.5 → 1.4 |
+**Files changed**:
 
+
+| File                    | Change                                                                              |
+| ----------------------- | ----------------------------------------------------------------------------------- |
+| `FontSection.tsx`       | Widen advanced labels from `w-16` to `w-24`, remove SVG icons                       |
+| `Index.tsx`             | 1 blank slide instead of 3, `nextId = 2`                                            |
+| `OnboardingOverlay.tsx` | New — 5-step tutorial overlay with highlights                                       |
+| `Index.tsx`             | Import + render OnboardingOverlay, add `data-onboarding` attributes to key elements |
+| `TopBar.tsx`            | Add `?` help button to re-launch onboarding                                         |
