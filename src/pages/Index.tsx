@@ -251,8 +251,9 @@ const Index = () => {
           onRedo={handleRedo}
           canUndo={undoStack.current.length > 0}
           canRedo={redoStack.current.length > 0}
+          onStartOnboarding={() => setOnboardingActive(true)}
         />
-        <main className="flex flex-1 flex-col min-h-0 pb-[calc(72px+env(safe-area-inset-bottom))]">
+        <main data-onboarding="slide" className="flex flex-1 flex-col min-h-0 pb-[calc(72px+env(safe-area-inset-bottom))]">
           <SlideCarousel
             slides={slides}
             activeSlide={activeSlide}
