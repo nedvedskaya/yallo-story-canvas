@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { getContrastColors } from "@/lib/utils";
 import TopBar from "@/components/editor/TopBar";
 import SlideCarousel from "@/components/editor/SlideCarousel";
@@ -9,6 +9,7 @@ import type { MenuId } from "@/components/editor/BottomMenu";
 import type { SlideFormat } from "@/components/editor/SizePanel";
 import DownloadModal from "@/components/editor/DownloadModal";
 import type { SlideTemplate } from "@/components/editor/TemplatesPanel";
+import OnboardingOverlay from "@/components/editor/OnboardingOverlay";
 
 let nextId = 2;
 
