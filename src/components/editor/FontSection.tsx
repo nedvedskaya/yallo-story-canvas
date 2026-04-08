@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Slider } from "@/components/ui/slider";
-import { Plus } from "lucide-react";
+import { Plus, ChevronDown } from "lucide-react";
 
 export interface FontSettings {
   font: string;
@@ -47,6 +47,7 @@ interface FontSectionProps {
 }
 
 const FontSection = ({ label, settings, onChange, onCommit, customFonts = [], onAddCustomFont }: FontSectionProps) => {
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const allFonts = [...FONT_LIST, ...customFonts];
 
@@ -69,7 +70,6 @@ const FontSection = ({ label, settings, onChange, onCommit, customFonts = [], on
       console.error("Failed to load font:", err);
     }
 
-    // Reset input via event target
     e.target.value = "";
   };
 
@@ -95,7 +95,6 @@ const FontSection = ({ label, settings, onChange, onCommit, customFonts = [], on
             {f.name}
           </button>
         ))}
-        {/* Add custom font — label for mobile compatibility */}
         <label
           className="flex-shrink-0 px-3 py-1.5 rounded-lg text-sm transition-all active:scale-95 flex items-center gap-1 cursor-pointer"
           style={{
@@ -143,25 +142,43 @@ const FontSection = ({ label, settings, onChange, onCommit, customFonts = [], on
         </div>
       </div>
 
-      {/* Line height */}
-      <div className="flex items-center gap-3">
-        <span className="text-[11px] w-16 flex-shrink-0 flex items-center gap-1" style={{ color: 'rgba(26,26,46,0.5)' }}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="3" y2="12"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
-          Высота строки
-        </span>
-        <Slider min={0.8} max={3} step={0.05} value={[settings.lineHeight]} onValueChange={([v]) => onChange({ lineHeight: v })} onValueCommit={([v]) => onCommit?.({ lineHeight: v })} className="flex-1" />
-        <span className="text-[11px] w-6 text-right" style={{ color: 'rgba(26,26,46,0.5)' }}>{settings.lineHeight.toFixed(1)}</span>
-      </div>
+      {/* Advanced toggle */}
+      <button
+        onClick={() => setShowAdvanced(!showAdvanced)}
+        className="flex items-center gap-1 text-[11px] font-medium transition-all self-start"
+        style={{ color: 'rgba(26,26,46,0.4)' }}
+      >
+        <ChevronDown
+          size={12}
+          className="transition-transform duration-200"
+          style={{ transform: showAdvanced ? 'rotate(180deg)' : 'rotate(0deg)' }}
+        />
+        {showAdvanced ? 'Скрыть' : 'Ещё'}
+      </button>
 
-      {/* Letter spacing */}
-      <div className="flex items-center gap-3">
-        <span className="text-[11px] w-16 flex-shrink-0 flex items-center gap-1" style={{ color: 'rgba(26,26,46,0.5)' }}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 20V4m10 16V4"/><path d="M3 8l4-4 4 4M13 8l4-4 4 4"/></svg>
-          Трекинг
-        </span>
-        <Slider min={-5} max={20} step={0.5} value={[settings.letterSpacing]} onValueChange={([v]) => onChange({ letterSpacing: v })} onValueCommit={([v]) => onCommit?.({ letterSpacing: v })} className="flex-1" />
-        <span className="text-[11px] w-6 text-right" style={{ color: 'rgba(26,26,46,0.5)' }}>{settings.letterSpacing}</span>
-      </div>
+      {showAdvanced && (
+        <>
+          {/* Line height */}
+          <div className="flex items-center gap-3">
+            <span className="text-[11px] w-16 flex-shrink-0 flex items-center gap-1" style={{ color: 'rgba(26,26,46,0.5)' }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="3" y2="12"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
+              Межстрочный
+            </span>
+            <Slider min={0.8} max={3} step={0.05} value={[settings.lineHeight]} onValueChange={([v]) => onChange({ lineHeight: v })} onValueCommit={([v]) => onCommit?.({ lineHeight: v })} className="flex-1" />
+            <span className="text-[11px] w-6 text-right" style={{ color: 'rgba(26,26,46,0.5)' }}>{settings.lineHeight.toFixed(1)}</span>
+          </div>
+
+          {/* Letter spacing */}
+          <div className="flex items-center gap-3">
+            <span className="text-[11px] w-16 flex-shrink-0 flex items-center gap-1" style={{ color: 'rgba(26,26,46,0.5)' }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 20V4m10 16V4"/><path d="M3 8l4-4 4 4M13 8l4-4 4 4"/></svg>
+              Межбуквенный
+            </span>
+            <Slider min={-5} max={20} step={0.5} value={[settings.letterSpacing]} onValueChange={([v]) => onChange({ letterSpacing: v })} onValueCommit={([v]) => onCommit?.({ letterSpacing: v })} className="flex-1" />
+            <span className="text-[11px] w-6 text-right" style={{ color: 'rgba(26,26,46,0.5)' }}>{settings.letterSpacing}</span>
+          </div>
+        </>
+      )}
     </div>
   );
 };
