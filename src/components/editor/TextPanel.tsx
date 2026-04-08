@@ -87,7 +87,7 @@ const TextPanel = ({ currentSlide, onSave, onSaveLive, onApplyTextToAll }: TextP
     font: currentSlide.bodyFont || "'Inter', sans-serif",
     size: currentSlide.bodySize ?? 14,
     case: (currentSlide.bodyCase || "none") as FontSettings["case"],
-    lineHeight: currentSlide.bodyLineHeight ?? 1.5,
+    lineHeight: currentSlide.bodyLineHeight ?? 1.4,
     letterSpacing: currentSlide.bodyLetterSpacing ?? 0,
   };
 
