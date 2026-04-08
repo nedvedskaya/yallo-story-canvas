@@ -293,6 +293,7 @@ const Index = () => {
       />
       <BottomMenu activeTab={activeTab} onTabChange={setActiveTab} hidden={textEditorOpen} />
       <DownloadModal open={downloadOpen} onClose={() => setDownloadOpen(false)} slides={slides} slideFormat={slideFormat} activeSlide={activeSlide} onSlideChange={setActiveSlide} />
+      <OnboardingOverlay active={onboardingActive} onFinish={() => setOnboardingActive(false)} />
     </div>
   );
 };
