@@ -39,9 +39,8 @@ const BottomMenu = ({ activeTab, onTabChange, hidden }: BottomMenuProps) => {
             return (
               <button
                 key={item.id}
-                data-onboarding={`menu-${item.id}`}
                 onClick={() => onTabChange(isActive ? null : item.id)}
-                className="relative flex flex-col items-center gap-1 rounded-xl px-3 py-2 transition-all duration-300"
+                className="relative flex flex-col items-center gap-1 rounded-xl px-3 py-2"
               >
                 {isActive && (
                   <div
@@ -51,14 +50,11 @@ const BottomMenu = ({ activeTab, onTabChange, hidden }: BottomMenuProps) => {
                 )}
                 <item.icon
                   size={21}
-                  className={cn(
-                    "relative z-10 transition-all duration-300",
-                    isActive && "scale-110"
-                  )}
+                  className={cn("relative z-10", isActive && "scale-110")}
                   style={{ color: isActive ? '#1a1a2e' : 'rgba(26, 26, 46, 0.35)' }}
                 />
                 <span
-                  className="relative z-10 text-[10px] transition-colors font-normal"
+                  className="relative z-10 text-[10px] font-normal"
                   style={{ color: isActive ? '#1a1a2e' : 'rgba(26, 26, 46, 0.35)' }}
                 >
                   {item.label}
