@@ -9,7 +9,7 @@ import type { MenuId } from "@/components/editor/BottomMenu";
 import type { SlideFormat } from "@/components/editor/SizePanel";
 import DownloadModal from "@/components/editor/DownloadModal";
 import type { SlideTemplate } from "@/components/editor/TemplatesPanel";
-import OnboardingOverlay from "@/components/editor/OnboardingOverlay";
+
 
 let nextId = 2;
 
@@ -39,13 +39,6 @@ const Index = () => {
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [textEditorOpen, setTextEditorOpen] = useState(false);
   const [activeTemplate, setActiveTemplate] = useState<SlideTemplate | null>(null);
-  const [onboardingActive, setOnboardingActive] = useState(false);
-
-  useEffect(() => {
-    if (!localStorage.getItem("onboarding_done")) {
-      setOnboardingActive(true);
-    }
-  }, []);
 
   // Undo/Redo stacks
   const undoStack = useRef<Slide[][]>([]);
@@ -251,9 +244,9 @@ const Index = () => {
           onRedo={handleRedo}
           canUndo={undoStack.current.length > 0}
           canRedo={redoStack.current.length > 0}
-          onStartOnboarding={() => setOnboardingActive(true)}
+          
         />
-        <main data-onboarding="slide" className="flex flex-1 flex-col min-h-0 pb-[calc(72px+env(safe-area-inset-bottom))]">
+        <main className="flex flex-1 flex-col min-h-0 pb-[calc(72px+env(safe-area-inset-bottom))]">
           <SlideCarousel
             slides={slides}
             activeSlide={activeSlide}
@@ -293,7 +286,7 @@ const Index = () => {
       />
       <BottomMenu activeTab={activeTab} onTabChange={setActiveTab} hidden={textEditorOpen} />
       <DownloadModal open={downloadOpen} onClose={() => setDownloadOpen(false)} slides={slides} slideFormat={slideFormat} activeSlide={activeSlide} onSlideChange={setActiveSlide} />
-      <OnboardingOverlay active={onboardingActive} onFinish={() => setOnboardingActive(false)} />
+      
     </div>
   );
 };
