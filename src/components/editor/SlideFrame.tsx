@@ -4,6 +4,7 @@
  * Single source of truth for slide layout.
  */
 import React from "react";
+import { sanitizeHtml } from "@/lib/sanitize";
 import SlideOverlay from "./SlideOverlay";
 import type { Slide } from "./SlideCarousel";
 import type { SlideFormat } from "./SizePanel";
@@ -137,7 +138,7 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
                 onClick={onTitleClick}
                 className="outline-none cursor-pointer"
                 style={title.textStyle}
-                dangerouslySetInnerHTML={{ __html: slide.title }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(slide.title) }}
               />
             </div>
             {/* Body */}
@@ -152,7 +153,7 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
                 onClick={onBodyClick}
                 className="outline-none cursor-pointer"
                 style={body.textStyle}
-                dangerouslySetInnerHTML={{ __html: slide.body }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(slide.body) }}
               />
             </div>
           </div>
