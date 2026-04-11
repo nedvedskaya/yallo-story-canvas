@@ -83,32 +83,24 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
 
   return (
     <div ref={ref} style={rootStyle} data-slide-id={dataSlideId}>
-      {/* Background image */}
-      {!overlayOnly && slide.bgImage && (
+      {/* Background media (image or video) */}
+      {!overlayOnly && (slide.bgImage || slide.bgVideo) && (
         <div
           className="absolute inset-0 z-[1]"
           style={{ overflow: 'hidden', pointerEvents: 'none' }}
         >
-          <img src={slide.bgImage} alt="" style={{ ...mediaStyle, objectFit: 'cover' }} />
-          {slide.bgDarken > 0 && (
-            <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${slide.bgDarken / 100})`, pointerEvents: 'none' }} />
+          {slide.bgImage && (
+            <img src={slide.bgImage} alt="" style={{ ...mediaStyle, objectFit: 'cover' }} />
           )}
-        </div>
-      )}
-
-      {/* Background video */}
-      {!overlayOnly && slide.bgVideo && (
-        <div
-          className="absolute inset-0 z-[1]"
-          style={{ overflow: 'hidden', pointerEvents: 'none' }}
-        >
-          <video
-            src={slide.bgVideo}
-            autoPlay loop playsInline
-            muted={videoMuted}
-            style={{ ...mediaStyle, objectFit: 'cover' }}
-            ref={videoRefCallback}
-          />
+          {slide.bgVideo && (
+            <video
+              src={slide.bgVideo}
+              autoPlay loop playsInline
+              muted={videoMuted}
+              style={{ ...mediaStyle, objectFit: 'cover' }}
+              ref={videoRefCallback}
+            />
+          )}
           {slide.bgDarken > 0 && (
             <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${slide.bgDarken / 100})`, pointerEvents: 'none' }} />
           )}

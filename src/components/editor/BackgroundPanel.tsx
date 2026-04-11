@@ -3,6 +3,9 @@ import { Slider } from "@/components/ui/slider";
 import { Upload, Volume2, VolumeX } from "lucide-react";
 import MediaControls from "./MediaControls";
 import { labelStyle, valStyle } from "./shared-styles";
+import GlassTabBar from "./GlassTabBar";
+import ApplyToAllButton from "./ApplyToAllButton";
+import { rgbaToHex } from "@/lib/utils";
 
 export type OverlayType = "none" | "dots" | "lines" | "grid" | "cells" | "blobs";
 type BgTab = "color" | "photo" | "video";
@@ -55,13 +58,10 @@ const BackgroundPanel = ({
   const [bgTab, setBgTab] = useState<BgTab>(bgVideo ? "video" : bgImage ? "photo" : "color");
   const [hexInput, setHexInput] = useState(bgColor.startsWith("#") ? bgColor : "#667eea");
 
-  // Compute overlay color hex for color picker
   const overlayColorHex = (() => {
     const c = overlayColor || "rgba(255,255,255,1)";
     if (c.startsWith("#")) return c.slice(0, 7);
-    const m = c.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-    if (m) return `#${parseInt(m[1]).toString(16).padStart(2,'0')}${parseInt(m[2]).toString(16).padStart(2,'0')}${parseInt(m[3]).toString(16).padStart(2,'0')}`;
-    return "#ffffff";
+    return rgbaToHex(c);
   })();
   const colorRef = useRef<HTMLInputElement>(null);
   const photoRef = useRef<HTMLInputElement>(null);
@@ -102,7 +102,7 @@ const BackgroundPanel = ({
     }
   };
 
-  const tabItems: { id: BgTab; label: string }[] = [
+  const tabItems = [
     { id: "color", label: "Цвет" },
     { id: "photo", label: "Фото" },
     { id: "video", label: "Видео" },
@@ -111,24 +111,15 @@ const BackgroundPanel = ({
   return (
     <div className="flex flex-col gap-3">
       <div>
-        <div className="flex gap-1 mb-2">
-          {tabItems.map((t) => (
-            <button key={t.id} onClick={() => setBgTab(t.id)}
-              className="flex-1 rounded-lg py-1.5 text-[11px] font-medium transition-all"
-              style={{
-                background: bgTab === t.id ? "rgba(255,255,255,0.7)" : "transparent",
-                color: bgTab === t.id ? "#1a1a2e" : "rgba(26,26,46,0.45)",
-                boxShadow: bgTab === t.id ? "0 2px 8px rgba(0,0,0,0.04)" : "none",
-              }}
-            >{t.label}</button>
-          ))}
+        <div className="mb-2">
+          <GlassTabBar tabs={tabItems} activeId={bgTab} onChange={(id) => setBgTab(id as BgTab)} />
         </div>
 
         {bgTab === "photo" && (
           <>
             <input ref={photoRef} type="file" accept="image/*" className="sr-only" onChange={handlePhotoUpload} />
             <button onClick={() => photoRef.current?.click()}
-              className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-medium transition-all active:scale-[0.98]"
+              className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-medium active:scale-[0.98]"
               style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(200,200,220,0.5)", color: "#1a1a2e" }}
             >
               <Upload size={14} /> {bgImage ? "Заменить фото" : "Загрузить фото"}
@@ -138,7 +129,7 @@ const BackgroundPanel = ({
               <>
                 <MediaControls scale={bgScale} posX={bgPosX} posY={bgPosY} darken={bgDarken} onChange={update} />
                 <button onClick={() => update({ bgImage: undefined })}
-                  className="w-full rounded-xl py-1.5 text-[10px] font-medium transition-all active:scale-[0.98] mt-2"
+                  className="w-full rounded-xl py-1.5 text-[10px] font-medium active:scale-[0.98] mt-2"
                   style={{ background: "rgba(255,255,255,0.4)", border: "1px solid rgba(200,200,220,0.4)", color: "rgba(26,26,46,0.5)" }}
                 >Удалить фото</button>
               </>
@@ -150,7 +141,7 @@ const BackgroundPanel = ({
           <>
             <input ref={videoRef} type="file" accept="video/*" className="sr-only" onChange={handleVideoUpload} />
             <button onClick={() => videoRef.current?.click()}
-              className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-medium transition-all active:scale-[0.98]"
+              className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-medium active:scale-[0.98]"
               style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(200,200,220,0.5)", color: "#1a1a2e" }}
             >
               <Upload size={14} /> {bgVideo ? "Заменить видео" : "Загрузить видео (до 1 мин)"}
@@ -164,7 +155,7 @@ const BackgroundPanel = ({
                   <span className="text-[10px] flex-shrink-0" style={labelStyle}>Звук</span>
                   <button
                     onClick={() => update({ bgMuted: bgMuted !== false ? false : true })}
-                    className="flex-1 rounded-lg py-1 text-[10px] font-medium transition-all active:scale-[0.97]"
+                    className="flex-1 rounded-lg py-1 text-[10px] font-medium active:scale-[0.97]"
                     style={{
                       background: bgMuted === false ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.35)",
                       border: "1px solid rgba(200,200,220,0.5)",
@@ -175,7 +166,7 @@ const BackgroundPanel = ({
                   </button>
                 </div>
                 <button onClick={() => update({ bgVideo: undefined })}
-                  className="w-full rounded-xl py-1.5 text-[10px] font-medium transition-all active:scale-[0.98] mt-2"
+                  className="w-full rounded-xl py-1.5 text-[10px] font-medium active:scale-[0.98] mt-2"
                   style={{ background: "rgba(255,255,255,0.4)", border: "1px solid rgba(200,200,220,0.4)", color: "rgba(26,26,46,0.5)" }}
                 >Удалить видео</button>
               </>
@@ -205,7 +196,7 @@ const BackgroundPanel = ({
             <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
               {overlayOptions.map((opt) => (
                 <button key={opt.id} onClick={() => update({ overlayType: opt.id })}
-                  className="flex-shrink-0 rounded-lg px-2.5 py-1.5 text-[10px] font-medium transition-all active:scale-95"
+                  className="flex-shrink-0 rounded-lg px-2.5 py-1.5 text-[10px] font-medium active:scale-95"
                   style={{
                     background: overlayType === opt.id ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.3)",
                     color: overlayType === opt.id ? "#1a1a2e" : "rgba(26,26,46,0.5)",
@@ -238,18 +229,8 @@ const BackgroundPanel = ({
               </div>
             )}
 
-            <div className="flex items-center justify-end mt-2">
-              <button
-                onClick={() => onApplyToAll()}
-                className="px-4 py-1.5 rounded-lg text-xs font-medium transition-all active:scale-95"
-                style={{
-                  background: 'rgba(26,26,46,0.08)',
-                  border: '1px solid rgba(26,26,46,0.15)',
-                  color: '#1a1a2e',
-                }}
-              >
-                Применить ко всем
-              </button>
+            <div className="mt-2">
+              <ApplyToAllButton onClick={onApplyToAll} />
             </div>
           </div>
         </>

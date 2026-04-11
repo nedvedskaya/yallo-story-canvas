@@ -1,6 +1,9 @@
 import { useState, useCallback, useRef } from "react";
 import FontSection, { type FontSettings, type CustomFont } from "./FontSection";
 import type { Slide } from "./SlideCarousel";
+import GlassTabBar from "./GlassTabBar";
+import ApplyToAllButton from "./ApplyToAllButton";
+import { rgbaToHex } from "@/lib/utils";
 
 interface TextPanelProps {
   currentSlide: Slide;
@@ -19,14 +22,6 @@ const ColorPicker = ({
   onChange: (color: string) => void;
 }) => {
   const ref = useRef<HTMLInputElement>(null);
-  const rgbaToHex = (rgba: string): string => {
-    const match = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-    if (!match) return '#ffffff';
-    const r = parseInt(match[1]).toString(16).padStart(2, '0');
-    const g = parseInt(match[2]).toString(16).padStart(2, '0');
-    const b = parseInt(match[3]).toString(16).padStart(2, '0');
-    return `#${r}${g}${b}`;
-  };
   const normalizedValue = /^#[0-9a-fA-F]{6}$/.test(value)
     ? value
     : value.startsWith('rgb')
@@ -66,9 +61,19 @@ const ColorPicker = ({
   );
 };
 
+/** Map FontSettings updates to Slide fields for a given prefix */
+function mapFontSettings(prefix: "title" | "body", updates: Partial<FontSettings>): Partial<Slide> {
+  const mapped: Partial<Slide> = {};
+  if (updates.font !== undefined) (mapped as any)[`${prefix}Font`] = updates.font;
+  if (updates.size !== undefined) (mapped as any)[`${prefix}Size`] = updates.size;
+  if (updates.case !== undefined) (mapped as any)[`${prefix}Case`] = updates.case;
+  if (updates.lineHeight !== undefined) (mapped as any)[`${prefix}LineHeight`] = updates.lineHeight;
+  if (updates.letterSpacing !== undefined) (mapped as any)[`${prefix}LetterSpacing`] = updates.letterSpacing;
+  return mapped;
+}
+
 const TextPanel = ({ currentSlide, onSave, onSaveLive, onApplyTextToAll }: TextPanelProps) => {
   const [activeSection, setActiveSection] = useState<"title" | "body">("title");
-  
   const [customFonts, setCustomFonts] = useState<CustomFont[]>([]);
 
   const handleAddCustomFont = useCallback((font: CustomFont) => {
@@ -91,73 +96,27 @@ const TextPanel = ({ currentSlide, onSave, onSaveLive, onApplyTextToAll }: TextP
     letterSpacing: currentSlide.bodyLetterSpacing ?? 0,
   };
 
-  const mapTitle = (updates: Partial<FontSettings>): Partial<Slide> => {
-    const mapped: Partial<Slide> = {};
-    if (updates.font !== undefined) mapped.titleFont = updates.font;
-    if (updates.size !== undefined) mapped.titleSize = updates.size;
-    if (updates.case !== undefined) mapped.titleCase = updates.case;
-    if (updates.lineHeight !== undefined) mapped.titleLineHeight = updates.lineHeight;
-    if (updates.letterSpacing !== undefined) mapped.titleLetterSpacing = updates.letterSpacing;
-    return mapped;
-  };
-
-  const handleTitleChange = useCallback((updates: Partial<FontSettings>) => {
-    const mapped = mapTitle(updates);
+  const handleChange = useCallback((prefix: "title" | "body") => (updates: Partial<FontSettings>) => {
+    const mapped = mapFontSettings(prefix, updates);
     if (onSaveLive) onSaveLive(mapped); else onSave(mapped);
   }, [onSave, onSaveLive]);
 
-  const handleTitleCommit = useCallback((updates: Partial<FontSettings>) => {
-    onSave(mapTitle(updates));
-  }, [onSave]);
-
-  const mapBody = (updates: Partial<FontSettings>): Partial<Slide> => {
-    const mapped: Partial<Slide> = {};
-    if (updates.font !== undefined) mapped.bodyFont = updates.font;
-    if (updates.size !== undefined) mapped.bodySize = updates.size;
-    if (updates.case !== undefined) mapped.bodyCase = updates.case;
-    if (updates.lineHeight !== undefined) mapped.bodyLineHeight = updates.lineHeight;
-    if (updates.letterSpacing !== undefined) mapped.bodyLetterSpacing = updates.letterSpacing;
-    return mapped;
-  };
-
-  const handleBodyChange = useCallback((updates: Partial<FontSettings>) => {
-    const mapped = mapBody(updates);
-    if (onSaveLive) onSaveLive(mapped); else onSave(mapped);
-  }, [onSave, onSaveLive]);
-
-  const handleBodyCommit = useCallback((updates: Partial<FontSettings>) => {
-    onSave(mapBody(updates));
+  const handleCommit = useCallback((prefix: "title" | "body") => (updates: Partial<FontSettings>) => {
+    onSave(mapFontSettings(prefix, updates));
   }, [onSave]);
 
   const tabs = [
-    { id: "title" as const, label: "Заголовок" },
-    { id: "body" as const, label: "Основной текст" },
+    { id: "title", label: "Заголовок" },
+    { id: "body", label: "Основной текст" },
   ];
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Tabs */}
-      <div className="flex gap-1">
-        {tabs.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setActiveSection(t.id)}
-            className="flex-1 rounded-lg py-1.5 text-[11px] font-medium transition-all"
-            style={{
-              background: activeSection === t.id ? "rgba(255,255,255,0.7)" : "transparent",
-              color: activeSection === t.id ? "#1a1a2e" : "rgba(26,26,46,0.45)",
-              boxShadow: activeSection === t.id ? "0 2px 8px rgba(0,0,0,0.04)" : "none",
-            }}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <GlassTabBar tabs={tabs} activeId={activeSection} onChange={(id) => setActiveSection(id as "title" | "body")} />
 
-      {/* Active section content */}
       {activeSection === "title" ? (
         <>
-          <FontSection label="Шрифт заголовка" settings={titleSettings} onChange={handleTitleChange} onCommit={handleTitleCommit} customFonts={customFonts} onAddCustomFont={handleAddCustomFont} />
+          <FontSection label="Шрифт заголовка" settings={titleSettings} onChange={handleChange("title")} onCommit={handleCommit("title")} customFonts={customFonts} onAddCustomFont={handleAddCustomFont} />
           <div className="h-px" style={{ background: 'rgba(26,26,46,0.08)' }} />
           <ColorPicker
             label="Цвет заголовка"
@@ -167,7 +126,7 @@ const TextPanel = ({ currentSlide, onSave, onSaveLive, onApplyTextToAll }: TextP
         </>
       ) : (
         <>
-          <FontSection label="Шрифт основного текста" settings={bodySettings} onChange={handleBodyChange} onCommit={handleBodyCommit} customFonts={customFonts} onAddCustomFont={handleAddCustomFont} />
+          <FontSection label="Шрифт основного текста" settings={bodySettings} onChange={handleChange("body")} onCommit={handleCommit("body")} customFonts={customFonts} onAddCustomFont={handleAddCustomFont} />
           <div className="h-px" style={{ background: 'rgba(26,26,46,0.08)' }} />
           <ColorPicker
             label="Цвет текста"
@@ -178,19 +137,7 @@ const TextPanel = ({ currentSlide, onSave, onSaveLive, onApplyTextToAll }: TextP
       )}
 
       <div className="h-px" style={{ background: 'rgba(26,26,46,0.08)' }} />
-      <div className="flex items-center justify-end">
-        <button
-          onClick={onApplyTextToAll}
-          className="px-4 py-1.5 rounded-lg text-xs font-medium transition-all active:scale-95"
-          style={{
-            background: 'rgba(26,26,46,0.08)',
-            border: '1px solid rgba(26,26,46,0.15)',
-            color: '#1a1a2e',
-          }}
-        >
-          Применить ко всем
-        </button>
-      </div>
+      <ApplyToAllButton onClick={onApplyTextToAll} />
     </div>
   );
 };
