@@ -1,6 +1,7 @@
 import { Switch } from "@/components/ui/switch";
 import type { Slide } from "./SlideCarousel";
 import { labelStyle } from "./shared-styles";
+import ApplyToAllButton from "./ApplyToAllButton";
 
 interface InfoPanelProps {
   currentSlide: Slide;
@@ -9,8 +10,6 @@ interface InfoPanelProps {
 }
 
 const InfoPanel = ({ currentSlide, onSave, onApplyInfoToAll }: InfoPanelProps) => {
-  
-
   const showUsername = currentSlide.showUsername !== false;
   const showSlideCount = currentSlide.showSlideCount !== false;
   const showArrow = currentSlide.showArrow !== false;
@@ -23,7 +22,6 @@ const InfoPanel = ({ currentSlide, onSave, onApplyInfoToAll }: InfoPanelProps) =
 
   return (
     <div className="flex flex-col gap-1.5">
-      {/* Username */}
       <div className="flex flex-col gap-1">
         <div className={rowStyle}>
           <span className="font-medium" style={lblStyle}>Имя пользователя</span>
@@ -55,7 +53,6 @@ const InfoPanel = ({ currentSlide, onSave, onApplyInfoToAll }: InfoPanelProps) =
         <Switch checked={showArrow} onCheckedChange={(v) => onSave({ showArrow: v })} />
       </div>
 
-      {/* Footer */}
       <div className="flex flex-col gap-1">
         <div className={rowStyle}>
           <span className="font-medium" style={lblStyle}>Подвал</span>
@@ -77,19 +74,8 @@ const InfoPanel = ({ currentSlide, onSave, onApplyInfoToAll }: InfoPanelProps) =
         )}
       </div>
 
-      <div className="flex items-center justify-end py-0.5">
-        <button
-          onClick={onApplyInfoToAll}
-          className="px-4 py-1.5 rounded-lg text-xs font-medium transition-all active:scale-95"
-          style={{
-            background: 'rgba(26,26,46,0.08)',
-            border: '1px solid rgba(26,26,46,0.15)',
-            color: '#1a1a2e',
-          }}
-        >
-          Применить ко всем
-
-        </button>
+      <div className="py-0.5">
+        <ApplyToAllButton onClick={onApplyInfoToAll} />
       </div>
     </div>
   );

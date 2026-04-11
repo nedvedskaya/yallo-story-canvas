@@ -114,7 +114,7 @@ export function getBodyStyle(slide: Slide, metrics: SlideMetrics, overrides?: { 
       fontSize: `${metrics.bodySize}px`,
       fontFamily: slide.bodyFont || "'Inter', sans-serif",
       textTransform: (slide.bodyCase === 'uppercase' ? 'uppercase' : slide.bodyCase === 'lowercase' ? 'lowercase' : 'none') as React.CSSProperties['textTransform'],
-      lineHeight: slide.bodyLineHeight ?? 1.5,
+      lineHeight: slide.bodyLineHeight ?? 1.4,
       letterSpacing: `${(slide.bodyLetterSpacing ?? 0)}px`,
       fontWeight: 400,
       margin: 0,
