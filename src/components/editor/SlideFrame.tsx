@@ -91,7 +91,7 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
           style={{ overflow: 'hidden', pointerEvents: 'none' }}
         >
           {slide.bgImage && (
-            <img src={slide.bgImage} alt="" style={{ ...mediaStyle, objectFit: 'cover' }} />
+            <img src={slide.bgImage} alt="" loading="lazy" decoding="async" style={{ ...mediaStyle, objectFit: 'cover' }} />
           )}
           {slide.bgVideo && (
             <video
