@@ -12,6 +12,11 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
   },
+  build: {
+    target: ["es2022", "chrome105", "safari16", "firefox104", "edge105"],
+    cssTarget: ["chrome105", "safari16", "firefox104", "edge105"],
+    modulePreload: { polyfill: true },
+  },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
     alias: {
