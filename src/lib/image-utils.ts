@@ -1,6 +1,7 @@
 /**
  * Resize an image file client-side to a max dimension, returning a blob URL.
- * Keeps aspect ratio. Uses canvas for fast GPU-accelerated resize.
+ * Keeps aspect ratio and original format quality.
+ * Uses canvas for fast GPU-accelerated resize.
  */
 export function resizeImage(
   file: File,
@@ -12,7 +13,7 @@ export function resizeImage(
     img.onload = () => {
       let { width, height } = img;
 
-      // Skip resize if already small enough
+      // Skip resize if already small enough — use original file as-is
       if (width <= maxSize && height <= maxSize) {
         resolve(originalUrl);
         return;
@@ -34,13 +35,19 @@ export function resizeImage(
       ctx.drawImage(img, 0, 0, width, height);
 
       URL.revokeObjectURL(originalUrl);
+
+      // Preserve original format: PNG stays PNG (lossless), everything else → JPEG max quality
+      const isPng = file.type === "image/png";
+      const mimeType = isPng ? "image/png" : "image/jpeg";
+      const quality = isPng ? undefined : 1.0;
+
       canvas.toBlob(
         (blob) => {
           if (!blob) { reject(new Error("Canvas toBlob failed")); return; }
           resolve(URL.createObjectURL(blob));
         },
-        "image/jpeg",
-        0.85,
+        mimeType,
+        quality,
       );
     };
     img.onerror = () => { URL.revokeObjectURL(originalUrl); reject(new Error("Image load failed")); };
