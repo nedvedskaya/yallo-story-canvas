@@ -127,6 +127,15 @@ const SlideOverlay = ({ type, opacity, color, scale = 1 }: SlideOverlayProps) =>
           />
         </div>
       );
+    case "gradient":
+      return (
+        <div
+          style={{
+            ...style,
+            background: `linear-gradient(to top, ${ca(0.7)} 0%, ${ca(0.3)} 40%, transparent 70%)`,
+          }}
+        />
+      );
     default:
       return null;
   }
