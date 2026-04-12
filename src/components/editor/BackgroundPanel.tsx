@@ -7,7 +7,7 @@ import GlassTabBar from "./GlassTabBar";
 import ApplyToAllButton from "./ApplyToAllButton";
 import { rgbaToHex } from "@/lib/utils";
 
-export type OverlayType = "none" | "dots" | "lines" | "grid" | "cells" | "blobs";
+export type OverlayType = "none" | "dots" | "lines" | "grid" | "cells" | "blobs" | "gradient";
 type BgTab = "color" | "photo" | "video";
 
 const overlayOptions: { id: OverlayType; label: string }[] = [
@@ -17,6 +17,7 @@ const overlayOptions: { id: OverlayType; label: string }[] = [
   { id: "grid", label: "Сетка" },
   { id: "cells", label: "Ячейки" },
   { id: "blobs", label: "Блики" },
+  { id: "gradient", label: "Градиент" },
 ];
 
 export interface BgDraft {
