@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { resizeImage } from "@/lib/image-utils";
 import { Slider } from "@/components/ui/slider";
 import { Upload, Volume2, VolumeX } from "lucide-react";
 import MediaControls from "./MediaControls";
@@ -83,12 +84,12 @@ const BackgroundPanel = ({
     if (/^#[0-9a-fA-F]{6}$/.test(val)) update({ bgColor: val });
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (bgImage && bgImage.startsWith('blob:')) URL.revokeObjectURL(bgImage);
       if (bgVideo && bgVideo.startsWith('blob:')) URL.revokeObjectURL(bgVideo);
-      const url = URL.createObjectURL(file);
+      const url = await resizeImage(file, 1920);
       update({ bgVideo: undefined, bgImage: url, bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0 });
     }
   };
