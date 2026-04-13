@@ -1,4 +1,4 @@
-import { X, Palette, Image, Type, Maximize, Info } from "lucide-react";
+import { X, Palette, Image, Type, Maximize, Info, Layers } from "lucide-react";
 import type { MenuId } from "./BottomMenu";
 import type { Slide } from "./SlideCarousel";
 import BackgroundPanel from "./BackgroundPanel";
@@ -6,6 +6,8 @@ import TextPanel from "./TextPanel";
 import SizePanel, { type SlideFormat } from "./SizePanel";
 import InfoPanel from "./InfoPanel";
 import TemplatesPanel, { type SlideTemplate } from "./TemplatesPanel";
+import StickersPanel from "./StickersPanel";
+import type { Sticker } from "./StickerLayer";
 
 interface BottomSheetProps {
   activeTab: MenuId | null;
@@ -19,15 +21,18 @@ interface BottomSheetProps {
   onApplyTemplate?: (tpl: SlideTemplate) => void;
   slideFormat?: SlideFormat;
   onSlideFormatChange?: (format: SlideFormat) => void;
+  onAddSticker?: (src: string, width: number, height: number) => void;
+  onDeleteSticker?: (id: string) => void;
 }
 
-const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onUpdateSlideLive, onApplyBgToAll, onApplyTextToAll, onApplyInfoToAll, onApplyTemplate, slideFormat, onSlideFormatChange }: BottomSheetProps) => {
+const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onUpdateSlideLive, onApplyBgToAll, onApplyTextToAll, onApplyInfoToAll, onApplyTemplate, slideFormat, onSlideFormatChange, onAddSticker, onDeleteSticker }: BottomSheetProps) => {
   const isBackground = activeTab === "background";
   const isText = activeTab === "text";
   const isSize = activeTab === "size";
   const isInfo = activeTab === "info";
   const isDesign = activeTab === "design";
-  const isCustomPanel = isBackground || isText || isSize || isInfo || isDesign;
+  const isStickers = activeTab === "stickers";
+  const isCustomPanel = isBackground || isText || isSize || isInfo || isDesign || isStickers;
 
   if (!isCustomPanel) return null;
 
