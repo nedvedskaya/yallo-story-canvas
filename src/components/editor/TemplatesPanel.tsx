@@ -120,8 +120,6 @@ const TEMPLATES: SlideTemplate[] = [
   {
     id: "minimalism-clean",
     name: "Минимализм",
-    accentColor: "#7C5CFC",
-    accentMode: "highlight",
     apply: {
       bgColor: "#FFFFFF",
       bgImage: undefined,
