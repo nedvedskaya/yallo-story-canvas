@@ -177,17 +177,7 @@ const TEMPLATES: SlideTemplate[] = [
               textTransform: "uppercase",
             }}
           >
-            ЗАГОЛОВОК{" "}
-            <span
-              style={{
-                background: "#7C5CFC",
-                color: "#FFFFFF",
-                padding: "1px 2px",
-                borderRadius: 1,
-              }}
-            >
-              СЛАЙДА
-            </span>
+            ЗАГОЛОВОК СЛАЙДА
           </h3>
           <p style={{ fontSize: 5, color: "#1A1A1A", margin: 0, lineHeight: 1.5, textAlign: "left" }}>
             Основной текст слайда
