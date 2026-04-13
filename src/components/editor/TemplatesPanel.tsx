@@ -204,6 +204,84 @@ const TEMPLATES: SlideTemplate[] = [
       </div>
     ),
   },
+  {
+    id: "bordo",
+    name: "Бордо",
+    accentColor: "#F0EAE0",
+    accentMode: "color",
+    apply: {
+      bgColor: "#3C1518",
+      bgImage: undefined,
+      bgVideo: undefined,
+      bgType: "color",
+      overlayType: "none",
+      overlayOpacity: 0,
+      titleColor: "#FFFFFF",
+      bodyColor: "rgba(255,255,255,0.75)",
+      metaColor: "rgba(255,255,255,0.45)",
+      overlayColor: "rgba(0,0,0,0.08)",
+      showFooter: false,
+      footerText: "",
+      showArrow: true,
+      showUsername: true,
+      showSlideCount: true,
+      bgDarken: 0,
+      titleFont: "'Forum', serif",
+      titleSize: 28,
+      titleLineHeight: 1.15,
+      titleLetterSpacing: 0,
+      titleCase: "none",
+      bodyFont: "'Inter', sans-serif",
+      bodySize: 14,
+      bodyLineHeight: 1.5,
+      bodyLetterSpacing: 0,
+      bodyCase: "none",
+      hAlign: "left",
+      vAlign: "center",
+    },
+    preview: (
+      <div
+        className="w-full h-full flex flex-col justify-between"
+        style={{
+          background: "#3C1518",
+          padding: 8,
+          fontFamily: "'Inter', sans-serif",
+        }}
+      >
+        {/* top bar */}
+        <div className="flex justify-between items-center">
+          <span style={{ fontSize: 5, color: "rgba(255,255,255,0.45)" }}>@username</span>
+          <span style={{ fontSize: 5, color: "rgba(255,255,255,0.45)" }}>[ 1/3 ]</span>
+        </div>
+        {/* content */}
+        <div className="flex-1 flex flex-col justify-center gap-1 py-1">
+          <h3
+            style={{
+              fontFamily: "'Forum', serif",
+              fontSize: 10,
+              lineHeight: 1.15,
+              color: "#FFFFFF",
+              margin: 0,
+              textAlign: "left",
+            }}
+          >
+            Заголовок{" "}
+            <span style={{ color: "#F0EAE0" }}>слайда</span>
+          </h3>
+          <p style={{ fontFamily: "'Bella Script CYR', cursive", fontSize: 6, color: "rgba(255,255,255,0.6)", margin: 0, marginTop: 2, lineHeight: 1.3, textAlign: "left" }}>
+            элегантный стиль
+          </p>
+          <p style={{ fontSize: 4.5, color: "rgba(255,255,255,0.7)", margin: 0, lineHeight: 1.5, textAlign: "left", marginTop: 2 }}>
+            Основной текст слайда
+          </p>
+        </div>
+        {/* bottom */}
+        <div className="flex justify-end items-center">
+          <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 6 }}>→</span>
+        </div>
+      </div>
+    ),
+  },
 ];
 
 interface TemplatesPanelProps {

@@ -52,6 +52,16 @@ export interface Slide {
   metaColor?: string;
   overlayColor?: string;
   bgVideoFile?: File;
+  stickers?: Array<{
+    id: string;
+    src: string;
+    x: number;
+    y: number;
+    scale: number;
+    rotation: number;
+    width: number;
+    height: number;
+  }>;
 }
 
 const addBtnStyle: React.CSSProperties = { ...glassBtnStyle, width: 32, height: 32, flexShrink: 0 };
@@ -68,11 +78,14 @@ interface SlideCarouselProps {
   onDuplicateSlide: (idx: number) => void;
   onDeleteSlide: (idx: number) => void;
   onEditorOpenChange?: (open: boolean) => void;
+  onUpdateSticker?: (stickerId: string, updates: Partial<{x:number;y:number;scale:number;rotation:number}>) => void;
+  onDeleteSticker?: (stickerId: string) => void;
 }
 
 const SlideCarousel = ({
   slides, activeSlide, onSlideChange, isSheetOpen = false, slideFormat = "carousel",
   onUpdateSlide, onAddSlide, onMoveSlide, onDuplicateSlide, onDeleteSlide, onEditorOpenChange,
+  onUpdateSticker, onDeleteSticker,
 }: SlideCarouselProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const currentSlide = slides[activeSlide];
@@ -333,6 +346,9 @@ const SlideCarousel = ({
                     onBodyTouchEnd={() => handleTextTouchEnd(slide.id)}
                     onBodyMouseDown={(e) => handleTextMouseDown(e, slide, "body")}
                     onBodyClick={() => { if (!textDragMovedRef.current) openEditor("body"); }}
+                    onUpdateSticker={isActive ? onUpdateSticker : undefined}
+                    onDeleteSticker={isActive ? onDeleteSticker : undefined}
+                    stickerInteractive={isActive}
                   />
                 </div>
               </div>

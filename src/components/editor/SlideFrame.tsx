@@ -6,6 +6,7 @@
 import React from "react";
 import { sanitizeHtml } from "@/lib/sanitize";
 import SlideOverlay from "./SlideOverlay";
+import StickerLayer from "./StickerLayer";
 import type { Slide } from "./SlideCarousel";
 import type { SlideFormat } from "./SizePanel";
 import {
@@ -53,6 +54,10 @@ export interface SlideFrameProps {
   overlayOnly?: boolean;
   /** Data attribute for slide identification */
   dataSlideId?: number;
+  /** Sticker interaction handlers */
+  onUpdateSticker?: (id: string, updates: Partial<{x:number;y:number;scale:number;rotation:number}>) => void;
+  onDeleteSticker?: (id: string) => void;
+  stickerInteractive?: boolean;
 }
 
 const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
@@ -62,6 +67,7 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
   onTitleTouchStart, onTitleTouchMove, onTitleTouchEnd, onTitleMouseDown, onTitleClick,
   onBodyTouchStart, onBodyTouchMove, onBodyTouchEnd, onBodyMouseDown, onBodyClick,
   editorOpen, videoRefCallback, videoMuted = true, overlayOnly = false, dataSlideId,
+  onUpdateSticker, onDeleteSticker, stickerInteractive = false,
 }, ref) => {
   const metrics = getSlideMetrics(slide, format, scale);
   const isExport = !!(width && height);
@@ -110,6 +116,17 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
 
       {/* Overlay pattern — on top of media but below content */}
       {!overlayOnly && <SlideOverlay type={slide.overlayType} opacity={slide.overlayOpacity} color={slide.overlayColor} scale={scale} />}
+
+      {/* Sticker layer — between overlay and content */}
+      {slide.stickers && slide.stickers.length > 0 && (
+        <StickerLayer
+          stickers={slide.stickers}
+          onUpdateSticker={onUpdateSticker}
+          onDeleteSticker={onDeleteSticker}
+          interactive={stickerInteractive}
+          scale={scale}
+        />
+      )}
 
       {/* Content layer */}
       <div className="relative z-10 flex flex-col h-full w-full">
