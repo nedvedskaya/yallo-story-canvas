@@ -85,6 +85,7 @@ interface SlideCarouselProps {
 const SlideCarousel = ({
   slides, activeSlide, onSlideChange, isSheetOpen = false, slideFormat = "carousel",
   onUpdateSlide, onAddSlide, onMoveSlide, onDuplicateSlide, onDeleteSlide, onEditorOpenChange,
+  onUpdateSticker, onDeleteSticker,
 }: SlideCarouselProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const currentSlide = slides[activeSlide];
