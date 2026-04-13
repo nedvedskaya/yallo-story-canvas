@@ -16,8 +16,11 @@ let nextId = 2;
 const MAX_UNDO = 50;
 
 /** Strip all inline-style spans from HTML */
-function stripAccentSpans(html: string): string {
-  return html.replace(/<span style="[^"]*">([^<]*)<\/span>/g, '$1');
+/** Strip ALL HTML tags, returning plain text */
+function stripHtml(html: string): string {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || '';
 }
 
 const initialSlides: Slide[] = [
@@ -170,7 +173,7 @@ const Index = () => {
       const updated = { ...s, ...styleOnly };
       // Apply accent to existing title
       if (tpl.accentColor && updated.title) {
-        const clean = stripAccentSpans(updated.title);
+        const clean = stripHtml(updated.title);
         if (tpl.accentMode === "highlight") {
           updated.title = clean.replace(/(\S+)(\s*)$/, `<span style="background:${tpl.accentColor};color:#FFFFFF;padding:2px 6px;border-radius:3px">$1</span>$2`);
         } else {
@@ -196,7 +199,7 @@ const Index = () => {
       ...templateProps,
     };
     if (activeTemplate?.accentColor && baseSlide.title) {
-      const clean = stripAccentSpans(baseSlide.title);
+      const clean = stripHtml(baseSlide.title);
       if (activeTemplate.accentMode === "highlight") {
         baseSlide.title = clean.replace(/(\S+)(\s*)$/, `<span style="background:${activeTemplate.accentColor};color:#FFFFFF;padding:2px 6px;border-radius:3px">$1</span>$2`);
       } else {
