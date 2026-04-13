@@ -78,6 +78,8 @@ interface SlideCarouselProps {
   onDuplicateSlide: (idx: number) => void;
   onDeleteSlide: (idx: number) => void;
   onEditorOpenChange?: (open: boolean) => void;
+  onUpdateSticker?: (stickerId: string, updates: Partial<{x:number;y:number;scale:number;rotation:number}>) => void;
+  onDeleteSticker?: (stickerId: string) => void;
 }
 
 const SlideCarousel = ({
