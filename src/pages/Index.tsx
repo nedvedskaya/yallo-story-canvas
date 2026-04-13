@@ -287,6 +287,8 @@ const Index = () => {
             onDuplicateSlide={handleDuplicateSlide}
             onDeleteSlide={handleDeleteSlide}
             onEditorOpenChange={setTextEditorOpen}
+            onUpdateSticker={handleUpdateSticker}
+            onDeleteSticker={handleDeleteSticker}
           />
         </main>
       </div>
