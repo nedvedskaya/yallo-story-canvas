@@ -188,6 +188,31 @@ const Index = () => {
     setActiveTab(null);
   }, []);
 
+  const handleAddSticker = useCallback((src: string, width: number, height: number) => {
+    if (!currentSlide) return;
+    const sticker = {
+      id: `sticker-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      src, x: 50, y: 50, scale: 1, rotation: 0, width, height,
+    };
+    setSlidesWithHistory(prev => prev.map(s =>
+      s.id === currentSlide.id ? { ...s, stickers: [...(s.stickers || []), sticker] } : s
+    ));
+  }, [currentSlide, setSlidesWithHistory]);
+
+  const handleDeleteSticker = useCallback((stickerId: string) => {
+    if (!currentSlide) return;
+    setSlidesWithHistory(prev => prev.map(s =>
+      s.id === currentSlide.id ? { ...s, stickers: (s.stickers || []).filter(st => st.id !== stickerId) } : s
+    ));
+  }, [currentSlide, setSlidesWithHistory]);
+
+  const handleUpdateSticker = useCallback((stickerId: string, updates: Partial<{x:number;y:number;scale:number;rotation:number}>) => {
+    if (!currentSlide) return;
+    setSlides(prev => prev.map(s =>
+      s.id === currentSlide.id ? { ...s, stickers: (s.stickers || []).map(st => st.id === stickerId ? { ...st, ...updates } : st) } : s
+    ));
+  }, [currentSlide]);
+
   const handleAddSlide = useCallback((atIndex: number) => {
     const templateProps = activeTemplate?.apply ?? {};
     const baseSlide: Slide = {
@@ -286,6 +311,8 @@ const Index = () => {
             ...(fmt === "stories" ? { showUsername: false, showSlideCount: false } : {}),
           })));
         }}
+        onAddSticker={handleAddSticker}
+        onDeleteSticker={handleDeleteSticker}
       />
       <BottomMenu activeTab={activeTab} onTabChange={setActiveTab} hidden={textEditorOpen} />
       <DownloadModal open={downloadOpen} onClose={() => setDownloadOpen(false)} slides={slides} slideFormat={slideFormat} activeSlide={activeSlide} onSlideChange={setActiveSlide} />
