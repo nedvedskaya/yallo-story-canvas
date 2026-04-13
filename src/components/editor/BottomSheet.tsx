@@ -67,6 +67,8 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onUpdate
               <><Maximize size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} /><h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>Размер</h3></>
             ) : isInfo ? (
               <><Info size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} /><h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>Инфо</h3></>
+            ) : isStickers ? (
+              <><Layers size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} /><h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>Элементы</h3></>
             ) : null}
           </div>
           <button onClick={onClose} className="rounded-full p-1.5 glass-pill" style={{ color: 'rgba(26, 26, 46, 0.5)' }}>
@@ -110,6 +112,12 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onUpdate
             <SizePanel
               currentFormat={slideFormat}
               onSave={onSlideFormatChange}
+            />
+          ) : isStickers && currentSlide && onAddSticker && onDeleteSticker ? (
+            <StickersPanel
+              stickers={currentSlide.stickers || []}
+              onAddSticker={onAddSticker}
+              onDeleteSticker={onDeleteSticker}
             />
           ) : null}
         </div>
