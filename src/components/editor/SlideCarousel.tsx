@@ -346,6 +346,9 @@ const SlideCarousel = ({
                     onBodyTouchEnd={() => handleTextTouchEnd(slide.id)}
                     onBodyMouseDown={(e) => handleTextMouseDown(e, slide, "body")}
                     onBodyClick={() => { if (!textDragMovedRef.current) openEditor("body"); }}
+                    onUpdateSticker={isActive ? onUpdateSticker : undefined}
+                    onDeleteSticker={isActive ? onDeleteSticker : undefined}
+                    stickerInteractive={isActive}
                   />
                 </div>
               </div>
