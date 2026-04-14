@@ -53,6 +53,7 @@ async function renderSlideToDOM(
   exportHeight: number,
   previewWidth: number,
   overlayOnly = false,
+  watermark?: string,
 ): Promise<{ container: HTMLDivElement; root: Root }> {
   const scale = exportWidth / previewWidth;
 
@@ -73,6 +74,7 @@ async function renderSlideToDOM(
         width={exportWidth}
         height={exportHeight}
         overlayOnly={overlayOnly}
+        watermark={watermark}
       />
     );
 
