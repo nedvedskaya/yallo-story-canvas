@@ -376,6 +376,7 @@ const DownloadModal = ({ open, onClose, slides, slideFormat, onExported, waterma
       triggerDownload(blob, "slides.zip");
       setProgress(100);
       toast({ title: "Готово!", description: `${slides.length} слайдов сохранены как PNG` });
+      onExported?.();
     } catch (e) {
       console.error("PNG export error:", e);
       toast({ title: "Ошибка", description: "Не удалось сохранить PNG", variant: "destructive" });
@@ -417,6 +418,7 @@ const DownloadModal = ({ open, onClose, slides, slideFormat, onExported, waterma
       pdf.save("slides.pdf");
       setProgress(100);
       toast({ title: "Готово!", description: "Слайды сохранены как PDF" });
+      onExported?.();
     } catch (e) {
       console.error("PDF export error:", e);
       toast({ title: "Ошибка", description: "Не удалось сохранить PDF", variant: "destructive" });
@@ -480,6 +482,7 @@ const DownloadModal = ({ open, onClose, slides, slideFormat, onExported, waterma
 
       setProgress(100);
       toast({ title: "Готово!", description: `${slides.length} слайдов сохранены` });
+      onExported?.();
     } catch (e) {
       console.error("Export all error:", e);
       toast({ title: "Ошибка", description: "Не удалось сохранить файлы", variant: "destructive" });
