@@ -19,7 +19,6 @@ const TEMPLATES: SlideTemplate[] = [
     name: "Тетрадь",
     accentColor: "#FF4200",
     apply: {
-
       bgColor: "#F3F3F3",
       bgImage: undefined,
       bgVideo: undefined,
@@ -52,67 +51,27 @@ const TEMPLATES: SlideTemplate[] = [
     preview: (
       <div
         className="w-full h-full flex flex-col justify-between relative"
-        style={{
-          background: "#F3F3F3",
-          padding: 8,
-          fontFamily: "'Inter', sans-serif",
-        }}
+        style={{ background: "#F3F3F3", padding: 8, fontFamily: "'Inter', sans-serif" }}
       >
-        {/* Grid overlay */}
         <div
           style={{
-            position: "absolute",
-            inset: 0,
-            backgroundImage: `
-              linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px)
-            `,
-            backgroundSize: "12px 12px",
-            pointerEvents: "none",
-            zIndex: 0,
+            position: "absolute", inset: 0,
+            backgroundImage: `linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px)`,
+            backgroundSize: "12px 12px", pointerEvents: "none", zIndex: 0,
           }}
         />
-        {/* top bar */}
         <div className="flex justify-between items-center relative z-10">
           <span style={{ fontSize: 5, color: "#999" }}>@username</span>
           <span style={{ fontSize: 5, color: "#999" }}>[ 1/3 ]</span>
         </div>
-        {/* content */}
         <div className="flex-1 flex flex-col justify-center gap-1 py-1 relative z-10">
-          <h3
-            style={{
-              fontFamily: "'Dela Gothic One', sans-serif",
-              fontSize: 9,
-              lineHeight: 1.15,
-              color: "#1A1A1A",
-              margin: 0,
-              textAlign: "left",
-            }}
-          >
-            Заголовок{" "}
-            <span style={{ color: "#FF4200" }}>слайда</span>
+          <h3 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 9, lineHeight: 1.15, color: "#1A1A1A", margin: 0, textAlign: "left" }}>
+            Заголовок <span style={{ color: "#FF4200" }}>слайда</span>
           </h3>
-          <p style={{ fontSize: 5, color: "#1A1A1A", margin: 0, lineHeight: 1.5, textAlign: "left" }}>
-            Основной текст слайда
-          </p>
+          <p style={{ fontSize: 5, color: "#1A1A1A", margin: 0, lineHeight: 1.5, textAlign: "left" }}>Основной текст слайда</p>
         </div>
-        {/* bottom */}
         <div className="flex justify-end items-center relative z-10">
-          <div
-            style={{
-              width: 10,
-              height: 10,
-              borderRadius: "50%",
-              border: "1px solid #1A1A1A",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 5,
-              color: "#1A1A1A",
-            }}
-          >
-            →
-          </div>
+          <div style={{ width: 10, height: 10, borderRadius: "50%", border: "1px solid #1A1A1A", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 5, color: "#1A1A1A" }}>→</div>
         </div>
       </div>
     ),
@@ -151,55 +110,19 @@ const TEMPLATES: SlideTemplate[] = [
       vAlign: "center",
     },
     preview: (
-      <div
-        className="w-full h-full flex flex-col justify-between"
-        style={{
-          background: "#FFFFFF",
-          padding: 8,
-          fontFamily: "'Inter', sans-serif",
-        }}
-      >
-        {/* top bar */}
+      <div className="w-full h-full flex flex-col justify-between" style={{ background: "#FFFFFF", padding: 8, fontFamily: "'Inter', sans-serif" }}>
         <div className="flex justify-between items-center">
           <span style={{ fontSize: 5, color: "#999" }}>@username</span>
           <span style={{ fontSize: 5, color: "#999" }}>[ 1/3 ]</span>
         </div>
-        {/* content */}
         <div className="flex-1 flex flex-col justify-center gap-1 py-1">
-          <h3
-            style={{
-              fontFamily: "'SONGER Grotesque', sans-serif",
-              fontSize: 7,
-              lineHeight: 1.2,
-              color: "#1A1A1A",
-              margin: 0,
-              textAlign: "left",
-              textTransform: "uppercase",
-            }}
-          >
+          <h3 style={{ fontFamily: "'SONGER Grotesque', sans-serif", fontSize: 7, lineHeight: 1.2, color: "#1A1A1A", margin: 0, textAlign: "left", textTransform: "uppercase" }}>
             ЗАГОЛОВОК СЛАЙДА
           </h3>
-          <p style={{ fontSize: 5, color: "#1A1A1A", margin: 0, lineHeight: 1.5, textAlign: "left" }}>
-            Основной текст слайда
-          </p>
+          <p style={{ fontSize: 5, color: "#1A1A1A", margin: 0, lineHeight: 1.5, textAlign: "left" }}>Основной текст слайда</p>
         </div>
-        {/* bottom */}
         <div className="flex justify-end items-center">
-          <div
-            style={{
-              width: 10,
-              height: 10,
-              borderRadius: "50%",
-              border: "1px solid #1A1A1A",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 5,
-              color: "#1A1A1A",
-            }}
-          >
-            →
-          </div>
+          <div style={{ width: 10, height: 10, borderRadius: "50%", border: "1px solid #1A1A1A", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 5, color: "#1A1A1A" }}>→</div>
         </div>
       </div>
     ),
@@ -242,42 +165,62 @@ const TEMPLATES: SlideTemplate[] = [
     preview: (
       <div
         className="w-full h-full flex flex-col justify-between"
-        style={{
-          background: "#3C1518",
-          padding: 8,
-          fontFamily: "'Inter', sans-serif",
-        }}
+        style={{ background: "#3C1518", padding: 8, fontFamily: "'Inter', sans-serif" }}
       >
-        {/* top bar */}
-        <div className="flex justify-between items-center">
-          <span style={{ fontSize: 5, color: "rgba(255,255,255,0.45)" }}>@username</span>
-          <span style={{ fontSize: 5, color: "rgba(255,255,255,0.45)" }}>[ 1/3 ]</span>
+        {/* Header - like reference: name left, name right */}
+        <div className="flex justify-between items-start">
+          <div>
+            <span style={{ fontSize: 3.5, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 0.5, fontWeight: 500, display: "block" }}>ИМЯ БРЕНД</span>
+            <span style={{ fontSize: 3, color: "rgba(255,255,255,0.4)", display: "block" }}>@username</span>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <span style={{ fontSize: 3.5, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 0.5, fontWeight: 500, display: "block" }}>NAME BRAND</span>
+            <span style={{ fontSize: 3, color: "rgba(255,255,255,0.4)", display: "block" }}>design smm lifestyle</span>
+          </div>
         </div>
-        {/* content */}
-        <div className="flex-1 flex flex-col justify-center gap-1 py-1">
-          <h3
-            style={{
-              fontFamily: "'Forum', serif",
-              fontSize: 10,
-              lineHeight: 1.15,
-              color: "#FFFFFF",
-              margin: 0,
-              textAlign: "left",
-            }}
-          >
-            Заголовок{" "}
-            <span style={{ color: "#F0EAE0" }}>слайда</span>
+
+        {/* Center - large title with cursive */}
+        <div className="flex-1 flex flex-col justify-center py-1" style={{ marginTop: 4 }}>
+          {/* Small cursive words above title */}
+          <div style={{ position: "relative", marginBottom: -2 }}>
+            <span style={{ fontFamily: "'Bella Script CYR', cursive", fontSize: 6, color: "rgba(255,255,255,0.5)", marginLeft: 4 }}>латиница</span>
+            <span style={{ fontFamily: "'Bella Script CYR', cursive", fontSize: 6, color: "rgba(255,255,255,0.5)", marginLeft: 10 }}>кириллица</span>
+          </div>
+          {/* Main title - huge serif */}
+          <h3 style={{
+            fontFamily: "'Forum', serif",
+            fontSize: 16,
+            lineHeight: 0.95,
+            color: "#FFFFFF",
+            margin: 0,
+            textAlign: "left",
+            fontWeight: 400,
+            letterSpacing: -0.5,
+          }}>
+            Шрифтовые
           </h3>
-          <p style={{ fontFamily: "'Bella Script CYR', cursive", fontSize: 6, color: "rgba(255,255,255,0.6)", margin: 0, marginTop: 2, lineHeight: 1.3, textAlign: "left" }}>
-            элегантный стиль
-          </p>
-          <p style={{ fontSize: 4.5, color: "rgba(255,255,255,0.7)", margin: 0, lineHeight: 1.5, textAlign: "left", marginTop: 2 }}>
-            Основной текст слайда
+          {/* Subtitle aligned right */}
+          <p style={{
+            fontFamily: "'Forum', serif",
+            fontSize: 12,
+            color: "rgba(255,255,255,0.45)",
+            margin: 0,
+            textAlign: "right",
+            lineHeight: 1,
+            marginTop: -1,
+          }}>
+            пары
           </p>
         </div>
-        {/* bottom */}
-        <div className="flex justify-end items-center">
-          <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 6 }}>→</span>
+
+        {/* Bottom - CTA text + cursive */}
+        <div style={{ textAlign: "center" }}>
+          <p style={{ fontSize: 4.5, color: "rgba(255,255,255,0.7)", margin: 0, fontWeight: 500, letterSpacing: 0.3 }}>
+            скачай бесплатно подборку
+          </p>
+          <p style={{ fontFamily: "'Bella Script CYR', cursive", fontSize: 6, color: "rgba(255,255,255,0.5)", margin: 0, marginTop: 1 }}>
+            в телеграм канале (↓)
+          </p>
         </div>
       </div>
     ),
@@ -297,7 +240,6 @@ const TemplatesPanel = ({ onApplyTemplate }: TemplatesPanelProps) => {
           onClick={() => onApplyTemplate(tpl)}
           className="flex flex-col items-center gap-1.5 flex-shrink-0 transition-all active:scale-95"
         >
-          {/* Live preview card */}
           <div
             className="overflow-hidden"
             style={{
