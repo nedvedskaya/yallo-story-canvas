@@ -9,6 +9,8 @@ import type { MenuId } from "@/components/editor/BottomMenu";
 import type { SlideFormat } from "@/components/editor/SizePanel";
 import DownloadModal from "@/components/editor/DownloadModal";
 import type { SlideTemplate } from "@/components/editor/TemplatesPanel";
+import { TEMPLATES } from "@/components/editor/TemplatesPanel";
+import { useBotToken, getTokenFromUrl, notifyExported } from "@/hooks/use-bot-token";
 
 
 let nextId = 2;
@@ -184,6 +186,22 @@ const Index = () => {
     }));
   }, [setSlidesWithHistory]);
 
+  // Bot token loading
+  const { botSlides, botFormat, watermark } = useBotToken(TEMPLATES, handleApplyTemplate);
+
+  useEffect(() => {
+    if (botSlides) {
+      setSlides(botSlides);
+      setActiveSlide(0);
+    }
+  }, [botSlides]);
+
+  useEffect(() => {
+    if (botFormat) {
+      setSlideFormat(botFormat);
+    }
+  }, [botFormat]);
+
   const handleClosePanel = useCallback(() => {
     setActiveTab(null);
   }, []);
@@ -317,7 +335,19 @@ const Index = () => {
         onDeleteSticker={handleDeleteSticker}
       />
       <BottomMenu activeTab={activeTab} onTabChange={setActiveTab} hidden={textEditorOpen} />
-      <DownloadModal open={downloadOpen} onClose={() => setDownloadOpen(false)} slides={slides} slideFormat={slideFormat} activeSlide={activeSlide} onSlideChange={setActiveSlide} />
+      <DownloadModal
+        open={downloadOpen}
+        onClose={() => setDownloadOpen(false)}
+        slides={slides}
+        slideFormat={slideFormat}
+        activeSlide={activeSlide}
+        onSlideChange={setActiveSlide}
+        onExported={() => {
+          const token = getTokenFromUrl();
+          if (token) notifyExported(token);
+        }}
+        watermark={watermark}
+      />
       
     </div>
   );
