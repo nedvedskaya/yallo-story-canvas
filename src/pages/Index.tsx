@@ -307,6 +307,7 @@ const Index = () => {
             onEditorOpenChange={setTextEditorOpen}
             onUpdateSticker={handleUpdateSticker}
             onDeleteSticker={handleDeleteSticker}
+            watermark={watermark ? "Создано в @yalokontent_bot" : undefined}
           />
         </main>
       </div>
