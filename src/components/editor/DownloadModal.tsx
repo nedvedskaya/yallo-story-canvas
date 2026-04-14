@@ -357,6 +357,7 @@ const DownloadModal = ({ open, onClose, slides, slideFormat, onExported, waterma
             await navigator.share({ files });
             setProgress(100);
             toast({ title: "Готово!", description: `${slides.length} слайдов сохранены` });
+            onExported?.();
             return;
           }
         } catch (shareErr: unknown) {
@@ -407,6 +408,7 @@ const DownloadModal = ({ open, onClose, slides, slideFormat, onExported, waterma
             await navigator.share({ files: [file] });
             setProgress(100);
             toast({ title: "Готово!", description: "Слайды сохранены как PDF" });
+            onExported?.();
             return;
           }
         } catch (e) {
