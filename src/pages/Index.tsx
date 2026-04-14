@@ -347,7 +347,7 @@ const Index = () => {
           const token = getTokenFromUrl();
           if (token) notifyExported(token);
         }}
-        watermark={watermark}
+        watermark={watermark ? "Создано в @yalokontent_bot" : undefined}
       />
       
     </div>
