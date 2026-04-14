@@ -20,6 +20,8 @@ interface DownloadModalProps {
   slideFormat: SlideFormat;
   activeSlide: number;
   onSlideChange: (index: number) => void;
+  onExported?: () => void;
+  watermark?: string;
 }
 
 const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
@@ -51,6 +53,7 @@ async function renderSlideToDOM(
   exportHeight: number,
   previewWidth: number,
   overlayOnly = false,
+  watermark?: string,
 ): Promise<{ container: HTMLDivElement; root: Root }> {
   const scale = exportWidth / previewWidth;
 
@@ -71,6 +74,7 @@ async function renderSlideToDOM(
         width={exportWidth}
         height={exportHeight}
         overlayOnly={overlayOnly}
+        watermark={watermark}
       />
     );
 
@@ -268,7 +272,7 @@ async function downloadOriginalVideo(videoSrc: string, filename: string) {
   }
 }
 
-const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProps) => {
+const DownloadModal = ({ open, onClose, slides, slideFormat, onExported, watermark }: DownloadModalProps) => {
   const [loading, setLoading] = useState(false);
   const [loadingType, setLoadingType] = useState<"png" | "pdf" | "all" | null>(null);
   const [progress, setProgress] = useState(0);
@@ -295,7 +299,7 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
     const renderW = exportW * 2;
     const renderH = exportH * 2;
 
-    const { container, root } = await renderSlideToDOM(renderSlide, slideFormat, index, slides.length, renderW, renderH, pw);
+    const { container, root } = await renderSlideToDOM(renderSlide, slideFormat, index, slides.length, renderW, renderH, pw, false, watermark ? watermark : undefined);
 
     const rawCanvas = await html2canvas(
       (container.firstElementChild as HTMLElement) || container,
@@ -355,6 +359,7 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
             await navigator.share({ files });
             setProgress(100);
             toast({ title: "Готово!", description: `${slides.length} слайдов сохранены` });
+            onExported?.();
             return;
           }
         } catch (shareErr: unknown) {
@@ -374,6 +379,7 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
       triggerDownload(blob, "slides.zip");
       setProgress(100);
       toast({ title: "Готово!", description: `${slides.length} слайдов сохранены как PNG` });
+      onExported?.();
     } catch (e) {
       console.error("PNG export error:", e);
       toast({ title: "Ошибка", description: "Не удалось сохранить PNG", variant: "destructive" });
@@ -404,6 +410,7 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
             await navigator.share({ files: [file] });
             setProgress(100);
             toast({ title: "Готово!", description: "Слайды сохранены как PDF" });
+            onExported?.();
             return;
           }
         } catch (e) {
@@ -415,6 +422,7 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
       pdf.save("slides.pdf");
       setProgress(100);
       toast({ title: "Готово!", description: "Слайды сохранены как PDF" });
+      onExported?.();
     } catch (e) {
       console.error("PDF export error:", e);
       toast({ title: "Ошибка", description: "Не удалось сохранить PDF", variant: "destructive" });
@@ -478,6 +486,7 @@ const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProp
 
       setProgress(100);
       toast({ title: "Готово!", description: `${slides.length} слайдов сохранены` });
+      onExported?.();
     } catch (e) {
       console.error("Export all error:", e);
       toast({ title: "Ошибка", description: "Не удалось сохранить файлы", variant: "destructive" });

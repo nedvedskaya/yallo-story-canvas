@@ -80,12 +80,13 @@ interface SlideCarouselProps {
   onEditorOpenChange?: (open: boolean) => void;
   onUpdateSticker?: (stickerId: string, updates: Partial<{x:number;y:number;scale:number;rotation:number}>) => void;
   onDeleteSticker?: (stickerId: string) => void;
+  watermark?: string;
 }
 
 const SlideCarousel = ({
   slides, activeSlide, onSlideChange, isSheetOpen = false, slideFormat = "carousel",
   onUpdateSlide, onAddSlide, onMoveSlide, onDuplicateSlide, onDeleteSlide, onEditorOpenChange,
-  onUpdateSticker, onDeleteSticker,
+  onUpdateSticker, onDeleteSticker, watermark,
 }: SlideCarouselProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const currentSlide = slides[activeSlide];
@@ -349,6 +350,7 @@ const SlideCarousel = ({
                     onUpdateSticker={isActive ? onUpdateSticker : undefined}
                     onDeleteSticker={isActive ? onDeleteSticker : undefined}
                     stickerInteractive={isActive}
+                    watermark={watermark}
                   />
                 </div>
               </div>

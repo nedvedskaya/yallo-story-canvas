@@ -58,6 +58,8 @@ export interface SlideFrameProps {
   onUpdateSticker?: (id: string, updates: Partial<{x:number;y:number;scale:number;rotation:number}>) => void;
   onDeleteSticker?: (id: string) => void;
   stickerInteractive?: boolean;
+  /** Watermark text */
+  watermark?: string;
 }
 
 const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
@@ -68,6 +70,7 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
   onBodyTouchStart, onBodyTouchMove, onBodyTouchEnd, onBodyMouseDown, onBodyClick,
   editorOpen, videoRefCallback, videoMuted = true, overlayOnly = false, dataSlideId,
   onUpdateSticker, onDeleteSticker, stickerInteractive = false,
+  watermark,
 }, ref) => {
   const metrics = getSlideMetrics(slide, format, scale);
   const isExport = !!(width && height);
@@ -188,6 +191,24 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
           ) : <span />}
         </div>
       </div>
+
+      {/* Watermark */}
+      {watermark && (
+        <div className="absolute z-20" style={{
+          bottom: `${8 * scale}px`,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          opacity: 0.4,
+          pointerEvents: 'none',
+        }}>
+          <span style={{
+            fontSize: `${9 * scale}px`,
+            color: slide.metaColor || 'rgba(255,255,255,0.5)',
+            fontFamily: "'Inter', sans-serif",
+            whiteSpace: 'nowrap',
+          }}>{watermark}</span>
+        </div>
+      )}
     </div>
   );
 });
