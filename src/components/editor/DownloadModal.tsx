@@ -299,7 +299,7 @@ const DownloadModal = ({ open, onClose, slides, slideFormat, onExported, waterma
     const renderW = exportW * 2;
     const renderH = exportH * 2;
 
-    const { container, root } = await renderSlideToDOM(renderSlide, slideFormat, index, slides.length, renderW, renderH, pw, false, watermark);
+    const { container, root } = await renderSlideToDOM(renderSlide, slideFormat, index, slides.length, renderW, renderH, pw, false, watermark ? watermark : undefined);
 
     const rawCanvas = await html2canvas(
       (container.firstElementChild as HTMLElement) || container,
