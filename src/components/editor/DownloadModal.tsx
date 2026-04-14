@@ -20,6 +20,8 @@ interface DownloadModalProps {
   slideFormat: SlideFormat;
   activeSlide: number;
   onSlideChange: (index: number) => void;
+  onExported?: () => void;
+  watermark?: boolean;
 }
 
 const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
@@ -268,7 +270,7 @@ async function downloadOriginalVideo(videoSrc: string, filename: string) {
   }
 }
 
-const DownloadModal = ({ open, onClose, slides, slideFormat }: DownloadModalProps) => {
+const DownloadModal = ({ open, onClose, slides, slideFormat, onExported, watermark }: DownloadModalProps) => {
   const [loading, setLoading] = useState(false);
   const [loadingType, setLoadingType] = useState<"png" | "pdf" | "all" | null>(null);
   const [progress, setProgress] = useState(0);
