@@ -1,12 +1,13 @@
 import { useState, useRef, useCallback } from "react";
 import { resizeImage } from "@/lib/image-utils";
 import { Slider } from "@/components/ui/slider";
-import { Upload, Volume2, VolumeX } from "lucide-react";
+import { Upload, Volume2, VolumeX, Plus, Trash2 } from "lucide-react";
 import MediaControls from "./MediaControls";
 import { labelStyle, valStyle } from "./shared-styles";
 import GlassTabBar from "./GlassTabBar";
 import ApplyToAllButton from "./ApplyToAllButton";
 import { rgbaToHex } from "@/lib/utils";
+import type { Sticker } from "./StickerLayer";
 
 export type OverlayType = "none" | "dots" | "lines" | "grid" | "cells" | "blobs" | "gradient";
 type BgTab = "color" | "photo" | "video";
@@ -50,12 +51,16 @@ interface BackgroundPanelProps {
   bgMuted?: boolean;
   onSave: (draft: Partial<BgDraft>) => void;
   onApplyToAll: () => void;
+  stickers?: Sticker[];
+  onAddSticker?: (src: string, width: number, height: number) => void;
+  onDeleteSticker?: (id: string) => void;
 }
 
 const BackgroundPanel = ({
   bgColor, overlayType, overlayOpacity, overlayColor,
   bgImage, bgVideo, bgScale, bgPosX, bgPosY, bgDarken, bgMuted,
   onSave, onApplyToAll,
+  stickers = [], onAddSticker, onDeleteSticker,
 }: BackgroundPanelProps) => {
   const [bgTab, setBgTab] = useState<BgTab>(bgVideo ? "video" : bgImage ? "photo" : "color");
   const [hexInput, setHexInput] = useState(bgColor.startsWith("#") ? bgColor : "#667eea");
@@ -68,6 +73,7 @@ const BackgroundPanel = ({
   const colorRef = useRef<HTMLInputElement>(null);
   const photoRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
+  const stickerInputRef = useRef<HTMLInputElement>(null);
 
   const update = useCallback((partial: Partial<BgDraft>) => {
     onSave(partial);
@@ -102,6 +108,42 @@ const BackgroundPanel = ({
       const url = URL.createObjectURL(file);
       update({ bgImage: undefined, bgVideo: url, bgVideoFile: file, bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0, bgMuted: false });
     }
+  };
+
+  const handleStickerFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !onAddSticker) return;
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const maxBase = 80;
+      const ratio = Math.min(maxBase / img.width, maxBase / img.height, 1);
+      onAddSticker(url, img.width * ratio, img.height * ratio);
+    };
+    img.src = url;
+    if (stickerInputRef.current) stickerInputRef.current.value = "";
+  };
+
+  const handleStickerPaste = async () => {
+    if (!onAddSticker) return;
+    try {
+      const items = await navigator.clipboard.read();
+      for (const item of items) {
+        const imageType = item.types.find(t => t.startsWith("image/"));
+        if (imageType) {
+          const blob = await item.getType(imageType);
+          const url = URL.createObjectURL(blob);
+          const img = new Image();
+          img.onload = () => {
+            const maxBase = 80;
+            const ratio = Math.min(maxBase / img.width, maxBase / img.height, 1);
+            onAddSticker(url, img.width * ratio, img.height * ratio);
+          };
+          img.src = url;
+          return;
+        }
+      }
+    } catch {}
   };
 
   const tabItems = [
@@ -238,6 +280,56 @@ const BackgroundPanel = ({
         </>
       )}
 
+      {/* Decorative elements (stickers) */}
+      {onAddSticker && (
+        <div>
+          <p className="text-[11px] font-medium mb-1.5" style={labelStyle}>Декоративные элементы</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => stickerInputRef.current?.click()}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium active:scale-95"
+              style={{ background: 'rgba(26,26,46,0.06)', color: '#1a1a2e' }}
+            >
+              <Plus size={14} />
+              Загрузить
+            </button>
+            <button
+              onClick={handleStickerPaste}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium active:scale-95"
+              style={{ background: 'rgba(26,26,46,0.06)', color: '#1a1a2e' }}
+            >
+              Вставить
+            </button>
+            <input ref={stickerInputRef} type="file" accept="image/*" className="hidden" onChange={handleStickerFile} />
+          </div>
+
+          {stickers.length > 0 && (
+            <div className="flex gap-2 flex-wrap mt-2">
+              {stickers.map((s) => (
+                <div key={s.id} className="relative group">
+                  <img
+                    src={s.src}
+                    alt=""
+                    className="rounded-lg object-contain"
+                    style={{ width: 56, height: 56, background: 'rgba(0,0,0,0.04)' }}
+                  />
+                  <button
+                    onClick={() => onDeleteSticker?.(s.id)}
+                    className="absolute -top-1 -right-1 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{ background: 'rgba(220,40,40,0.85)', color: '#fff' }}
+                  >
+                    <Trash2 size={10} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <p className="text-[10px] mt-1" style={{ color: 'rgba(26,26,46,0.4)' }}>
+            Двойной клик по элементу на слайде — удалить
+          </p>
+        </div>
+      )}
     </div>
   );
 };

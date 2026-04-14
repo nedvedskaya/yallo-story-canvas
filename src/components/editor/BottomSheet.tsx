@@ -1,4 +1,4 @@
-import { X, Palette, Image, Type, Maximize, Info, Layers } from "lucide-react";
+import { X, Palette, Image, Type, Maximize, Info } from "lucide-react";
 import type { MenuId } from "./BottomMenu";
 import type { Slide } from "./SlideCarousel";
 import BackgroundPanel from "./BackgroundPanel";
@@ -6,8 +6,6 @@ import TextPanel from "./TextPanel";
 import SizePanel, { type SlideFormat } from "./SizePanel";
 import InfoPanel from "./InfoPanel";
 import TemplatesPanel, { type SlideTemplate } from "./TemplatesPanel";
-import StickersPanel from "./StickersPanel";
-import type { Sticker } from "./StickerLayer";
 
 interface BottomSheetProps {
   activeTab: MenuId | null;
@@ -31,8 +29,7 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onUpdate
   const isSize = activeTab === "size";
   const isInfo = activeTab === "info";
   const isDesign = activeTab === "design";
-  const isStickers = activeTab === "stickers";
-  const isCustomPanel = isBackground || isText || isSize || isInfo || isDesign || isStickers;
+  const isCustomPanel = isBackground || isText || isSize || isInfo || isDesign;
 
   if (!isCustomPanel) return null;
 
@@ -67,8 +64,6 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onUpdate
               <><Maximize size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} /><h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>Размер</h3></>
             ) : isInfo ? (
               <><Info size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} /><h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>Инфо</h3></>
-            ) : isStickers ? (
-              <><Layers size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} /><h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>Элементы</h3></>
             ) : null}
           </div>
           <button onClick={onClose} className="rounded-full p-1.5 glass-pill" style={{ color: 'rgba(26, 26, 46, 0.5)' }}>
@@ -107,17 +102,14 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onUpdate
               bgMuted={currentSlide.bgMuted}
               onSave={(partial) => onUpdateSlide(currentSlide.id, partial)}
               onApplyToAll={() => onApplyBgToAll?.()}
+              stickers={currentSlide.stickers || []}
+              onAddSticker={onAddSticker}
+              onDeleteSticker={onDeleteSticker}
             />
           ) : isSize && slideFormat && onSlideFormatChange ? (
             <SizePanel
               currentFormat={slideFormat}
               onSave={onSlideFormatChange}
-            />
-          ) : isStickers && currentSlide && onAddSticker && onDeleteSticker ? (
-            <StickersPanel
-              stickers={currentSlide.stickers || []}
-              onAddSticker={onAddSticker}
-              onDeleteSticker={onDeleteSticker}
             />
           ) : null}
         </div>
