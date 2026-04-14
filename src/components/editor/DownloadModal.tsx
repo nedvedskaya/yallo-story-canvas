@@ -21,7 +21,7 @@ interface DownloadModalProps {
   activeSlide: number;
   onSlideChange: (index: number) => void;
   onExported?: () => void;
-  watermark?: boolean;
+  watermark?: string;
 }
 
 const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
