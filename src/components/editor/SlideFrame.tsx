@@ -5,6 +5,7 @@
  */
 import React from "react";
 import { sanitizeHtml } from "@/lib/sanitize";
+import defaultAvatar from "@/assets/default-avatar.jpg";
 import SlideOverlay from "./SlideOverlay";
 import StickerLayer from "./StickerLayer";
 import type { Slide } from "./SlideCarousel";

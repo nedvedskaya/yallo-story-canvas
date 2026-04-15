@@ -29,10 +29,14 @@ const initialSlides: Slide[] = [
   {
     id: 1, username: "@username", title: "Заголовок",
     body: "Текст слайда",
-    bgColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    bgColor: "#F3F3F3",
     bgType: "color", hAlign: "left", vAlign: "center",
-    overlayType: "none", overlayOpacity: 50,
+    overlayType: "grid", overlayOpacity: 40,
     bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0,
+    titleColor: "#1A1A1A", bodyColor: "#1A1A1A", metaColor: "#999999",
+    overlayColor: "rgba(0,0,0,0.08)",
+    titleFont: "'Dela Gothic One', sans-serif", titleSize: 28,
+    showArrow: true, showUsername: true, showSlideCount: true,
   },
 ];
 
