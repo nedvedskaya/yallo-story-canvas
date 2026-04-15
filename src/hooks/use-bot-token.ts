@@ -8,6 +8,7 @@ interface BotSlide {
   title: string;
   body: string;
   type: string;
+  has_list?: boolean;
 }
 
 interface BotResponse {
@@ -84,6 +85,7 @@ export function useBotToken(
           bgPosX: 50,
           bgPosY: 50,
           bgDarken: 0,
+          hasList: !!s.has_list,
         }));
 
         setBotSlides(slides);
