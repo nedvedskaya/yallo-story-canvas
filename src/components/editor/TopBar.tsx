@@ -1,4 +1,5 @@
 import { Download, Undo2, Redo2 } from "lucide-react";
+import yaloAvatar from "@/assets/yalo-avatar.jpg";
 
 interface TopBarProps {
   onDownload?: () => void;
@@ -11,12 +12,12 @@ interface TopBarProps {
 const TopBar = ({ onDownload, onUndo, onRedo, canUndo = false, canRedo = false }: TopBarProps) => {
   return (
     <div className="flex items-center justify-between px-5 py-3">
-      <span
-        className="tracking-tight text-lg font-extralight"
-        style={{ color: '#1a1a2e' }}
-      >
-        Яло
-      </span>
+      <img
+        src={yaloAvatar}
+        alt="Яло"
+        className="object-cover"
+        style={{ width: 32, height: 32, borderRadius: 8 }}
+      />
       <div className="flex items-center gap-2">
         <button
           onClick={onUndo}
