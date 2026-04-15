@@ -169,12 +169,27 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
               onMouseDown={onBodyMouseDown}
               style={{ ...body.wrapperStyle, touchAction: 'none', cursor: editorOpen ? 'text' : 'grab', marginTop: `${12 * scale}px` }}
             >
-              <p
-                onClick={onBodyClick}
-                className="outline-none cursor-pointer"
-                style={body.textStyle}
-                dangerouslySetInnerHTML={{ __html: sanitizeHtml(slide.body) }}
-              />
+              {slide.hasList ? (
+                <ul
+                  onClick={onBodyClick}
+                  className="outline-none cursor-pointer"
+                  style={{ ...body.textStyle, listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: `${6 * scale}px` }}
+                >
+                  {slide.body.split('\n').filter(Boolean).map((line, i) => (
+                    <li key={i} style={{ display: 'flex', alignItems: 'baseline', gap: `${6 * scale}px` }}>
+                      <span style={{ flexShrink: 0, opacity: 0.7 }}>•</span>
+                      <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(line.trim()) }} />
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p
+                  onClick={onBodyClick}
+                  className="outline-none cursor-pointer"
+                  style={body.textStyle}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(slide.body) }}
+                />
+              )}
             </div>
           </div>
         </div>

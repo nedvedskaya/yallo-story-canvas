@@ -8,6 +8,7 @@ interface BotSlide {
   title: string;
   body: string;
   type: string;
+  has_list?: boolean;
 }
 
 interface BotResponse {
