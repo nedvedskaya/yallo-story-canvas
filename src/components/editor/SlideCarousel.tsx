@@ -53,7 +53,6 @@ export interface Slide {
   overlayColor?: string;
   bgVideoFile?: File;
   hasList?: boolean;
-  avatarUrl?: string;
   stickers?: Array<{
     id: string;
     src: string;
