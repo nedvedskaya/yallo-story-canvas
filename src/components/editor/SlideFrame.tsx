@@ -137,7 +137,20 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
         {/* Top bar */}
         <div className="flex items-center justify-between w-full flex-shrink-0 mb-2">
           {slide.showUsername !== false ? (
-            <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.7)', fontSize: `${metrics.usernameSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>{slide.username}</span>
+            <div className="flex items-center" style={{ gap: `${4 * scale}px` }}>
+              <img
+                src={slide.avatarUrl || defaultAvatar}
+                alt=""
+                style={{
+                  width: `${20 * scale}px`,
+                  height: `${20 * scale}px`,
+                  borderRadius: `${4 * scale}px`,
+                  objectFit: 'cover',
+                  flexShrink: 0,
+                }}
+              />
+              <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.7)', fontSize: `${metrics.usernameSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>{slide.username}</span>
+            </div>
           ) : <span />}
           {slide.showSlideCount !== false ? (
             <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.7)', fontSize: `${metrics.usernameSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>[ {slideIndex + 1}/{totalSlides} ]</span>
