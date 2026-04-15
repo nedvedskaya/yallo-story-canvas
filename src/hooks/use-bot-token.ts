@@ -70,22 +70,42 @@ export function useBotToken(
       })
       .then(data => {
         const format = mapFormat(data.format);
+        // Find minimalism template defaults
+        const minTpl = templates.find(t => t.id === "minimalism");
+        const tplApply = minTpl?.apply || {};
+
         const slides: Slide[] = data.slides.map((s) => ({
           id: nextBotId++,
           username: data.author_username || "@username",
           title: s.title || "Заголовок",
           body: s.body || "",
-          bgColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          bgColor: "#F3F3F3",
           bgType: "color" as const,
           hAlign: "left" as const,
           vAlign: "center" as const,
-          overlayType: "none" as const,
-          overlayOpacity: 50,
+          overlayType: "grid" as const,
+          overlayOpacity: 40,
           bgScale: 100,
           bgPosX: 50,
           bgPosY: 50,
           bgDarken: 0,
           hasList: !!s.has_list,
+          titleColor: "#1A1A1A",
+          bodyColor: "#1A1A1A",
+          metaColor: "#999999",
+          overlayColor: "rgba(0,0,0,0.08)",
+          showFooter: false,
+          showArrow: true,
+          showUsername: true,
+          showSlideCount: true,
+          titleFont: "'Dela Gothic One', sans-serif",
+          titleSize: 20,
+          titleLineHeight: 1.15,
+          titleCase: "none",
+          bodyFont: "'Inter', sans-serif",
+          bodySize: 11,
+          bodyLineHeight: 1.4,
+          ...tplApply,
         }));
 
         setBotSlides(slides);

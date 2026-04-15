@@ -173,12 +173,12 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
                 <ul
                   onClick={onBodyClick}
                   className="outline-none cursor-pointer"
-                  style={{ ...body.textStyle, listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: `${6 * scale}px` }}
+                  style={{ ...body.textStyle, listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: `${8 * scale}px` }}
                 >
-                  {slide.body.split('\n').filter(Boolean).map((line, i) => (
-                    <li key={i} style={{ display: 'flex', alignItems: 'baseline', gap: `${6 * scale}px` }}>
-                      <span style={{ flexShrink: 0, opacity: 0.7 }}>•</span>
-                      <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(line.trim()) }} />
+                  {slide.body.split(/\n|(?<=\.)(?=\s)/g).map(l => l.trim()).filter(Boolean).map((line, i) => (
+                    <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: `${6 * scale}px` }}>
+                      <span style={{ flexShrink: 0, opacity: 0.7, lineHeight: body.textStyle.lineHeight }}>•</span>
+                      <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(line) }} />
                     </li>
                   ))}
                 </ul>
