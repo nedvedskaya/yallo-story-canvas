@@ -1,7 +1,6 @@
 /**
  * SlideFrame — unified slide renderer.
  * Used by SlideCarousel for preview and DownloadModal for export.
- * Single source of truth for slide layout.
  */
 import React from "react";
 import { sanitizeHtml } from "@/lib/sanitize";
@@ -9,7 +8,6 @@ import SlideOverlay from "./SlideOverlay";
 import StickerLayer from "./StickerLayer";
 import type { Slide } from "./SlideCarousel";
 import type { SlideFormat } from "./SizePanel";
-import { getExportWidth, getPreviewWidth } from "./shared-styles";
 import {
   H_ALIGN_TO_TEXT,
   V_ALIGN_TO_JUSTIFY,
@@ -29,49 +27,36 @@ export interface SlideFrameProps {
   /** Override width/height for export (px). If not set, uses 100% */
   width?: number;
   height?: number;
-  /** Override title drag offsets (for live drag preview) */
   titleOverrides?: { offsetX?: number; offsetY?: number; scale?: number };
-  /** Override body drag offsets (for live drag preview) */
   bodyOverrides?: { offsetX?: number; offsetY?: number; scale?: number };
-  /** Event handlers for title drag */
   onTitleTouchStart?: (e: React.TouchEvent) => void;
   onTitleTouchMove?: (e: React.TouchEvent) => void;
   onTitleTouchEnd?: () => void;
   onTitleMouseDown?: (e: React.MouseEvent) => void;
   onTitleClick?: () => void;
-  /** Event handlers for body drag */
   onBodyTouchStart?: (e: React.TouchEvent) => void;
   onBodyTouchMove?: (e: React.TouchEvent) => void;
   onBodyTouchEnd?: () => void;
   onBodyMouseDown?: (e: React.MouseEvent) => void;
   onBodyClick?: () => void;
-  /** Is editor open (affects cursor) */
   editorOpen?: boolean;
-  /** For video slides: ref callback */
   videoRefCallback?: (el: HTMLVideoElement | null) => void;
-  /** For video: muted state */
   videoMuted?: boolean;
-  /** Hide background (for overlay-only mode in video export) */
   overlayOnly?: boolean;
-  /** Data attribute for slide identification */
   dataSlideId?: number;
-  /** Sticker interaction handlers */
   onUpdateSticker?: (id: string, updates: Partial<{x:number;y:number;scale:number;rotation:number}>) => void;
   onDeleteSticker?: (id: string) => void;
   stickerInteractive?: boolean;
-  /** Watermark text */
   watermark?: string;
 }
 
 /** Parse body text into list items */
 function parseListItems(body: string): string[] {
-  // Split by newline, or by bullet/arrow markers
   return body
     .split(/\n/)
     .map(l => l.trim())
     .filter(Boolean)
     .flatMap(line => {
-      // If line contains multiple bullet markers, split them
       if ((line.match(/[•→]/g) || []).length > 1) {
         return line.split(/(?=[•→])/).map(s => s.trim()).filter(Boolean);
       }
@@ -90,21 +75,12 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
   onUpdateSticker, onDeleteSticker, stickerInteractive = false,
   watermark,
 }, ref) => {
+  const metrics = getSlideMetrics(slide, format, scale);
   const isExport = !!(width && height);
-  const exportW = getExportWidth(format);
-  const previewW = getPreviewWidth(format);
-
-  // renderScale converts export-resolution values to rendered px
-  // Preview: previewW / exportW (e.g. 290/1080 ≈ 0.27)
-  // Export: width / exportW (e.g. 1080/1080 = 1, or 2160/1080 = 2 for 2x)
-  const renderScale = isExport ? (width! / exportW) : (previewW / exportW);
-
-  const metrics = getSlideMetrics(slide, format, renderScale);
   const mediaStyle = getMediaStyle(slide, undefined, isExport ? width : undefined, isExport ? height : undefined);
   const title = getTitleStyle(slide, metrics, titleOverrides);
   const body = getBodyStyle(slide, metrics, bodyOverrides);
 
-  // Detect if body should render as list
   const isList = slide.hasList || /[•→]/.test(slide.body);
   const listItems = isList ? parseListItems(slide.body) : [];
 
@@ -126,12 +102,9 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
 
   return (
     <div ref={ref} style={rootStyle} data-slide-id={dataSlideId}>
-      {/* Background media (image or video) */}
+      {/* Background media */}
       {!overlayOnly && (slide.bgImage || slide.bgVideo) && (
-        <div
-          className="absolute inset-0 z-[1]"
-          style={{ overflow: 'hidden', pointerEvents: 'none' }}
-        >
+        <div className="absolute inset-0 z-[1]" style={{ overflow: 'hidden', pointerEvents: 'none' }}>
           {slide.bgImage && (
             <img src={slide.bgImage} alt="" loading="lazy" decoding="async" style={{ ...mediaStyle, objectFit: 'cover' }} />
           )}
@@ -167,7 +140,7 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
       {/* Content layer */}
       <div className="relative z-10 flex flex-col h-full w-full">
         {/* Top bar */}
-        <div className="flex items-center justify-between w-full flex-shrink-0" style={{ marginBottom: `${8 * renderScale}px` }}>
+        <div className="flex items-center justify-between w-full flex-shrink-0" style={{ marginBottom: `${4 * scale}px` }}>
           {slide.showUsername !== false ? (
             <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.7)', fontSize: `${metrics.usernameSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>{slide.username}</span>
           ) : <span />}
@@ -246,7 +219,7 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
             </span>
           ) : <span />}
           {slide.showArrow !== false && slideIndex < totalSlides - 1 ? (
-            <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.5)', fontSize: `${(metrics.footerSize + 2 * renderScale)}px` }}>→</span>
+            <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.5)', fontSize: `${(metrics.footerSize + 2 * scale)}px` }}>→</span>
           ) : <span />}
         </div>
       </div>
@@ -254,14 +227,14 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
       {/* Watermark */}
       {watermark && (
         <div className="absolute z-20" style={{
-          bottom: `${8 * renderScale}px`,
+          bottom: `${8 * scale}px`,
           left: '50%',
           transform: 'translateX(-50%)',
           opacity: 0.4,
           pointerEvents: 'none',
         }}>
           <span style={{
-            fontSize: `${9 * renderScale}px`,
+            fontSize: `${9 * scale}px`,
             color: slide.metaColor || 'rgba(255,255,255,0.5)',
             fontFamily: "'Inter', sans-serif",
             whiteSpace: 'nowrap',
