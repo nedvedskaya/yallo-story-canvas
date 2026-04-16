@@ -41,7 +41,6 @@ const TEMPLATES: SlideTemplate[] = [
       bodyFont: "'Inter', sans-serif",
       bodyLetterSpacing: 0,
       bodyCase: "none",
-      bodyCase: "none",
       hAlign: "left",
       vAlign: "center",
     },
