@@ -42,12 +42,8 @@ const initialSlides: Slide[] = [
     showUsername: true,
     showSlideCount: true,
     titleFont: "'Dela Gothic One', sans-serif",
-    titleSize: 28,
-    titleLineHeight: 1.15,
     titleCase: "none",
     bodyFont: "'Inter', sans-serif",
-    bodySize: 14,
-    bodyLineHeight: 1.4,
   },
 ];
 
@@ -263,12 +259,8 @@ const Index = () => {
       showUsername: true,
       showSlideCount: true,
       titleFont: "'Dela Gothic One', sans-serif",
-      titleSize: 28,
-      titleLineHeight: 1.15,
       titleCase: "none",
       bodyFont: "'Inter', sans-serif",
-      bodySize: 14,
-      bodyLineHeight: 1.4,
       ...templateProps,
     };
     if (activeTemplate?.accentColor && baseSlide.title) {

@@ -1,7 +1,6 @@
 /**
  * SlideFrame — unified slide renderer.
  * Used by SlideCarousel for preview and DownloadModal for export.
- * Single source of truth for slide layout.
  */
 import React from "react";
 import { sanitizeHtml } from "@/lib/sanitize";
@@ -28,38 +27,42 @@ export interface SlideFrameProps {
   /** Override width/height for export (px). If not set, uses 100% */
   width?: number;
   height?: number;
-  /** Override title drag offsets (for live drag preview) */
   titleOverrides?: { offsetX?: number; offsetY?: number; scale?: number };
-  /** Override body drag offsets (for live drag preview) */
   bodyOverrides?: { offsetX?: number; offsetY?: number; scale?: number };
-  /** Event handlers for title drag */
   onTitleTouchStart?: (e: React.TouchEvent) => void;
   onTitleTouchMove?: (e: React.TouchEvent) => void;
   onTitleTouchEnd?: () => void;
   onTitleMouseDown?: (e: React.MouseEvent) => void;
   onTitleClick?: () => void;
-  /** Event handlers for body drag */
   onBodyTouchStart?: (e: React.TouchEvent) => void;
   onBodyTouchMove?: (e: React.TouchEvent) => void;
   onBodyTouchEnd?: () => void;
   onBodyMouseDown?: (e: React.MouseEvent) => void;
   onBodyClick?: () => void;
-  /** Is editor open (affects cursor) */
   editorOpen?: boolean;
-  /** For video slides: ref callback */
   videoRefCallback?: (el: HTMLVideoElement | null) => void;
-  /** For video: muted state */
   videoMuted?: boolean;
-  /** Hide background (for overlay-only mode in video export) */
   overlayOnly?: boolean;
-  /** Data attribute for slide identification */
   dataSlideId?: number;
-  /** Sticker interaction handlers */
   onUpdateSticker?: (id: string, updates: Partial<{x:number;y:number;scale:number;rotation:number}>) => void;
   onDeleteSticker?: (id: string) => void;
   stickerInteractive?: boolean;
-  /** Watermark text */
   watermark?: string;
+}
+
+/** Parse body text into list items */
+function parseListItems(body: string): string[] {
+  return body
+    .split(/\n/)
+    .map(l => l.trim())
+    .filter(Boolean)
+    .flatMap(line => {
+      if ((line.match(/[•→]/g) || []).length > 1) {
+        return line.split(/(?=[•→])/).map(s => s.trim()).filter(Boolean);
+      }
+      return [line];
+    })
+    .map(line => line.replace(/^[•→]\s*/, ''));
 }
 
 const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
@@ -78,6 +81,9 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
   const title = getTitleStyle(slide, metrics, titleOverrides);
   const body = getBodyStyle(slide, metrics, bodyOverrides);
 
+  const isList = slide.hasList || /[•→]/.test(slide.body);
+  const listItems = isList ? parseListItems(slide.body) : [];
+
   const rootStyle: React.CSSProperties = {
     width: width ? `${width}px` : '100%',
     height: height ? `${height}px` : '100%',
@@ -86,19 +92,19 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
     background: overlayOnly ? 'transparent' : slide.bgColor,
     borderRadius: '0px',
     textAlign: H_ALIGN_TO_TEXT[slide.hAlign] as React.CSSProperties['textAlign'],
-    padding: `${metrics.padding}px`,
+    paddingTop: `${metrics.paddingTop}px`,
+    paddingBottom: `${metrics.paddingBottom}px`,
+    paddingLeft: `${metrics.paddingLeft}px`,
+    paddingRight: `${metrics.paddingRight}px`,
     display: 'flex',
     flexDirection: 'column',
   };
 
   return (
     <div ref={ref} style={rootStyle} data-slide-id={dataSlideId}>
-      {/* Background media (image or video) */}
+      {/* Background media */}
       {!overlayOnly && (slide.bgImage || slide.bgVideo) && (
-        <div
-          className="absolute inset-0 z-[1]"
-          style={{ overflow: 'hidden', pointerEvents: 'none' }}
-        >
+        <div className="absolute inset-0 z-[1]" style={{ overflow: 'hidden', pointerEvents: 'none' }}>
           {slide.bgImage && (
             <img src={slide.bgImage} alt="" loading="lazy" decoding="async" style={{ ...mediaStyle, objectFit: 'cover' }} />
           )}
@@ -117,10 +123,10 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
         </div>
       )}
 
-      {/* Overlay pattern — on top of media but below content */}
+      {/* Overlay pattern */}
       {!overlayOnly && <SlideOverlay type={slide.overlayType} opacity={slide.overlayOpacity} color={slide.overlayColor} scale={scale} />}
 
-      {/* Sticker layer — between overlay and content */}
+      {/* Sticker layer */}
       {slide.stickers && slide.stickers.length > 0 && (
         <StickerLayer
           stickers={slide.stickers}
@@ -134,12 +140,12 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
       {/* Content layer */}
       <div className="relative z-10 flex flex-col h-full w-full">
         {/* Top bar */}
-        <div className="flex items-center justify-between w-full flex-shrink-0 mb-2">
+        <div className="flex items-center justify-between w-full flex-shrink-0" style={{ marginBottom: `${4 * scale}px` }}>
           {slide.showUsername !== false ? (
             <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.7)', fontSize: `${metrics.usernameSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>{slide.username}</span>
           ) : <span />}
           {slide.showSlideCount !== false ? (
-            <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.7)', fontSize: `${metrics.usernameSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>[ {slideIndex + 1}/{totalSlides} ]</span>
+            <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.7)', fontSize: `${metrics.counterSize}px`, fontWeight: 500, fontFamily: "'Inter', sans-serif" }}>[ {slideIndex + 1}/{totalSlides} ]</span>
           ) : <span />}
         </div>
 
@@ -167,17 +173,28 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
               onTouchMove={onBodyTouchMove}
               onTouchEnd={onBodyTouchEnd}
               onMouseDown={onBodyMouseDown}
-              style={{ ...body.wrapperStyle, touchAction: 'none', cursor: editorOpen ? 'text' : 'grab', marginTop: `${12 * scale}px` }}
+              style={{ ...body.wrapperStyle, touchAction: 'none', cursor: editorOpen ? 'text' : 'grab', marginTop: `${metrics.titleBodyGap}px` }}
             >
-              {slide.hasList ? (
+              {isList ? (
                 <ul
                   onClick={onBodyClick}
                   className="outline-none cursor-pointer"
-                  style={{ ...body.textStyle, listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: `${8 * scale}px` }}
+                  style={{
+                    ...body.textStyle,
+                    fontSize: `${metrics.bulletSize}px`,
+                    lineHeight: metrics.bulletLineHeight,
+                    listStyle: 'none',
+                    padding: 0,
+                    margin: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: `${metrics.bulletGap}px`,
+                    maxWidth: `${metrics.bulletMaxWidth * 100}%`,
+                  }}
                 >
-                  {slide.body.split(/\n|(?<=\.)(?=\s)/g).map(l => l.trim()).filter(Boolean).map((line, i) => (
-                    <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: `${6 * scale}px` }}>
-                      <span style={{ flexShrink: 0, opacity: 0.7, lineHeight: body.textStyle.lineHeight }}>•</span>
+                  {listItems.map((line, i) => (
+                    <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: `${metrics.bulletIndent}px` }}>
+                      <span style={{ flexShrink: 0, opacity: 0.7, lineHeight: metrics.bulletLineHeight }}>•</span>
                       <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(line) }} />
                     </li>
                   ))}
