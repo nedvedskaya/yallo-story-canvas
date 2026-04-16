@@ -9,6 +9,7 @@ import SlideOverlay from "./SlideOverlay";
 import StickerLayer from "./StickerLayer";
 import type { Slide } from "./SlideCarousel";
 import type { SlideFormat } from "./SizePanel";
+import { getExportWidth, getPreviewWidth } from "./shared-styles";
 import {
   H_ALIGN_TO_TEXT,
   V_ALIGN_TO_JUSTIFY,
@@ -62,6 +63,23 @@ export interface SlideFrameProps {
   watermark?: string;
 }
 
+/** Parse body text into list items */
+function parseListItems(body: string): string[] {
+  // Split by newline, or by bullet/arrow markers
+  return body
+    .split(/\n/)
+    .map(l => l.trim())
+    .filter(Boolean)
+    .flatMap(line => {
+      // If line contains multiple bullet markers, split them
+      if ((line.match(/[•→]/g) || []).length > 1) {
+        return line.split(/(?=[•→])/).map(s => s.trim()).filter(Boolean);
+      }
+      return [line];
+    })
+    .map(line => line.replace(/^[•→]\s*/, ''));
+}
+
 const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
   slide, slideIndex, totalSlides, format, scale = 1,
   width, height,
@@ -72,11 +90,23 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
   onUpdateSticker, onDeleteSticker, stickerInteractive = false,
   watermark,
 }, ref) => {
-  const metrics = getSlideMetrics(slide, format, scale);
   const isExport = !!(width && height);
+  const exportW = getExportWidth(format);
+  const previewW = getPreviewWidth(format);
+
+  // renderScale converts export-resolution values to rendered px
+  // Preview: previewW / exportW (e.g. 290/1080 ≈ 0.27)
+  // Export: width / exportW (e.g. 1080/1080 = 1, or 2160/1080 = 2 for 2x)
+  const renderScale = isExport ? (width! / exportW) : (previewW / exportW);
+
+  const metrics = getSlideMetrics(slide, format, renderScale);
   const mediaStyle = getMediaStyle(slide, undefined, isExport ? width : undefined, isExport ? height : undefined);
   const title = getTitleStyle(slide, metrics, titleOverrides);
   const body = getBodyStyle(slide, metrics, bodyOverrides);
+
+  // Detect if body should render as list
+  const isList = slide.hasList || /[•→]/.test(slide.body);
+  const listItems = isList ? parseListItems(slide.body) : [];
 
   const rootStyle: React.CSSProperties = {
     width: width ? `${width}px` : '100%',
@@ -86,7 +116,10 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
     background: overlayOnly ? 'transparent' : slide.bgColor,
     borderRadius: '0px',
     textAlign: H_ALIGN_TO_TEXT[slide.hAlign] as React.CSSProperties['textAlign'],
-    padding: `${metrics.padding}px`,
+    paddingTop: `${metrics.paddingTop}px`,
+    paddingBottom: `${metrics.paddingBottom}px`,
+    paddingLeft: `${metrics.paddingLeft}px`,
+    paddingRight: `${metrics.paddingRight}px`,
     display: 'flex',
     flexDirection: 'column',
   };
@@ -117,10 +150,10 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
         </div>
       )}
 
-      {/* Overlay pattern — on top of media but below content */}
+      {/* Overlay pattern */}
       {!overlayOnly && <SlideOverlay type={slide.overlayType} opacity={slide.overlayOpacity} color={slide.overlayColor} scale={scale} />}
 
-      {/* Sticker layer — between overlay and content */}
+      {/* Sticker layer */}
       {slide.stickers && slide.stickers.length > 0 && (
         <StickerLayer
           stickers={slide.stickers}
@@ -134,12 +167,12 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
       {/* Content layer */}
       <div className="relative z-10 flex flex-col h-full w-full">
         {/* Top bar */}
-        <div className="flex items-center justify-between w-full flex-shrink-0 mb-2">
+        <div className="flex items-center justify-between w-full flex-shrink-0" style={{ marginBottom: `${8 * renderScale}px` }}>
           {slide.showUsername !== false ? (
             <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.7)', fontSize: `${metrics.usernameSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>{slide.username}</span>
           ) : <span />}
           {slide.showSlideCount !== false ? (
-            <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.7)', fontSize: `${metrics.usernameSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>[ {slideIndex + 1}/{totalSlides} ]</span>
+            <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.7)', fontSize: `${metrics.counterSize}px`, fontWeight: 500, fontFamily: "'Inter', sans-serif" }}>[ {slideIndex + 1}/{totalSlides} ]</span>
           ) : <span />}
         </div>
 
@@ -167,17 +200,28 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
               onTouchMove={onBodyTouchMove}
               onTouchEnd={onBodyTouchEnd}
               onMouseDown={onBodyMouseDown}
-              style={{ ...body.wrapperStyle, touchAction: 'none', cursor: editorOpen ? 'text' : 'grab', marginTop: `${12 * scale}px` }}
+              style={{ ...body.wrapperStyle, touchAction: 'none', cursor: editorOpen ? 'text' : 'grab', marginTop: `${metrics.titleBodyGap}px` }}
             >
-              {slide.hasList ? (
+              {isList ? (
                 <ul
                   onClick={onBodyClick}
                   className="outline-none cursor-pointer"
-                  style={{ ...body.textStyle, listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: `${8 * scale}px` }}
+                  style={{
+                    ...body.textStyle,
+                    fontSize: `${metrics.bulletSize}px`,
+                    lineHeight: metrics.bulletLineHeight,
+                    listStyle: 'none',
+                    padding: 0,
+                    margin: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: `${metrics.bulletGap}px`,
+                    maxWidth: `${metrics.bulletMaxWidth * 100}%`,
+                  }}
                 >
-                  {slide.body.split(/\n|(?<=\.)(?=\s)/g).map(l => l.trim()).filter(Boolean).map((line, i) => (
-                    <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: `${6 * scale}px` }}>
-                      <span style={{ flexShrink: 0, opacity: 0.7, lineHeight: body.textStyle.lineHeight }}>•</span>
+                  {listItems.map((line, i) => (
+                    <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: `${metrics.bulletIndent}px` }}>
+                      <span style={{ flexShrink: 0, opacity: 0.7, lineHeight: metrics.bulletLineHeight }}>•</span>
                       <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(line) }} />
                     </li>
                   ))}
@@ -202,7 +246,7 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
             </span>
           ) : <span />}
           {slide.showArrow !== false && slideIndex < totalSlides - 1 ? (
-            <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.5)', fontSize: `${(metrics.footerSize + 2 * scale)}px` }}>→</span>
+            <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.5)', fontSize: `${(metrics.footerSize + 2 * renderScale)}px` }}>→</span>
           ) : <span />}
         </div>
       </div>
@@ -210,14 +254,14 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
       {/* Watermark */}
       {watermark && (
         <div className="absolute z-20" style={{
-          bottom: `${8 * scale}px`,
+          bottom: `${8 * renderScale}px`,
           left: '50%',
           transform: 'translateX(-50%)',
           opacity: 0.4,
           pointerEvents: 'none',
         }}>
           <span style={{
-            fontSize: `${9 * scale}px`,
+            fontSize: `${9 * renderScale}px`,
             color: slide.metaColor || 'rgba(255,255,255,0.5)',
             fontFamily: "'Inter', sans-serif",
             whiteSpace: 'nowrap',
