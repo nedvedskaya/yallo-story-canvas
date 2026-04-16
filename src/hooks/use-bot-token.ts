@@ -99,12 +99,8 @@ export function useBotToken(
           showUsername: true,
           showSlideCount: true,
           titleFont: "'Dela Gothic One', sans-serif",
-          titleSize: 20,
-          titleLineHeight: 1.15,
           titleCase: "none",
           bodyFont: "'Inter', sans-serif",
-          bodySize: 11,
-          bodyLineHeight: 1.4,
           ...tplApply,
         }));
 
