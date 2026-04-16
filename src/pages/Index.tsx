@@ -250,10 +250,25 @@ const Index = () => {
     const templateProps = activeTemplate?.apply ?? {};
     const baseSlide: Slide = {
       id: nextId++, username: "@username", title: "Новый слайд", body: "Введите текст...",
-      bgColor: "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)",
+      bgColor: "#F3F3F3",
       bgType: "color", hAlign: "left", vAlign: "center",
-      overlayType: "none", overlayOpacity: 50,
+      overlayType: "grid", overlayOpacity: 40,
       bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0,
+      titleColor: "#1A1A1A",
+      bodyColor: "#1A1A1A",
+      metaColor: "#999999",
+      overlayColor: "rgba(0,0,0,0.08)",
+      showFooter: false,
+      showArrow: true,
+      showUsername: true,
+      showSlideCount: true,
+      titleFont: "'Dela Gothic One', sans-serif",
+      titleSize: 28,
+      titleLineHeight: 1.15,
+      titleCase: "none",
+      bodyFont: "'Inter', sans-serif",
+      bodySize: 14,
+      bodyLineHeight: 1.4,
       ...templateProps,
     };
     if (activeTemplate?.accentColor && baseSlide.title) {
