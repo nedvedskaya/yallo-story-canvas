@@ -4,28 +4,63 @@
  */
 import type { Slide } from "./SlideCarousel";
 import type { SlideFormat } from "./SizePanel";
-import { FORMAT_TEXT_DEFAULTS } from "./shared-styles";
+import { FORMAT_DESIGN, type FormatDesign } from "./shared-styles";
 
 export const H_ALIGN_TO_TEXT: Record<string, string> = { left: "left", center: "center", right: "right" };
 export const V_ALIGN_TO_JUSTIFY: Record<string, string> = { start: "flex-start", center: "center", end: "flex-end" };
 
 export interface SlideMetrics {
-  padding: number;
+  paddingTop: number;
+  paddingBottom: number;
+  paddingLeft: number;
+  paddingRight: number;
   usernameSize: number;
+  counterSize: number;
   footerSize: number;
   titleSize: number;
   bodySize: number;
+  bulletSize: number;
+  titleLineHeight: number;
+  bodyLineHeight: number;
+  bulletLineHeight: number;
+  titleMaxWidth: number; // fraction 0-1
+  bodyMaxWidth: number;
+  bulletMaxWidth: number;
+  titleBodyGap: number;
+  bulletGap: number;
+  bulletIndent: number;
+  /** For legacy compat: average padding */
+  padding: number;
 }
 
-/** Get font/padding metrics for a slide, with optional scale factor for export */
+/**
+ * Get font/padding metrics for a slide.
+ * scale=1 means export resolution. For preview, pass previewWidth/exportWidth.
+ */
 export function getSlideMetrics(slide: Slide, format: SlideFormat, scale = 1): SlideMetrics {
-  const fmt = FORMAT_TEXT_DEFAULTS[format] || FORMAT_TEXT_DEFAULTS.carousel;
+  const d = FORMAT_DESIGN[format] || FORMAT_DESIGN.carousel;
+  const s = (v: number) => v * scale;
   return {
-    padding: fmt.padding * scale,
-    usernameSize: fmt.usernameSize * scale,
-    footerSize: fmt.footerSize * scale,
-    titleSize: (slide.titleSize ?? fmt.titleSize) * scale,
-    bodySize: (slide.bodySize ?? fmt.bodySize) * scale,
+    paddingTop: s(d.safeZone.top),
+    paddingBottom: s(d.safeZone.bottom),
+    paddingLeft: s(d.safeZone.left),
+    paddingRight: s(d.safeZone.right),
+    usernameSize: s(d.usernameSize),
+    counterSize: s(d.counterSize),
+    footerSize: s(d.footerSize),
+    titleSize: s(slide.titleSize ?? d.titleSize),
+    bodySize: s(slide.bodySize ?? d.bodySize),
+    bulletSize: s(d.bulletSize),
+    titleLineHeight: d.titleLineHeight,
+    bodyLineHeight: d.bodyLineHeight,
+    bulletLineHeight: d.bulletLineHeight,
+    titleMaxWidth: d.titleMaxWidth,
+    bodyMaxWidth: d.bodyMaxWidth,
+    bulletMaxWidth: d.bulletMaxWidth,
+    titleBodyGap: s(d.titleBodyGap),
+    bulletGap: s(d.bulletGap),
+    bulletIndent: s(d.bulletIndent),
+    padding: s((d.safeZone.top + d.safeZone.bottom + d.safeZone.left + d.safeZone.right) / 4),
   };
 }
 
@@ -39,14 +74,10 @@ export function getMediaStyle(
   const posY = overrides?.posY ?? slide.bgPosY;
   const sc = overrides?.scale ?? slide.bgScale;
 
-  // If container dimensions provided — use absolute px (for export)
   if (containerWidth && containerHeight) {
     const scaleFactor = sc / 100;
-    // Use container dimensions scaled by user's bgScale
-    // objectFit:cover on the <img> handles aspect ratio
     const w = containerWidth * scaleFactor;
     const h = containerHeight * scaleFactor;
-    // Position center point at posX/posY % of container
     const cx = (posX / 100) * containerWidth;
     const cy = (posY / 100) * containerHeight;
     return {
@@ -60,7 +91,6 @@ export function getMediaStyle(
     };
   }
 
-  // Without dimensions — old behavior for preview
   return {
     position: 'absolute',
     left: `${posX}%`,
@@ -83,13 +113,14 @@ export function getTitleStyle(slide: Slide, metrics: SlideMetrics, overrides?: {
     wrapperStyle: {
       transform: `translate(${ox}px, ${oy}px) scale(${sc})`,
       transformOrigin: 'center center',
+      maxWidth: `${metrics.titleMaxWidth * 100}%`,
     },
     textStyle: {
       color: slide.titleColor || '#ffffff',
       fontSize: `${metrics.titleSize}px`,
       fontFamily: slide.titleFont || "'Inter', sans-serif",
       textTransform: (slide.titleCase === 'uppercase' ? 'uppercase' : slide.titleCase === 'lowercase' ? 'lowercase' : 'none') as React.CSSProperties['textTransform'],
-      lineHeight: slide.titleLineHeight ?? 1.1,
+      lineHeight: slide.titleLineHeight ?? metrics.titleLineHeight,
       letterSpacing: `${(slide.titleLetterSpacing ?? 0)}px`,
       fontWeight: 'bold',
       margin: 0,
@@ -108,13 +139,14 @@ export function getBodyStyle(slide: Slide, metrics: SlideMetrics, overrides?: { 
     wrapperStyle: {
       transform: `translate(${ox}px, ${oy}px) scale(${sc})`,
       transformOrigin: 'center center',
+      maxWidth: `${metrics.bodyMaxWidth * 100}%`,
     },
     textStyle: {
       color: slide.bodyColor || 'rgba(255, 255, 255, 0.85)',
       fontSize: `${metrics.bodySize}px`,
       fontFamily: slide.bodyFont || "'Inter', sans-serif",
       textTransform: (slide.bodyCase === 'uppercase' ? 'uppercase' : slide.bodyCase === 'lowercase' ? 'lowercase' : 'none') as React.CSSProperties['textTransform'],
-      lineHeight: slide.bodyLineHeight ?? 1.4,
+      lineHeight: slide.bodyLineHeight ?? metrics.bodyLineHeight,
       letterSpacing: `${(slide.bodyLetterSpacing ?? 0)}px`,
       fontWeight: 400,
       margin: 0,
