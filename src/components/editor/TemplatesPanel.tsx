@@ -5,6 +5,8 @@ export interface SlideTemplate {
   name: string;
   /** Partial slide props applied to all slides */
   apply: Partial<Slide>;
+  /** Partial slide props applied ONLY to the first slide (cover) — overrides `apply` */
+  coverApply?: Partial<Slide>;
   /** Preview render */
   preview: React.ReactNode;
   /** Accent color for highlighting last word in titles */
