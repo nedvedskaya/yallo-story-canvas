@@ -247,7 +247,12 @@ const Index = () => {
   }, [currentSlide]);
 
   const handleAddSlide = useCallback((atIndex: number) => {
-    const templateProps = activeTemplate?.apply ?? {};
+    const isCover = atIndex === 0;
+    const templateProps = activeTemplate
+      ? (isCover && activeTemplate.coverApply
+          ? { ...activeTemplate.apply, ...activeTemplate.coverApply }
+          : { ...activeTemplate.apply })
+      : {};
     const baseSlide: Slide = {
       id: nextId++, username: "@username", title: "Новый слайд", body: "Введите текст...",
       bgColor: "#F3F3F3",
@@ -267,7 +272,7 @@ const Index = () => {
       bodyFont: "'Inter', sans-serif",
       ...templateProps,
     };
-    if (activeTemplate?.accentColor && baseSlide.title) {
+    if (activeTemplate?.accentColor && baseSlide.title && !isCover) {
       const clean = stripHtml(baseSlide.title);
       if (activeTemplate.accentMode === "highlight") {
         baseSlide.title = clean.replace(/(\S+)(\s*)$/, `<span style="background:${activeTemplate.accentColor};color:#FFFFFF;padding:2px 6px;border-radius:3px">$1</span>$2`);
