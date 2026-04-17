@@ -1,123 +1,63 @@
+# План правок
 
+## 1. Сохранение переносов строк (Enter) в заголовке и тексте
 
-# План реализации
+**Проблема**: В `TextEditorModal` пользователь жмёт Enter и видит абзацы, но на слайде `<p>` / `<h2>` рендерит всё сплошной строкой — `white-space` не сохраняет переносы, а `<br>`/`<div>` от contentEditable иногда теряются при санитайзе.
 
-## 1. Стикеры / декоративные элементы поверх слайда
+**Решение**:
 
-**Суть**: Пользователь может добавлять картинки (стикеры, иконки, декор) поверх слайда — независимо от фона. Элементы можно перетаскивать, масштабировать и удалять.
+- В `src/lib/sanitize.ts` добавить тег `div` и `p` в `ALLOWED_TAGS` (DOMPurify по умолчанию пропускает `<br>`, но `contentEditable` в Chrome вставляет `<div>` на каждый Enter).
+- В `src/components/editor/slide-render-model.ts` (`getTitleStyle` и `getBodyStyle`) добавить `whiteSpace: 'pre-wrap'` в `textStyle` — это сохранит явные `\n` и пробелы.
+- В режиме «обычный текст» (без списка) в `SlideFrame.tsx` оставить `<p>` / `<h2>` — но `pre-wrap` + `<br>` от редактора обеспечат корректные пустые строки между абзацами.
 
-### Архитектура
+## 2. Перетаскивание стикеров + кнопка «Вставить»
 
-Расширить интерфейс `Slide` новым полем:
-```text
-stickers: Array<{
-  id: string;
-  src: string;        // blob URL или data URL
-  x: number;          // % от ширины
-  y: number;          // % от высоты
-  scale: number;      // множитель размера
-  rotation: number;   // градусы
-  width: number;      // базовая ширина в px
-  height: number;     // базовая высота в px
-}>
-```
+**Проблема №1 — драг не работает**: В `SlideFrame.tsx` в JSX `<StickerLayer>` пропс `stickerInteractive` берётся из родителя, но в `Index.tsx`/`SlideCarousel` он, скорее всего, передаётся как `false` для активного слайда (или вовсе не передаётся). Нужно проверить и установить `stickerInteractive={true}` для активного слайда в превью.
 
-### Новые файлы
-- **`StickersPanel.tsx`** — панель в BottomSheet (новая вкладка "Элементы" в меню или подраздел BackgroundPanel). Кнопка загрузки изображения + галерея добавленных стикеров. Возможность удалить стикер из списка.
-- **`StickerLayer.tsx`** — рендер-слой в SlideFrame (z-index между overlay и контентом). Каждый стикер — `<img>` с `position: absolute`, поддержка drag (touch + mouse) и pinch-to-zoom для масштабирования.
+**Проблема №2 — «Вставить» не работает**: `navigator.clipboard.read()` требует HTTPS + permissions + поддержку браузера. Нужно показать toast при ошибке/пустом буфере и добавить fallback через глобальный `paste`-listener (когда панель открыта — слушать `document.addEventListener('paste', ...)` и брать `e.clipboardData.items`).
 
-### Изменения в существующих файлах
+**Решение**:
 
-| Файл | Изменение |
-|------|-----------|
-| `SlideCarousel.tsx` | Добавить `stickers` в интерфейс `Slide` |
-| `SlideFrame.tsx` | Рендерить `StickerLayer` между overlay и контентом (z-5) |
-| `BottomMenu.tsx` | Добавить пункт меню "Элементы" (иконка Sticker/Image) |
-| `BottomSheet.tsx` | Рендерить `StickersPanel` для новой вкладки |
-| `Index.tsx` | Прокинуть обработчики добавления/удаления/обновления стикеров |
-| `export-utils.ts` / `DownloadModal.tsx` | Учитывать стикеры при экспорте |
+- В `BackgroundPanel.tsx` улучшить `handleStickerPaste`: использовать `e.clipboardData` через временное окно или сразу повесить `document.paste` listener при открытии секции.
+- Гарантировать что в `SlideCarousel`/`SlideFrame` для активного слайда передаётся `stickerInteractive={true}`, `onUpdateSticker`, `onDeleteSticker`.
+- Стикер `StickerLayer` уже использует pointer events для drag — это работает и для пальца, и для мыши; нужно лишь пробросить хендлеры.
 
-### Взаимодействие
-- Drag для перемещения (touch + mouse, аналогично titleOffset)
-- Двойной тап — удаление или меню
-- Жест pinch — масштабирование (на мобильных)
-- Вставка из буфера обмена (Ctrl+V / долгое нажатие "Вставить")
+## 3. Синхронизация размера в панели «Текст» с реальным размером
 
----
+**Проблема**: В `TextPanel.tsx` слайдер «Размер» показывает `currentSlide.titleSize ?? 24`. Когда `titleSize === undefined` (по умолчанию), показывается фиктивные 24, а на слайде используется значение из `FORMAT_DESIGN[format].titleSize` (для карусели — 68, отмасштабированное в превью).
 
-## 2. Шаблон "Бордо"
+**Решение**:
 
-**Суть**: Новый шаблон на основе референсов. Два визуальных режима:
-- **Слайд 1 (обложка)**: тёмно-бордовый фон (`#3C1518` или `#4A1A1F`), крупная типографика с миксом serif + cursive
-- **Остальные слайды**: светлый бежевый фон (`#F0EAE0`), тёмный текст, бордовые акценты
+- В `TextPanel.tsx` при `titleSize == null` брать значение из `FORMAT_DESIGN[currentFormat].titleSize` (нужно прокинуть `slideFormat` пропсом из `Index.tsx` → `BottomSheet` → `TextPanel`).
+- То же для `bodySize`. Слайдер будет показывать реальный текущий размер. Когда пользователь двигает слайдер — записывается `titleSize` (override), которое потом отображается на слайде.
+- Опционально расширить диапазон слайдера до `8–120` (сейчас `8–48`), т.к. по дизайн-системе заголовок карусели — 68px.
 
-### Анализ референсов
+## 4. Выделение первого слайда (cover) во всех шаблонах
 
-**Изображение 1** (тёмное):
-- Фон: глубокий бордо ~`#3C1518`
-- Заголовок: крупный белый serif шрифт + курсивные подписи
-- Мета-текст: мелкий, верхние углы
-- Стрелка и кнопки: бордо с розоватым оттенком
+**Идея**: Первый слайд должен быть «обложкой» — крупнее, ярче, с акцентом.
 
-**Изображение 2** (светлое):
-- Фон: тёплый беж ~`#F0EAE0`
-- Заголовок: жирный чёрный sans-serif uppercase + бордовый cursive
-- Нижние бейджи: бордовые пилюли с белым текстом
-- Текст-список: uppercase, spacing
+**Решение**:
 
-### Подбор шрифтов из имеющихся
-- Заголовок (крупный serif): **Forum** (ближе всего к элегантному serif на референсе)
-- Курсивный акцент: **Bella Script CYR** (аналог каллиграфического стиля "graphic design")
-- Тело: **Inter** (чистый sans-serif для списков и мелкого текста)
-
-### Реализация
-
-**Файл**: `TemplatesPanel.tsx` — добавить третий шаблон в массив `TEMPLATES`:
-
-```text
-{
-  id: "bordo",
-  name: "Бордо",
-  accentColor: "#F0EAE0",   // бежевый акцент на последнем слове
-  accentMode: "color",
-  apply: {
-    bgColor: "#3C1518",
-    bgType: "color",
-    overlayType: "none",
-    overlayOpacity: 0,
-    titleColor: "#FFFFFF",
-    bodyColor: "rgba(255,255,255,0.8)",
-    metaColor: "rgba(255,255,255,0.5)",
-    titleFont: "'Forum', serif",
-    titleSize: 28,
-    titleLineHeight: 1.15,
-    titleCase: "none",
-    bodyFont: "'Inter', sans-serif",
-    bodySize: 14,
-    bodyLineHeight: 1.5,
-    bodyCase: "none",
-    hAlign: "left",
-    vAlign: "center",
-    showUsername: true,
-    showSlideCount: true,
-    showArrow: true,
-    showFooter: false,
-  },
-  preview: <...> // Миниатюра с бордовым фоном, белым заголовком Forum,
-                  // курсивной строкой Bella Script бежевого цвета
-}
-```
-
-**Preview JSX**: Бордовый фон, сверху мета-данные, по центру — крупный "Бордо" шрифтом Forum + курсивная строка Bella Script, внизу стрелка.
+- Расширить интерфейс `SlideTemplate` полем `coverApply?: Partial<Slide>` — переопределения только для первого слайда.
+- Для каждого шаблона задать `coverApply`:
+  - **Тетрадь**:  фон первого слайда сделать немного темнее, остальные слайды оставить как есть, белый заголовок крупнее (`titleSize: 96`), `vAlign: "center"`, `hAlign: "center"`.
+  - **Минимализм**: цвет фона оставить без изменений, заголовок 100px по центру.
+  - **Бордо**: фон 1 слайда тёмно-бордовый #620107, последующие слайды фон #e5e3d7, усилить размер до 120px по центру + декоративная курсивная подпись. цвет заголовка #010003, цвет основного шрифта #49453e, цвет выделения #630208
+- В `Index.tsx` в `handleApplyTemplate` применять `coverApply` только к первому слайду (index 0), `apply` — ко всем остальным.
+- Для нового пустого редактора (initialSlides) — оставить как сейчас (минимализм), но сделать первый слайд по cover-варианту минимализма.
 
 ---
 
-## Порядок реализации
+## Затрагиваемые файлы
 
-1. Добавить шаблон "Бордо" в `TemplatesPanel.tsx` (быстро, без новых компонентов)
-2. Расширить `Slide` интерфейс полем `stickers`
-3. Создать `StickerLayer.tsx` (рендер + drag)
-4. Создать `StickersPanel.tsx` (загрузка + управление)
-5. Интегрировать в `SlideFrame`, `BottomMenu`, `BottomSheet`, `Index.tsx`
-6. Поддержка экспорта стикеров в `DownloadModal`
 
+| Файл                                                         | Изменения                                                                                |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| `src/lib/sanitize.ts`                                        | Добавить `div`, `p` в `ALLOWED_TAGS`                                                     |
+| `src/components/editor/slide-render-model.ts`                | `whiteSpace: 'pre-wrap'` в title/body styles                                             |
+| `src/components/editor/BackgroundPanel.tsx`                  | Улучшить `handleStickerPaste` + paste-listener                                           |
+| `src/components/editor/SlideCarousel.tsx` / `SlideFrame.tsx` | Включить `stickerInteractive` для активного слайда                                       |
+| `src/components/editor/TextPanel.tsx`                        | Брать дефолт размера из `FORMAT_DESIGN`, расширить диапазон слайдера                     |
+| `src/components/editor/BottomSheet.tsx`                      | Прокинуть `slideFormat` в `TextPanel`                                                    |
+| `src/pages/Index.tsx`                                        | Прокинуть `slideFormat`; применять `coverApply` к первому слайду; обновить initialSlides |
+| `src/components/editor/TemplatesPanel.tsx`                   | Добавить `coverApply` в каждый из 3 шаблонов                                             |
