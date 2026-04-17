@@ -75,7 +75,7 @@ function mapFontSettings(prefix: "title" | "body", updates: Partial<FontSettings
   return mapped;
 }
 
-const TextPanel = ({ currentSlide, onSave, onSaveLive, onApplyTextToAll }: TextPanelProps) => {
+const TextPanel = ({ currentSlide, onSave, onSaveLive, onApplyTextToAll, slideFormat = "carousel" }: TextPanelProps) => {
   const [activeSection, setActiveSection] = useState<"title" | "body">("title");
   const [customFonts, setCustomFonts] = useState<CustomFont[]>([]);
 
@@ -83,19 +83,21 @@ const TextPanel = ({ currentSlide, onSave, onSaveLive, onApplyTextToAll }: TextP
     setCustomFonts(prev => [...prev, font]);
   }, []);
 
+  const design = FORMAT_DESIGN[slideFormat] || FORMAT_DESIGN.carousel;
+
   const titleSettings: FontSettings = {
     font: currentSlide.titleFont || "'Coolvetica', sans-serif",
-    size: currentSlide.titleSize ?? 24,
+    size: currentSlide.titleSize ?? design.titleSize,
     case: (currentSlide.titleCase || "none") as FontSettings["case"],
-    lineHeight: currentSlide.titleLineHeight ?? 1.1,
+    lineHeight: currentSlide.titleLineHeight ?? design.titleLineHeight,
     letterSpacing: currentSlide.titleLetterSpacing ?? 0,
   };
 
   const bodySettings: FontSettings = {
     font: currentSlide.bodyFont || "'Inter', sans-serif",
-    size: currentSlide.bodySize ?? 14,
+    size: currentSlide.bodySize ?? design.bodySize,
     case: (currentSlide.bodyCase || "none") as FontSettings["case"],
-    lineHeight: currentSlide.bodyLineHeight ?? 1.4,
+    lineHeight: currentSlide.bodyLineHeight ?? design.bodyLineHeight,
     letterSpacing: currentSlide.bodyLetterSpacing ?? 0,
   };
 
