@@ -5,6 +5,8 @@ export interface SlideTemplate {
   name: string;
   /** Partial slide props applied to all slides */
   apply: Partial<Slide>;
+  /** Partial slide props applied ONLY to the first slide (cover) — overrides `apply` */
+  coverApply?: Partial<Slide>;
   /** Preview render */
   preview: React.ReactNode;
   /** Accent color for highlighting last word in titles */
@@ -42,6 +44,18 @@ const TEMPLATES: SlideTemplate[] = [
       bodyLetterSpacing: 0,
       bodyCase: "none",
       hAlign: "left",
+      vAlign: "center",
+    },
+    coverApply: {
+      bgColor: "#1A1A1A",
+      overlayType: "grid",
+      overlayOpacity: 18,
+      overlayColor: "rgba(255,255,255,0.08)",
+      titleColor: "#FFFFFF",
+      bodyColor: "rgba(255,255,255,0.85)",
+      metaColor: "rgba(255,255,255,0.5)",
+      titleSize: 96,
+      hAlign: "center",
       vAlign: "center",
     },
     preview: (
@@ -101,6 +115,11 @@ const TEMPLATES: SlideTemplate[] = [
       hAlign: "left",
       vAlign: "center",
     },
+    coverApply: {
+      titleSize: 100,
+      hAlign: "center",
+      vAlign: "center",
+    },
     preview: (
       <div className="w-full h-full flex flex-col justify-between" style={{ background: "#FFFFFF", padding: 8, fontFamily: "'Inter', sans-serif" }}>
         <div className="flex justify-between items-center">
@@ -122,18 +141,18 @@ const TEMPLATES: SlideTemplate[] = [
   {
     id: "bordo",
     name: "Бордо",
-    accentColor: "#F0EAE0",
+    accentColor: "#630208",
     accentMode: "color",
     apply: {
-      bgColor: "#3C1518",
+      bgColor: "#E5E3D7",
       bgImage: undefined,
       bgVideo: undefined,
       bgType: "color",
       overlayType: "none",
       overlayOpacity: 0,
-      titleColor: "#FFFFFF",
-      bodyColor: "rgba(255,255,255,0.75)",
-      metaColor: "rgba(255,255,255,0.45)",
+      titleColor: "#010003",
+      bodyColor: "#49453E",
+      metaColor: "rgba(1,0,3,0.45)",
       overlayColor: "rgba(0,0,0,0.08)",
       showFooter: false,
       footerText: "",
@@ -148,6 +167,15 @@ const TEMPLATES: SlideTemplate[] = [
       bodyLetterSpacing: 0,
       bodyCase: "none",
       hAlign: "left",
+      vAlign: "center",
+    },
+    coverApply: {
+      bgColor: "#620107",
+      titleColor: "#FFFFFF",
+      bodyColor: "rgba(255,255,255,0.8)",
+      metaColor: "rgba(255,255,255,0.5)",
+      titleSize: 120,
+      hAlign: "center",
       vAlign: "center",
     },
     preview: (

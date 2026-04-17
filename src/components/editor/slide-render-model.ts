@@ -135,6 +135,7 @@ export function getTitleStyle(slide: Slide, metrics: SlideMetrics, overrides?: {
       letterSpacing: `${(slide.titleLetterSpacing ?? 0)}px`,
       fontWeight: 'bold',
       margin: 0,
+      whiteSpace: 'pre-wrap',
     },
   };
 }
@@ -161,6 +162,7 @@ export function getBodyStyle(slide: Slide, metrics: SlideMetrics, overrides?: { 
       letterSpacing: `${(slide.bodyLetterSpacing ?? 0)}px`,
       fontWeight: 400,
       margin: 0,
+      whiteSpace: 'pre-wrap',
     },
   };
 }

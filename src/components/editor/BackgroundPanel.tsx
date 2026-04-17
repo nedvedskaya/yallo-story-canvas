@@ -1,7 +1,8 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { resizeImage } from "@/lib/image-utils";
 import { Slider } from "@/components/ui/slider";
 import { Upload, Volume2, VolumeX, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import MediaControls from "./MediaControls";
 import { labelStyle, valStyle } from "./shared-styles";
 import GlassTabBar from "./GlassTabBar";
@@ -124,27 +125,63 @@ const BackgroundPanel = ({
     if (stickerInputRef.current) stickerInputRef.current.value = "";
   };
 
-  const handleStickerPaste = async () => {
+  const addStickerFromBlob = useCallback((blob: Blob) => {
     if (!onAddSticker) return;
-    try {
-      const items = await navigator.clipboard.read();
-      for (const item of items) {
-        const imageType = item.types.find(t => t.startsWith("image/"));
-        if (imageType) {
-          const blob = await item.getType(imageType);
-          const url = URL.createObjectURL(blob);
-          const img = new Image();
-          img.onload = () => {
-            const maxBase = 80;
-            const ratio = Math.min(maxBase / img.width, maxBase / img.height, 1);
-            onAddSticker(url, img.width * ratio, img.height * ratio);
-          };
-          img.src = url;
-          return;
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      const maxBase = 80;
+      const ratio = Math.min(maxBase / img.width, maxBase / img.height, 1);
+      onAddSticker(url, img.width * ratio, img.height * ratio);
+    };
+    img.src = url;
+  }, [onAddSticker]);
+
+  const handleStickerPaste = useCallback(async () => {
+    if (!onAddSticker) return;
+    if (navigator.clipboard && (navigator.clipboard as any).read) {
+      try {
+        const items = await (navigator.clipboard as any).read();
+        for (const item of items) {
+          const imageType = item.types.find((t: string) => t.startsWith("image/"));
+          if (imageType) {
+            const blob = await item.getType(imageType);
+            addStickerFromBlob(blob);
+            toast.success("Элемент вставлен");
+            return;
+          }
+        }
+        toast.error("В буфере нет изображения. Скопируйте картинку и попробуйте снова.");
+        return;
+      } catch {
+        // fall through
+      }
+    }
+    toast.message("Нажмите Ctrl+V (Cmd+V), чтобы вставить картинку из буфера");
+  }, [onAddSticker, addStickerFromBlob]);
+
+  // Global paste listener — works for Ctrl+V even when Clipboard API is blocked
+  useEffect(() => {
+    if (!onAddSticker) return;
+    const onPaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        const it = items[i];
+        if (it.kind === "file" && it.type.startsWith("image/")) {
+          const blob = it.getAsFile();
+          if (blob) {
+            e.preventDefault();
+            addStickerFromBlob(blob);
+            toast.success("Элемент вставлен");
+            return;
+          }
         }
       }
-    } catch {}
-  };
+    };
+    document.addEventListener("paste", onPaste);
+    return () => document.removeEventListener("paste", onPaste);
+  }, [onAddSticker, addStickerFromBlob]);
 
   const tabItems = [
     { id: "color", label: "Цвет" },

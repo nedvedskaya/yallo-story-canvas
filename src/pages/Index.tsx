@@ -29,19 +29,20 @@ const initialSlides: Slide[] = [
   {
     id: 1, username: "@username", title: "Заголовок",
     body: "Текст слайда",
-    bgColor: "#F3F3F3",
-    bgType: "color", hAlign: "left", vAlign: "center",
-    overlayType: "grid", overlayOpacity: 40,
+    bgColor: "#1A1A1A",
+    bgType: "color", hAlign: "center", vAlign: "center",
+    overlayType: "grid", overlayOpacity: 18,
     bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0,
-    titleColor: "#1A1A1A",
-    bodyColor: "#1A1A1A",
-    metaColor: "#999999",
-    overlayColor: "rgba(0,0,0,0.08)",
+    titleColor: "#FFFFFF",
+    bodyColor: "rgba(255,255,255,0.85)",
+    metaColor: "rgba(255,255,255,0.5)",
+    overlayColor: "rgba(255,255,255,0.08)",
     showFooter: false,
     showArrow: true,
     showUsername: true,
     showSlideCount: true,
     titleFont: "'Dela Gothic One', sans-serif",
+    titleSize: 96,
     titleCase: "none",
     bodyFont: "'Inter', sans-serif",
   },
@@ -162,9 +163,12 @@ const Index = () => {
 
   const handleApplyTemplate = useCallback((tpl: SlideTemplate) => {
     setActiveTemplate(tpl);
-    setSlidesWithHistory(prev => prev.map(s => {
+    setSlidesWithHistory(prev => prev.map((s, idx) => {
       // Build style-only updates: skip media & text content fields
-      const styleOnly = { ...tpl.apply };
+      const baseApply = idx === 0 && tpl.coverApply
+        ? { ...tpl.apply, ...tpl.coverApply }
+        : { ...tpl.apply };
+      const styleOnly: Partial<Slide> = { ...baseApply };
       // Preserve user's media if present
       if (s.bgImage || s.bgVideo) {
         delete styleOnly.bgImage;
@@ -184,8 +188,8 @@ const Index = () => {
       delete (styleOnly as any).body;
 
       const updated = { ...s, ...styleOnly };
-      // Apply accent to existing title
-      if (tpl.accentColor && updated.title) {
+      // Apply accent to existing title (only on non-cover slides; cover keeps clean look)
+      if (tpl.accentColor && updated.title && idx !== 0) {
         const clean = stripHtml(updated.title);
         if (tpl.accentMode === "highlight") {
           updated.title = clean.replace(/(\S+)(\s*)$/, `<span style="background:${tpl.accentColor};color:#FFFFFF;padding:2px 6px;border-radius:3px">$1</span>$2`);
@@ -243,7 +247,12 @@ const Index = () => {
   }, [currentSlide]);
 
   const handleAddSlide = useCallback((atIndex: number) => {
-    const templateProps = activeTemplate?.apply ?? {};
+    const isCover = atIndex === 0;
+    const templateProps = activeTemplate
+      ? (isCover && activeTemplate.coverApply
+          ? { ...activeTemplate.apply, ...activeTemplate.coverApply }
+          : { ...activeTemplate.apply })
+      : {};
     const baseSlide: Slide = {
       id: nextId++, username: "@username", title: "Новый слайд", body: "Введите текст...",
       bgColor: "#F3F3F3",
@@ -263,7 +272,7 @@ const Index = () => {
       bodyFont: "'Inter', sans-serif",
       ...templateProps,
     };
-    if (activeTemplate?.accentColor && baseSlide.title) {
+    if (activeTemplate?.accentColor && baseSlide.title && !isCover) {
       const clean = stripHtml(baseSlide.title);
       if (activeTemplate.accentMode === "highlight") {
         baseSlide.title = clean.replace(/(\S+)(\s*)$/, `<span style="background:${activeTemplate.accentColor};color:#FFFFFF;padding:2px 6px;border-radius:3px">$1</span>$2`);
