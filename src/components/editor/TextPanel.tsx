@@ -4,12 +4,15 @@ import type { Slide } from "./SlideCarousel";
 import GlassTabBar from "./GlassTabBar";
 import ApplyToAllButton from "./ApplyToAllButton";
 import { rgbaToHex } from "@/lib/utils";
+import { FORMAT_DESIGN } from "./shared-styles";
+import type { SlideFormat } from "./SizePanel";
 
 interface TextPanelProps {
   currentSlide: Slide;
   onSave: (updates: Partial<Slide>) => void;
   onSaveLive?: (updates: Partial<Slide>) => void;
   onApplyTextToAll: () => void;
+  slideFormat?: SlideFormat;
 }
 
 const ColorPicker = ({
