@@ -115,6 +115,11 @@ const TEMPLATES: SlideTemplate[] = [
       hAlign: "left",
       vAlign: "center",
     },
+    coverApply: {
+      titleSize: 100,
+      hAlign: "center",
+      vAlign: "center",
+    },
     preview: (
       <div className="w-full h-full flex flex-col justify-between" style={{ background: "#FFFFFF", padding: 8, fontFamily: "'Inter', sans-serif" }}>
         <div className="flex justify-between items-center">
