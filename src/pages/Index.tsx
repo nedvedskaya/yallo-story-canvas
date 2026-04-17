@@ -162,9 +162,12 @@ const Index = () => {
 
   const handleApplyTemplate = useCallback((tpl: SlideTemplate) => {
     setActiveTemplate(tpl);
-    setSlidesWithHistory(prev => prev.map(s => {
+    setSlidesWithHistory(prev => prev.map((s, idx) => {
       // Build style-only updates: skip media & text content fields
-      const styleOnly = { ...tpl.apply };
+      const baseApply = idx === 0 && tpl.coverApply
+        ? { ...tpl.apply, ...tpl.coverApply }
+        : { ...tpl.apply };
+      const styleOnly: Partial<Slide> = { ...baseApply };
       // Preserve user's media if present
       if (s.bgImage || s.bgVideo) {
         delete styleOnly.bgImage;
@@ -184,8 +187,8 @@ const Index = () => {
       delete (styleOnly as any).body;
 
       const updated = { ...s, ...styleOnly };
-      // Apply accent to existing title
-      if (tpl.accentColor && updated.title) {
+      // Apply accent to existing title (only on non-cover slides; cover keeps clean look)
+      if (tpl.accentColor && updated.title && idx !== 0) {
         const clean = stripHtml(updated.title);
         if (tpl.accentMode === "highlight") {
           updated.title = clean.replace(/(\S+)(\s*)$/, `<span style="background:${tpl.accentColor};color:#FFFFFF;padding:2px 6px;border-radius:3px">$1</span>$2`);
