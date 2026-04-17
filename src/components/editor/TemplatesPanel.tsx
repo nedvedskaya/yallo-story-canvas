@@ -46,6 +46,18 @@ const TEMPLATES: SlideTemplate[] = [
       hAlign: "left",
       vAlign: "center",
     },
+    coverApply: {
+      bgColor: "#1A1A1A",
+      overlayType: "grid",
+      overlayOpacity: 18,
+      overlayColor: "rgba(255,255,255,0.08)",
+      titleColor: "#FFFFFF",
+      bodyColor: "rgba(255,255,255,0.85)",
+      metaColor: "rgba(255,255,255,0.5)",
+      titleSize: 96,
+      hAlign: "center",
+      vAlign: "center",
+    },
     preview: (
       <div
         className="w-full h-full flex flex-col justify-between relative"
