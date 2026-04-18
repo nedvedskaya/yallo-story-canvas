@@ -95,7 +95,8 @@ const Index = () => {
     });
   }, []);
 
-  const currentSlide = slides[activeSlide];
+  const safeActiveSlide = Math.max(0, Math.min(activeSlide, slides.length - 1));
+  const currentSlide = slides[safeActiveSlide];
   const handleUpdateSlide = useCallback((id: number, updates: Partial<Slide>) => {
     setSlidesWithHistory(prev => prev.map(s => {
       if (s.id !== id) return s;
