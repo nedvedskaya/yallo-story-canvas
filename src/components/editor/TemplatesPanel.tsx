@@ -55,7 +55,7 @@ const TEMPLATES: SlideTemplate[] = [
       bodyColor: "rgba(255,255,255,0.85)",
       metaColor: "rgba(255,255,255,0.5)",
       titleSize: 96,
-      hAlign: "center",
+      hAlign: "left",
       vAlign: "center",
     },
     preview: (
@@ -117,7 +117,7 @@ const TEMPLATES: SlideTemplate[] = [
     },
     coverApply: {
       titleSize: 100,
-      hAlign: "center",
+      hAlign: "left",
       vAlign: "center",
     },
     preview: (
@@ -175,7 +175,7 @@ const TEMPLATES: SlideTemplate[] = [
       bodyColor: "rgba(255,255,255,0.8)",
       metaColor: "rgba(255,255,255,0.5)",
       titleSize: 120,
-      hAlign: "center",
+      hAlign: "left",
       vAlign: "center",
     },
     preview: (
