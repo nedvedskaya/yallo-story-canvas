@@ -6,6 +6,7 @@ import ApplyToAllButton from "./ApplyToAllButton";
 import { rgbaToHex } from "@/lib/utils";
 import { FORMAT_DESIGN } from "./shared-styles";
 import type { SlideFormat } from "./SizePanel";
+import InlineTextEditor from "./InlineTextEditor";
 
 interface TextPanelProps {
   currentSlide: Slide;
