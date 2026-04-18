@@ -148,7 +148,7 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
               onTouchMove={onTitleTouchMove}
               onTouchEnd={onTitleTouchEnd}
               onMouseDown={onTitleMouseDown}
-              style={{ ...title.wrapperStyle, touchAction: 'none', cursor: editorOpen ? 'text' : 'grab' }}
+              style={{ ...title.wrapperStyle, touchAction: 'none', cursor: editorOpen ? 'text' : 'grab', pointerEvents: 'auto' }}
             >
               <h2
                 onClick={onTitleClick}
@@ -163,7 +163,7 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
               onTouchMove={onBodyTouchMove}
               onTouchEnd={onBodyTouchEnd}
               onMouseDown={onBodyMouseDown}
-              style={{ ...body.wrapperStyle, touchAction: 'none', cursor: editorOpen ? 'text' : 'grab', marginTop: `${metrics.titleBodyGap}px` }}
+              style={{ ...body.wrapperStyle, touchAction: 'none', cursor: editorOpen ? 'text' : 'grab', marginTop: `${metrics.titleBodyGap}px`, pointerEvents: 'auto' }}
             >
               {isList ? (
                 <ul
