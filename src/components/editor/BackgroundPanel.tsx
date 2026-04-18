@@ -380,6 +380,12 @@ const BackgroundPanel = ({
               Вставить
             </button>
             <input ref={stickerInputRef} type="file" accept="image/*" className="hidden" onChange={handleStickerFile} />
+            <textarea
+              ref={pasteHelperRef}
+              aria-hidden="true"
+              tabIndex={-1}
+              style={{ position: 'absolute', width: 1, height: 1, opacity: 0, left: -9999, top: -9999 }}
+            />
           </div>
 
           {stickers.length > 0 && (
