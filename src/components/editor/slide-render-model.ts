@@ -46,10 +46,11 @@ export function getSlideMetrics(slide: Slide, format: SlideFormat, scale = 1): S
   const d = FORMAT_DESIGN[format] || FORMAT_DESIGN.carousel;
   const exportW = getExportWidth(format);
   const previewW = getPreviewWidth(format);
-  // renderScale: converts export-resolution values to rendered px
-  // For preview (scale=1): previewW/exportW
-  // For export (scale=exportW/previewW): 1
   const renderScale = (previewW / exportW) * scale;
+
+  // Adaptive default sizes (export-resolution px) based on word count
+  const adaptiveTitle = getAdaptiveTitleSize(slide.title || "", format);
+  const adaptiveBody = getAdaptiveBodySize(slide.body || "", format);
 
   return {
     paddingTop: d.safeZone.top * renderScale,
@@ -59,9 +60,9 @@ export function getSlideMetrics(slide: Slide, format: SlideFormat, scale = 1): S
     usernameSize: d.usernameSize * renderScale,
     counterSize: d.counterSize * renderScale,
     footerSize: d.footerSize * renderScale,
-    // If user set titleSize (preview px), scale by `scale`. Otherwise use format default.
-    titleSize: slide.titleSize != null ? slide.titleSize * scale : d.titleSize * renderScale,
-    bodySize: slide.bodySize != null ? slide.bodySize * scale : d.bodySize * renderScale,
+    // If user set titleSize (preview px), scale by `scale`. Otherwise use adaptive.
+    titleSize: slide.titleSize != null ? slide.titleSize * scale : adaptiveTitle * renderScale,
+    bodySize: slide.bodySize != null ? slide.bodySize * scale : adaptiveBody * renderScale,
     bulletSize: d.bulletSize * renderScale,
     titleLineHeight: slide.titleLineHeight ?? d.titleLineHeight,
     bodyLineHeight: slide.bodyLineHeight ?? d.bodyLineHeight,
@@ -137,6 +138,9 @@ export function getTitleStyle(slide: Slide, metrics: SlideMetrics, overrides?: {
       fontWeight: 'bold',
       margin: 0,
       whiteSpace: 'pre-wrap',
+      wordBreak: 'break-word',
+      overflowWrap: 'break-word',
+      overflow: 'hidden',
     },
   };
 }
@@ -164,6 +168,9 @@ export function getBodyStyle(slide: Slide, metrics: SlideMetrics, overrides?: { 
       fontWeight: 400,
       margin: 0,
       whiteSpace: 'pre-wrap',
+      wordBreak: 'break-word',
+      overflowWrap: 'break-word',
+      overflow: 'hidden',
     },
   };
 }
