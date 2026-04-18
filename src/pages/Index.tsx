@@ -43,7 +43,6 @@ const initialSlides: Slide[] = [
     showUsername: true,
     showSlideCount: true,
     titleFont: "'Dela Gothic One', sans-serif",
-    titleSize: 96,
     titleCase: "none",
     bodyFont: "'Inter', sans-serif",
   },
