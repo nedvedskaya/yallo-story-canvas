@@ -115,7 +115,6 @@ const TEMPLATES: SlideTemplate[] = [
       vAlign: "center",
     },
     coverApply: {
-      titleSize: 100,
       hAlign: "left",
       vAlign: "center",
     },
