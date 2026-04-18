@@ -54,7 +54,6 @@ const TEMPLATES: SlideTemplate[] = [
       titleColor: "#FFFFFF",
       bodyColor: "rgba(255,255,255,0.85)",
       metaColor: "rgba(255,255,255,0.5)",
-      titleSize: 96,
       hAlign: "left",
       vAlign: "center",
     },
