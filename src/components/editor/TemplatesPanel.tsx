@@ -55,33 +55,33 @@ const TEMPLATES: SlideTemplate[] = [
       bodyColor: "rgba(255,255,255,0.85)",
       metaColor: "rgba(255,255,255,0.5)",
       titleSize: 96,
-      hAlign: "center",
+      hAlign: "left",
       vAlign: "center",
     },
     preview: (
       <div
         className="w-full h-full flex flex-col justify-between relative"
-        style={{ background: "#F3F3F3", padding: 8, fontFamily: "'Inter', sans-serif" }}
+        style={{ background: "#1A1A1A", padding: 8, fontFamily: "'Inter', sans-serif" }}
       >
         <div
           style={{
             position: "absolute", inset: 0,
-            backgroundImage: `linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px)`,
+            backgroundImage: `linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)`,
             backgroundSize: "12px 12px", pointerEvents: "none", zIndex: 0,
           }}
         />
         <div className="flex justify-between items-center relative z-10">
-          <span style={{ fontSize: 5, color: "#999" }}>@username</span>
-          <span style={{ fontSize: 5, color: "#999" }}>[ 1/3 ]</span>
+          <span style={{ fontSize: 5, color: "rgba(255,255,255,0.5)" }}>@username</span>
+          <span style={{ fontSize: 5, color: "rgba(255,255,255,0.5)" }}>[ 1/3 ]</span>
         </div>
         <div className="flex-1 flex flex-col justify-center gap-1 py-1 relative z-10">
-          <h3 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 9, lineHeight: 1.15, color: "#1A1A1A", margin: 0, textAlign: "left" }}>
-            Заголовок <span style={{ color: "#FF4200" }}>слайда</span>
+          <h3 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 11, lineHeight: 1.05, color: "#FFFFFF", margin: 0, textAlign: "left" }}>
+            Заголовок
           </h3>
-          <p style={{ fontSize: 5, color: "#1A1A1A", margin: 0, lineHeight: 1.5, textAlign: "left" }}>Основной текст слайда</p>
+          <p style={{ fontSize: 5, color: "rgba(255,255,255,0.85)", margin: 0, lineHeight: 1.5, textAlign: "left" }}>Текст слайда</p>
         </div>
         <div className="flex justify-end items-center relative z-10">
-          <div style={{ width: 10, height: 10, borderRadius: "50%", border: "1px solid #1A1A1A", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 5, color: "#1A1A1A" }}>→</div>
+          <div style={{ width: 10, height: 10, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 5, color: "#FFFFFF" }}>→</div>
         </div>
       </div>
     ),
@@ -117,7 +117,7 @@ const TEMPLATES: SlideTemplate[] = [
     },
     coverApply: {
       titleSize: 100,
-      hAlign: "center",
+      hAlign: "left",
       vAlign: "center",
     },
     preview: (
@@ -127,8 +127,8 @@ const TEMPLATES: SlideTemplate[] = [
           <span style={{ fontSize: 5, color: "#999" }}>[ 1/3 ]</span>
         </div>
         <div className="flex-1 flex flex-col justify-center gap-1 py-1">
-          <h3 style={{ fontFamily: "'SONGER Grotesque', sans-serif", fontSize: 7, lineHeight: 1.2, color: "#1A1A1A", margin: 0, textAlign: "left", textTransform: "uppercase" }}>
-            ЗАГОЛОВОК СЛАЙДА
+          <h3 style={{ fontFamily: "'SONGER Grotesque', sans-serif", fontSize: 12, lineHeight: 1.0, color: "#1A1A1A", margin: 0, textAlign: "left", textTransform: "uppercase", fontWeight: 700 }}>
+            ЗАГОЛОВОК
           </h3>
           <p style={{ fontSize: 5, color: "#1A1A1A", margin: 0, lineHeight: 1.5, textAlign: "left" }}>Основной текст слайда</p>
         </div>
@@ -175,68 +175,34 @@ const TEMPLATES: SlideTemplate[] = [
       bodyColor: "rgba(255,255,255,0.8)",
       metaColor: "rgba(255,255,255,0.5)",
       titleSize: 120,
-      hAlign: "center",
+      hAlign: "left",
       vAlign: "center",
     },
     preview: (
       <div
         className="w-full h-full flex flex-col justify-between"
-        style={{ background: "#3C1518", padding: 8, fontFamily: "'Inter', sans-serif" }}
+        style={{ background: "#620107", padding: 8, fontFamily: "'Inter', sans-serif" }}
       >
-        {/* Header - like reference: name left, name right */}
-        <div className="flex justify-between items-start">
-          <div>
-            <span style={{ fontSize: 3.5, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 0.5, fontWeight: 500, display: "block" }}>ИМЯ БРЕНД</span>
-            <span style={{ fontSize: 3, color: "rgba(255,255,255,0.4)", display: "block" }}>@username</span>
-          </div>
-          <div style={{ textAlign: "right" }}>
-            <span style={{ fontSize: 3.5, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 0.5, fontWeight: 500, display: "block" }}>NAME BRAND</span>
-            <span style={{ fontSize: 3, color: "rgba(255,255,255,0.4)", display: "block" }}>design smm lifestyle</span>
-          </div>
+        <div className="flex justify-between items-center">
+          <span style={{ fontSize: 5, color: "rgba(255,255,255,0.5)" }}>@username</span>
+          <span style={{ fontSize: 5, color: "rgba(255,255,255,0.5)" }}>[ 1/3 ]</span>
         </div>
-
-        {/* Center - large title with cursive */}
-        <div className="flex-1 flex flex-col justify-center py-1" style={{ marginTop: 4 }}>
-          {/* Small cursive words above title */}
-          <div style={{ position: "relative", marginBottom: -2 }}>
-            <span style={{ fontFamily: "'Bella Script CYR', cursive", fontSize: 6, color: "rgba(255,255,255,0.5)", marginLeft: 4 }}>латиница</span>
-            <span style={{ fontFamily: "'Bella Script CYR', cursive", fontSize: 6, color: "rgba(255,255,255,0.5)", marginLeft: 10 }}>кириллица</span>
-          </div>
-          {/* Main title - huge serif */}
+        <div className="flex-1 flex flex-col justify-center gap-1 py-1">
           <h3 style={{
             fontFamily: "'Forum', serif",
-            fontSize: 16,
-            lineHeight: 0.95,
+            fontSize: 14,
+            lineHeight: 1.0,
             color: "#FFFFFF",
             margin: 0,
             textAlign: "left",
             fontWeight: 400,
-            letterSpacing: -0.5,
           }}>
             Шрифтовые
           </h3>
-          {/* Subtitle aligned right */}
-          <p style={{
-            fontFamily: "'Forum', serif",
-            fontSize: 12,
-            color: "rgba(255,255,255,0.45)",
-            margin: 0,
-            textAlign: "right",
-            lineHeight: 1,
-            marginTop: -1,
-          }}>
-            пары
-          </p>
+          <p style={{ fontSize: 5, color: "rgba(255,255,255,0.8)", margin: 0, lineHeight: 1.5, textAlign: "left" }}>Текст слайда</p>
         </div>
-
-        {/* Bottom - CTA text + cursive */}
-        <div style={{ textAlign: "center" }}>
-          <p style={{ fontSize: 4.5, color: "rgba(255,255,255,0.7)", margin: 0, fontWeight: 500, letterSpacing: 0.3 }}>
-            скачай бесплатно подборку
-          </p>
-          <p style={{ fontFamily: "'Bella Script CYR', cursive", fontSize: 6, color: "rgba(255,255,255,0.5)", margin: 0, marginTop: 1 }}>
-            в телеграм канале (↓)
-          </p>
+        <div className="flex justify-end items-center">
+          <div style={{ width: 10, height: 10, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 5, color: "#FFFFFF" }}>→</div>
         </div>
       </div>
     ),

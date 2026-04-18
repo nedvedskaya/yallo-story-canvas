@@ -11,6 +11,7 @@ import DownloadModal from "@/components/editor/DownloadModal";
 import type { SlideTemplate } from "@/components/editor/TemplatesPanel";
 import { TEMPLATES } from "@/components/editor/TemplatesPanel";
 import { useBotToken, getTokenFromUrl, notifyExported } from "@/hooks/use-bot-token";
+import { usePersistentSlides, usePersistentFormat, usePersistentActiveSlide } from "@/hooks/use-persistent-slides";
 
 
 let nextId = 2;
@@ -30,7 +31,7 @@ const initialSlides: Slide[] = [
     id: 1, username: "@username", title: "Заголовок",
     body: "Текст слайда",
     bgColor: "#1A1A1A",
-    bgType: "color", hAlign: "center", vAlign: "center",
+    bgType: "color", hAlign: "left", vAlign: "center",
     overlayType: "grid", overlayOpacity: 18,
     bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0,
     titleColor: "#FFFFFF",
@@ -50,9 +51,9 @@ const initialSlides: Slide[] = [
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<MenuId | null>(null);
-  const [activeSlide, setActiveSlide] = useState(0);
-  const [slides, setSlides] = useState<Slide[]>(initialSlides);
-  const [slideFormat, setSlideFormat] = useState<SlideFormat>("carousel");
+  const [activeSlide, setActiveSlide] = usePersistentActiveSlide(0);
+  const [slides, setSlides] = usePersistentSlides(initialSlides);
+  const [slideFormat, setSlideFormat] = usePersistentFormat("carousel");
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [textEditorOpen, setTextEditorOpen] = useState(false);
   const [activeTemplate, setActiveTemplate] = useState<SlideTemplate | null>(null);
@@ -94,7 +95,8 @@ const Index = () => {
     });
   }, []);
 
-  const currentSlide = slides[activeSlide];
+  const safeActiveSlide = Math.max(0, Math.min(activeSlide, slides.length - 1));
+  const currentSlide = slides[safeActiveSlide];
   const handleUpdateSlide = useCallback((id: number, updates: Partial<Slide>) => {
     setSlidesWithHistory(prev => prev.map(s => {
       if (s.id !== id) return s;
