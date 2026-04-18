@@ -137,8 +137,11 @@ const BackgroundPanel = ({
     img.src = url;
   }, [onAddSticker]);
 
+  const pasteHelperRef = useRef<HTMLTextAreaElement>(null);
+
   const handleStickerPaste = useCallback(async () => {
     if (!onAddSticker) return;
+    // Try modern Clipboard API first (works on Chrome desktop with permission)
     if (navigator.clipboard && (navigator.clipboard as any).read) {
       try {
         const items = await (navigator.clipboard as any).read();
@@ -151,32 +154,71 @@ const BackgroundPanel = ({
             return;
           }
         }
-        toast.error("В буфере нет изображения. Скопируйте картинку и попробуйте снова.");
-        return;
       } catch {
-        // fall through
+        // permission denied or unsupported — fall through
       }
     }
-    toast.message("Нажмите Ctrl+V (Cmd+V), чтобы вставить картинку из буфера");
+    // Fallback: focus a hidden textarea so the next Ctrl+V/Cmd+V triggers paste
+    if (pasteHelperRef.current) {
+      pasteHelperRef.current.focus();
+      pasteHelperRef.current.select();
+    }
+    toast.message("Нажмите Ctrl+V (⌘+V) чтобы вставить картинку");
   }, [onAddSticker, addStickerFromBlob]);
 
-  // Global paste listener — works for Ctrl+V even when Clipboard API is blocked
+  // Global paste listener — captures Ctrl+V even when Clipboard API is blocked.
+  // Also handles text/html with embedded <img src="data:..."> (rich-text paste).
   useEffect(() => {
     if (!onAddSticker) return;
     const onPaste = (e: ClipboardEvent) => {
-      const items = e.clipboardData?.items;
-      if (!items) return;
-      for (let i = 0; i < items.length; i++) {
-        const it = items[i];
-        if (it.kind === "file" && it.type.startsWith("image/")) {
-          const blob = it.getAsFile();
-          if (blob) {
+      const dt = e.clipboardData;
+      if (!dt) return;
+      // 1. Direct file/image items
+      const items = dt.items;
+      if (items) {
+        for (let i = 0; i < items.length; i++) {
+          const it = items[i];
+          if (it.kind === "file" && it.type.startsWith("image/")) {
+            const blob = it.getAsFile();
+            if (blob) {
+              e.preventDefault();
+              addStickerFromBlob(blob);
+              toast.success("Элемент вставлен");
+              return;
+            }
+          }
+        }
+      }
+      // 2. text/html with embedded image (e.g. copied from web)
+      const html = dt.getData("text/html");
+      if (html) {
+        const match = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+        if (match && match[1]) {
+          const src = match[1];
+          if (src.startsWith("data:image/") || src.startsWith("http")) {
             e.preventDefault();
-            addStickerFromBlob(blob);
-            toast.success("Элемент вставлен");
+            fetch(src)
+              .then(r => r.blob())
+              .then(blob => {
+                addStickerFromBlob(blob);
+                toast.success("Элемент вставлен");
+              })
+              .catch(() => toast.error("Не удалось загрузить изображение"));
             return;
           }
         }
+      }
+      // 3. plain text URL pointing to image
+      const text = dt.getData("text/plain");
+      if (text && /^https?:\/\/.+\.(png|jpe?g|gif|webp|svg)/i.test(text.trim())) {
+        e.preventDefault();
+        fetch(text.trim())
+          .then(r => r.blob())
+          .then(blob => {
+            addStickerFromBlob(blob);
+            toast.success("Элемент вставлен");
+          })
+          .catch(() => toast.error("Не удалось загрузить изображение"));
       }
     };
     document.addEventListener("paste", onPaste);
