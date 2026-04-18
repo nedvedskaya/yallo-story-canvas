@@ -202,7 +202,7 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
         </div>
 
         {/* Bottom bar */}
-        <div className="flex items-end justify-between w-full flex-shrink-0">
+        <div className="flex items-end justify-between w-full flex-shrink-0" style={{ pointerEvents: 'auto' }}>
           {slide.showFooter ? (
             <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.6)', fontSize: `${metrics.footerSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>
               {slide.footerText || ""}
@@ -213,6 +213,19 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
           ) : <span />}
         </div>
       </div>
+
+      {/* Sticker layer — rendered ABOVE content so they can be dragged anywhere on the slide */}
+      {slide.stickers && slide.stickers.length > 0 && (
+        <div className="absolute inset-0 z-[15]" style={{ pointerEvents: 'none' }}>
+          <StickerLayer
+            stickers={slide.stickers}
+            onUpdateSticker={onUpdateSticker}
+            onDeleteSticker={onDeleteSticker}
+            interactive={stickerInteractive}
+            scale={scale}
+          />
+        </div>
+      )}
 
       {/* Watermark */}
       {watermark && (
