@@ -126,21 +126,11 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
       {/* Overlay pattern */}
       {!overlayOnly && <SlideOverlay type={slide.overlayType} opacity={slide.overlayOpacity} color={slide.overlayColor} scale={scale} />}
 
-      {/* Sticker layer */}
-      {slide.stickers && slide.stickers.length > 0 && (
-        <StickerLayer
-          stickers={slide.stickers}
-          onUpdateSticker={onUpdateSticker}
-          onDeleteSticker={onDeleteSticker}
-          interactive={stickerInteractive}
-          scale={scale}
-        />
-      )}
-
-      {/* Content layer */}
-      <div className="relative z-10 flex flex-col h-full w-full">
+      {/* Content layer — pointer-events: none on wrapper so stickers (above) can be dragged anywhere.
+          Interactive children re-enable pointer-events. */}
+      <div className="relative z-10 flex flex-col h-full w-full" style={{ pointerEvents: 'none' }}>
         {/* Top bar */}
-        <div className="flex items-center justify-between w-full flex-shrink-0" style={{ marginBottom: `${4 * scale}px` }}>
+        <div className="flex items-center justify-between w-full flex-shrink-0" style={{ marginBottom: `${4 * scale}px`, pointerEvents: 'auto' }}>
           {slide.showUsername !== false ? (
             <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.7)', fontSize: `${metrics.usernameSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>{slide.username}</span>
           ) : <span />}
