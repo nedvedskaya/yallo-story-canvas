@@ -5,6 +5,7 @@
 import type { Slide } from "./SlideCarousel";
 import type { SlideFormat } from "./SizePanel";
 import { FORMAT_DESIGN, getPreviewWidth, getExportWidth } from "./shared-styles";
+import { getAdaptiveTitleSize, getAdaptiveBodySize } from "@/lib/text-sizing";
 
 export const H_ALIGN_TO_TEXT: Record<string, string> = { left: "left", center: "center", right: "right" };
 export const V_ALIGN_TO_JUSTIFY: Record<string, string> = { start: "flex-start", center: "center", end: "flex-end" };
