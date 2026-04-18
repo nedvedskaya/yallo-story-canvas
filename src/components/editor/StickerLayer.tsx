@@ -62,7 +62,7 @@ const StickerLayer: React.FC<StickerLayerProps> = ({ stickers, onUpdateSticker, 
     <div
       ref={containerRef}
       className="absolute inset-0 z-[5]"
-      style={{ pointerEvents: interactive ? 'auto' : 'none' }}
+      style={{ pointerEvents: 'none' }}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
     >
