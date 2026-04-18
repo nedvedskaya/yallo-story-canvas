@@ -122,6 +122,12 @@ const TextPanel = ({ currentSlide, onSave, onSaveLive, onApplyTextToAll, slideFo
 
       {activeSection === "title" ? (
         <>
+          <InlineTextEditor
+            value={currentSlide.title}
+            onChange={(html) => onSave({ title: html })}
+            placeholder="Введите заголовок"
+          />
+          <div className="h-px" style={{ background: 'rgba(26,26,46,0.08)' }} />
           <FontSection label="Шрифт заголовка" settings={titleSettings} onChange={handleChange("title")} onCommit={handleCommit("title")} customFonts={customFonts} onAddCustomFont={handleAddCustomFont} />
           <div className="h-px" style={{ background: 'rgba(26,26,46,0.08)' }} />
           <ColorPicker
@@ -132,6 +138,12 @@ const TextPanel = ({ currentSlide, onSave, onSaveLive, onApplyTextToAll, slideFo
         </>
       ) : (
         <>
+          <InlineTextEditor
+            value={currentSlide.body}
+            onChange={(html) => onSave({ body: html })}
+            placeholder="Введите основной текст"
+          />
+          <div className="h-px" style={{ background: 'rgba(26,26,46,0.08)' }} />
           <FontSection label="Шрифт основного текста" settings={bodySettings} onChange={handleChange("body")} onCommit={handleCommit("body")} customFonts={customFonts} onAddCustomFont={handleAddCustomFont} />
           <div className="h-px" style={{ background: 'rgba(26,26,46,0.08)' }} />
           <ColorPicker
