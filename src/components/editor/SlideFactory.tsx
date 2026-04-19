@@ -13,6 +13,7 @@ import type { Slide, SlideType } from "./SlideCarousel";
 import type { SlideFormat } from "./SizePanel";
 import type { SlideMetrics } from "./slide-render-model";
 import TextBlockContent from "./slide-types/TextBlockContent";
+import HookContent from "./slide-types/HookContent";
 
 export interface SlideContentProps {
   slide: Slide;
@@ -43,6 +44,7 @@ export interface SlideContentProps {
  * still fall through to TextBlockContent so partial rollouts are safe.
  */
 const CONTENT_MAP: Partial<Record<SlideType, React.FC<SlideContentProps>>> = {
+  hook: HookContent,
   text_block: TextBlockContent,
 };
 

@@ -61,10 +61,15 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
   const isExport = !!(width && height);
   const mediaStyle = getMediaStyle(slide, undefined, isExport ? width : undefined, isExport ? height : undefined);
 
-  // Minimalism template marker: asterisk decor triggers 8% side padding AND
-  // absolute top:52% content positioning. The regular (non-asterisk) flow
-  // keeps the format's safeZone-driven metrics untouched.
-  const isAsteriskTemplate = slide.decorShape === 'asterisk';
+  // Minimalism style package: keyed off bgPattern === 'dots' (template-wide
+  // marker). Drives 8% side padding, pill-counter topbar, hidden bottom bar.
+  // The asterisk decor is a SEPARATE flag (slide.decorShape === 'asterisk')
+  // — user may hide/remove it without losing the Minimalism styling.
+  const isMinimalism = slide.bgPattern === 'dots';
+  // Hook-specific: absolute top:58% positioning only for `type === 'hook'`
+  // inside Minimalism. Other Minimalism types (big_number, quote...) fall
+  // back to the normal flex-column flow with their own vAlign.
+  const isMinimalismHook = isMinimalism && slide.type === 'hook';
 
   const rootStyle: React.CSSProperties = {
     width: width ? `${width}px` : '100%',
@@ -76,8 +81,8 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
     textAlign: H_ALIGN_TO_TEXT[slide.hAlign] as React.CSSProperties['textAlign'],
     paddingTop: `${metrics.paddingTop}px`,
     paddingBottom: `${metrics.paddingBottom}px`,
-    paddingLeft: isAsteriskTemplate ? '8%' : `${metrics.paddingLeft}px`,
-    paddingRight: isAsteriskTemplate ? '8%' : `${metrics.paddingRight}px`,
+    paddingLeft: isMinimalism ? '8%' : `${metrics.paddingLeft}px`,
+    paddingRight: isMinimalism ? '8%' : `${metrics.paddingRight}px`,
     display: 'flex',
     flexDirection: 'column',
   };
@@ -203,42 +208,70 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
       {/* Content layer — pointer-events: none on wrapper so stickers (above) can be dragged anywhere.
           Interactive children re-enable pointer-events. */}
       <div className="relative z-10 flex flex-col h-full w-full" style={{ pointerEvents: 'none' }}>
-        {/* Top bar */}
+        {/* Top bar.
+            - Minimalism (isMinimalism): username слева, pill-counter справа в
+              круглой 48px-плашке #F0F0F0 (без скобок [ ]).
+            - Все остальные шаблоны: классический "[ N/M ]" справа. */}
         <div className="flex items-center justify-between w-full flex-shrink-0" style={{ marginBottom: `${4 * scale}px`, pointerEvents: 'auto' }}>
           {slide.showUsername !== false ? (
             <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.7)', fontSize: `${metrics.usernameSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>{slide.username}</span>
           ) : <span />}
           {slide.showSlideCount !== false ? (
-            <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.7)', fontSize: `${metrics.counterSize}px`, fontWeight: 500, fontFamily: "'Inter', sans-serif" }}>[ {slideIndex + 1}/{totalSlides} ]</span>
+            isMinimalism ? (
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: `${48 * scale}px`,
+                  height: `${48 * scale}px`,
+                  borderRadius: '50%',
+                  background: '#F0F0F0',
+                  color: '#0A0A0A',
+                  fontSize: `${13 * scale}px`,
+                  fontWeight: 500,
+                  fontFamily: "'Inter', sans-serif",
+                  lineHeight: 1,
+                }}
+              >
+                {slideIndex + 1}/{totalSlides}
+              </span>
+            ) : (
+              <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.7)', fontSize: `${metrics.counterSize}px`, fontWeight: 500, fontFamily: "'Inter', sans-serif" }}>[ {slideIndex + 1}/{totalSlides} ]</span>
+            )
           ) : <span />}
         </div>
 
         {/* Content area.
-            - asterisk template: spacer here; SlideFactory rendered as an absolute layer (see below)
-              so its content block starts at exactly top:52% of slide height.
-            - other templates: SlideFactory fills the flex-1 slot with its own vAlign-driven layout. */}
-        {isAsteriskTemplate ? (
+            - Minimalism Hook: spacer here; SlideFactory рендерится как absolute
+              слой (см. ниже) с контентом, стартующим на top:58% слайда.
+            - Все остальные: SlideFactory заполняет flex-1 слот, используя
+              собственный vAlign. */}
+        {isMinimalismHook ? (
           <div className="flex-1" />
         ) : (
           <SlideFactory {...factoryProps} />
         )}
 
-        {/* Bottom bar */}
-        <div className="flex items-end justify-between w-full flex-shrink-0" style={{ pointerEvents: 'auto' }}>
-          {slide.showFooter ? (
-            <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.6)', fontSize: `${metrics.footerSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>
-              {slide.footerText || ""}
-            </span>
-          ) : <span />}
-          {slide.showArrow !== false && slideIndex < totalSlides - 1 ? (
-            <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.5)', fontSize: `${(metrics.footerSize + 2 * scale)}px` }}>→</span>
-          ) : <span />}
-        </div>
+        {/* Bottom bar — для Minimalism скрываем целиком (arrow/footer уводит
+            фокус с заголовка, в референсе их нет). */}
+        {!isMinimalism && (
+          <div className="flex items-end justify-between w-full flex-shrink-0" style={{ pointerEvents: 'auto' }}>
+            {slide.showFooter ? (
+              <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.6)', fontSize: `${metrics.footerSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>
+                {slide.footerText || ""}
+              </span>
+            ) : <span />}
+            {slide.showArrow !== false && slideIndex < totalSlides - 1 ? (
+              <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.5)', fontSize: `${(metrics.footerSize + 2 * scale)}px` }}>→</span>
+            ) : <span />}
+          </div>
+        )}
       </div>
 
-      {/* Asterisk template: content block positioned absolutely at top:58% of slide,
+      {/* Minimalism Hook: content block positioned absolutely at top:58% of slide,
           with the same 8% side insets the root already applies for flex children. */}
-      {isAsteriskTemplate && (
+      {isMinimalismHook && (
         <div
           className="absolute"
           style={{

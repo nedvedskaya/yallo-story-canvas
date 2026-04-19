@@ -1,0 +1,166 @@
+/**
+ * HookContent — первый слайд карусели в стиле Minimalism.
+ *
+ * Layout-контракт (из claude.design эталона):
+ *   - Заголовок: Marvin Visions → Space Grotesk fallback, 88px на 1080-ширине,
+ *     weight 700, line-height 1.1, letter-spacing -0.015em, цвет #0A0A0A.
+ *   - Хайлайт: pill-span с фоном slide.accentColor (обычно #CDE0FA),
+ *     border-radius 999px, padding 0.08em 14px 0.12em, margin-left -14px.
+ *     Чёрный текст внутри (#0A0A0A).
+ *   - Подзаголовок: Inter 400, 28px на 1080-ширине, цвет slide.bodyColor (#666),
+ *     margin-top 20px.
+ *
+ * Масштабирование: все размеры в px × scale, где scale = 1 для превью
+ * (ширина контейнера ~96px в TemplatesPanel, либо 1080px слайд) и
+ * exportWidth / previewWidth для экспорта. Метрики рассчитываются от
+ * slide-render-model (хотя Hook имеет свои фикс-размеры и их не трогает).
+ *
+ * Хайлайт рендерится React-нодами: ищем первое вхождение slide.highlight в
+ * slide.title, разбиваем на before / <span> / after. Если не нашли — title
+ * рендерится как есть, без подсветки.
+ */
+import React from "react";
+import type { SlideContentProps } from "../SlideFactory";
+
+/** Разбивает title на React-ноды с pill-span на месте highlight. */
+function renderTitleWithHighlight(
+  title: string,
+  highlight: string | undefined,
+  accentColor: string,
+  scale: number,
+): React.ReactNode {
+  if (!title) return null;
+  if (!highlight) return title;
+  const idx = title.indexOf(highlight);
+  if (idx === -1) return title;
+
+  const before = title.slice(0, idx);
+  const after = title.slice(idx + highlight.length);
+
+  // Pill-плашка. margin-left: -14px * scale — чтобы текст внутри плашки
+  // визуально выровнялся с остальными строками (плашка «выезжает» влево
+  // на размер padding-а).
+  const pad = 14 * scale;
+  const pillStyle: React.CSSProperties = {
+    background: accentColor,
+    color: "#0A0A0A",
+    borderRadius: 999,
+    padding: `0.08em ${pad}px 0.12em`,
+    marginLeft: -pad,
+    display: "inline",
+    WebkitBoxDecorationBreak: "clone",
+    boxDecorationBreak: "clone",
+  };
+
+  return (
+    <>
+      {before}
+      <span style={pillStyle}>{highlight}</span>
+      {after}
+    </>
+  );
+}
+
+const HookContent: React.FC<SlideContentProps> = ({
+  slide,
+  scale,
+  editorOpen,
+  onTitleTouchStart,
+  onTitleTouchMove,
+  onTitleTouchEnd,
+  onTitleMouseDown,
+  onTitleClick,
+  onBodyTouchStart,
+  onBodyTouchMove,
+  onBodyTouchEnd,
+  onBodyMouseDown,
+  onBodyClick,
+}) => {
+  const title = slide.title || "";
+  const subtitle = slide.subtitle || slide.body || "";
+  const highlight = slide.highlight;
+
+  const accentColor = slide.accentColor || "#CDE0FA";
+  const titleColor = slide.titleColor || "#0A0A0A";
+  const bodyColor = slide.bodyColor || "#666666";
+
+  // Font stack: если в slide задан titleFont — используем его, иначе
+  // Marvin Visions → Space Grotesk → Inter (fallback chain).
+  const titleFontFamily =
+    slide.titleFont ||
+    "'Marvin Visions', 'Space Grotesk', 'Inter', sans-serif";
+  const bodyFontFamily = slide.bodyFont || "'Inter', sans-serif";
+
+  // Размеры — нормированы на 1080px, масштабируются через scale.
+  const titleFontSize = 88 * scale;
+  const subtitleFontSize = 28 * scale;
+  const subtitleMarginTop = 20 * scale;
+
+  return (
+    <div style={{ width: "100%" }}>
+      {/* Title — без dangerouslySetInnerHTML, highlight = React-нода */}
+      <div
+        onTouchStart={onTitleTouchStart}
+        onTouchMove={onTitleTouchMove}
+        onTouchEnd={onTitleTouchEnd}
+        onMouseDown={onTitleMouseDown}
+        style={{
+          touchAction: "none",
+          cursor: editorOpen ? "text" : "grab",
+          pointerEvents: "auto",
+        }}
+      >
+        <h1
+          onClick={onTitleClick}
+          className="outline-none cursor-pointer"
+          style={{
+            margin: 0,
+            fontFamily: titleFontFamily,
+            fontWeight: 700,
+            fontSize: `${titleFontSize}px`,
+            lineHeight: 1.1,
+            letterSpacing: "-0.015em",
+            color: titleColor,
+            textAlign: "left",
+          }}
+        >
+          {renderTitleWithHighlight(title, highlight, accentColor, scale)}
+        </h1>
+      </div>
+
+      {/* Subtitle */}
+      {subtitle && (
+        <div
+          onTouchStart={onBodyTouchStart}
+          onTouchMove={onBodyTouchMove}
+          onTouchEnd={onBodyTouchEnd}
+          onMouseDown={onBodyMouseDown}
+          style={{
+            touchAction: "none",
+            cursor: editorOpen ? "text" : "grab",
+            marginTop: `${subtitleMarginTop}px`,
+            pointerEvents: "auto",
+          }}
+        >
+          <p
+            onClick={onBodyClick}
+            className="outline-none cursor-pointer"
+            style={{
+              margin: 0,
+              fontFamily: bodyFontFamily,
+              fontWeight: 400,
+              fontSize: `${subtitleFontSize}px`,
+              lineHeight: 1.4,
+              color: bodyColor,
+              textAlign: "left",
+            }}
+          >
+            {subtitle}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default HookContent;

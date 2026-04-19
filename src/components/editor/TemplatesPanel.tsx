@@ -107,9 +107,12 @@ const TEMPLATES: SlideTemplate[] = [
       vAlign: "end",
       decorShape: "asterisk",
       decorColor: "#D6E8F7",
-      decorSize: 39,
+      // 520×520 астериск в правом-верхнем углу, right:-60px (частично срезан
+      // правым краем). В процентах 1080-слайда: size 48%, top 6%,
+      // left = 100% - 48% - (-60/1080*100) = 57.4%.
+      decorSize: 48,
       decorTop: 6,
-      decorLeft: -6,
+      decorLeft: 57,
       bgPattern: "dots",
       accentMode: "highlight",
       accentColor: "#CDE0FA",
@@ -126,9 +129,9 @@ const TEMPLATES: SlideTemplate[] = [
         >
           <span style={{ fontSize: 4, color: "#999999" }}>[ 1/7 ]</span>
         </div>
-        {/* Halftone asterisk — top-left, clipped by the slide's left edge */}
-        <div style={{ position: "absolute", top: "6%", left: "-6%", width: "39%", zIndex: 2 }}>
-          <DecorShape color="#D6E8F7" size={38} />
+        {/* Halftone asterisk — top-right, clipped by the slide's right edge */}
+        <div style={{ position: "absolute", top: "6%", left: "57%", width: "48%", zIndex: 2 }}>
+          <DecorShape color="#D6E8F7" size={46} />
         </div>
         {/* Content — middle-lower */}
         <div style={{ position: "absolute", top: "58%", left: 7, right: 7, zIndex: 4 }}>
