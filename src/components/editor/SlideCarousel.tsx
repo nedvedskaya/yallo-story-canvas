@@ -53,6 +53,13 @@ export interface Slide {
   overlayColor?: string;
   bgVideoFile?: File;
   hasList?: boolean;
+  decorShape?: 'asterisk' | 'none';
+  decorColor?: string;
+  decorSize?: number;
+  decorTop?: number;
+  decorLeft?: number;
+  accentMode?: 'highlight' | 'color' | 'none';
+  accentColor?: string;
   stickers?: Array<{
     id: string;
     src: string;

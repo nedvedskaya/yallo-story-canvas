@@ -8,7 +8,7 @@ export function sanitizeHtml(dirty: string): string {
   return DOMPurify.sanitize(dirty, {
     ALLOWED_TAGS: [
       "b", "i", "u", "s", "em", "strong", "span", "br", "font",
-      "strike", "sub", "sup", "div", "p",
+      "strike", "sub", "sup", "div", "p", "mark",
     ],
     ALLOWED_ATTR: ["style", "color", "size"],
     ALLOW_DATA_ATTR: false,

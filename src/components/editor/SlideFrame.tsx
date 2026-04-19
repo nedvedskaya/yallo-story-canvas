@@ -50,6 +50,48 @@ export interface SlideFrameProps {
   watermark?: string;
 }
 
+/**
+ * Apply accent to the last word of a title according to accentMode.
+ * - "highlight": wrap last word in <mark> with background color
+ * - "color":     wrap last word in <span style="color:..."> so it's recolored
+ * - "none" / undefined: pass through unchanged
+ *
+ * Works on the RAW title string BEFORE sanitization. We only inject whitelisted
+ * tags (<mark>, <span style="...">), so sanitizeHtml preserves them.
+ * Any existing HTML in the title remains intact — we only touch the trailing
+ * non-whitespace token.
+ */
+function applyTitleAccent(
+  title: string,
+  mode: Slide['accentMode'],
+  color: string | undefined,
+): string {
+  if (!mode || mode === 'none' || !title) return title;
+  const accent = color || '#CDE0FA';
+
+  // Match trailing word (non-space run) at the very end of the string.
+  // Note: intentionally tolerates trailing punctuation as part of "the word".
+  const match = title.match(/^([\s\S]*?)(\S+)\s*$/);
+  if (!match) return title;
+  const [, head, lastWord] = match;
+  const trailing = title.slice(head.length + lastWord.length); // preserved whitespace
+
+  if (mode === 'highlight') {
+    const style = [
+      `background:${accent}`,
+      'border-radius:4px',
+      'padding:2px 6px',
+      'color:inherit',
+      'box-decoration-break:clone',
+      '-webkit-box-decoration-break:clone',
+    ].join(';');
+    return `${head}<mark style="${style}">${lastWord}</mark>${trailing}`;
+  }
+
+  // "color"
+  return `${head}<span style="color:${accent}">${lastWord}</span>${trailing}`;
+}
+
 /** Parse body text into list items */
 function parseListItems(body: string): string[] {
   return body
@@ -126,6 +168,41 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
       {/* Overlay pattern */}
       {!overlayOnly && <SlideOverlay type={slide.overlayType} opacity={slide.overlayOpacity} color={slide.overlayColor} scale={scale} />}
 
+      {/* Decorative shape (e.g. asterisk) — rendered above overlay, below content */}
+      {!overlayOnly && slide.decorShape === 'asterisk' && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            top: `${slide.decorTop ?? 13}%`,
+            left: `${slide.decorLeft ?? 9}%`,
+            width: `${slide.decorSize ?? 30}%`,
+            zIndex: 2,
+            pointerEvents: 'none',
+          }}
+        >
+          <svg
+            viewBox="0 0 280 280"
+            xmlns="http://www.w3.org/2000/svg"
+            style={{ width: '100%', height: '100%', display: 'block', overflow: 'visible' }}
+          >
+            <g fill={slide.decorColor || '#E7F0FB'}>
+              <g transform="translate(140 140)">
+                <rect x="-36" y="-126" width="72" height="150" rx="36" ry="36" />
+                <rect x="-34" y="-122" width="68" height="146" rx="34" ry="34" transform="rotate(60)" />
+                <rect x="-37" y="-128" width="74" height="152" rx="37" ry="37" transform="rotate(120)" />
+                <rect x="-35" y="-124" width="70" height="148" rx="35" ry="35" transform="rotate(180)" />
+                <rect x="-36" y="-126" width="72" height="150" rx="36" ry="36" transform="rotate(240)" />
+                <rect x="-34" y="-120" width="68" height="144" rx="34" ry="34" transform="rotate(300)" />
+                <circle cx="0" cy="0" r="58" />
+                <circle cx="-8" cy="6" r="50" />
+                <circle cx="10" cy="-4" r="46" />
+              </g>
+            </g>
+          </svg>
+        </div>
+      )}
+
       {/* Content layer — pointer-events: none on wrapper so stickers (above) can be dragged anywhere.
           Interactive children re-enable pointer-events. */}
       <div className="relative z-10 flex flex-col h-full w-full" style={{ pointerEvents: 'none' }}>
@@ -154,7 +231,11 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
                 onClick={onTitleClick}
                 className="outline-none cursor-pointer"
                 style={title.textStyle}
-                dangerouslySetInnerHTML={{ __html: sanitizeHtml(slide.title) }}
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeHtml(
+                    applyTitleAccent(slide.title, slide.accentMode, slide.accentColor)
+                  ),
+                }}
               />
             </div>
             {/* Body */}

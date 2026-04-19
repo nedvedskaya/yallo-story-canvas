@@ -74,6 +74,13 @@ const TEMPLATES: SlideTemplate[] = [
       bodyCase: "none",
       hAlign: "left",
       vAlign: "center",
+      decorShape: "asterisk",
+      decorColor: "#E7F0FB",
+      decorSize: 30,
+      decorTop: 13,
+      decorLeft: 9,
+      accentMode: "highlight",
+      accentColor: "#CDE0FA",
     },
     coverApply: {
       bgColor: "#FFFFFF",
@@ -85,6 +92,13 @@ const TEMPLATES: SlideTemplate[] = [
       metaColor: "#999999",
       hAlign: "left",
       vAlign: "center",
+      decorShape: "asterisk",
+      decorColor: "#E7F0FB",
+      decorSize: 30,
+      decorTop: 13,
+      decorLeft: 9,
+      accentMode: "highlight",
+      accentColor: "#CDE0FA",
     },
     preview: (
       <div
@@ -105,12 +119,9 @@ const TEMPLATES: SlideTemplate[] = [
         />
         {/* Top bar */}
         <div
-          className="absolute flex items-center justify-between"
+          className="absolute flex items-center justify-end"
           style={{ top: 6, left: 6, right: 6, zIndex: 5 }}
         >
-          <svg width="8" height="8" viewBox="0 0 36 36">
-            <polygon points="0,36 18,0 36,36" fill="#0A0A0A" />
-          </svg>
           <div
             style={{
               width: 12,
