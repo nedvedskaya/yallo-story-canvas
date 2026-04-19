@@ -24,7 +24,6 @@ import type { SlideContentProps } from "../../SlideFactory";
 import {
   stripHtml,
   caseToTransform,
-  renderTitleWithHighlight,
   hAlignToText,
   getMinimalismSizes,
 } from "../shared";
@@ -35,6 +34,7 @@ import {
   MINIMALISM_TITLE_FONT,
   MINIMALISM_BODY_FONT,
 } from "./tokens";
+import { prepareTitleHtml } from "@/lib/title-html";
 
 const MinimalismBase: React.FC<SlideContentProps> = ({
   slide,
@@ -54,9 +54,7 @@ const MinimalismBase: React.FC<SlideContentProps> = ({
   onBodyMouseDown,
   onBodyClick,
 }) => {
-  const title = stripHtml(slide.title || "");
   const subtitle = stripHtml(slide.subtitle || slide.body || "");
-  const highlight = slide.highlight;
 
   const accentColor = slide.accentColor || MINIMALISM_ACCENT;
   const titleColor = slide.titleColor || MINIMALISM_TITLE;
@@ -122,9 +120,10 @@ const MinimalismBase: React.FC<SlideContentProps> = ({
               color: titleColor,
               textAlign,
             }}
-          >
-            {renderTitleWithHighlight(title, highlight, accentColor, titleColor, rs)}
-          </h1>
+            dangerouslySetInnerHTML={{
+              __html: prepareTitleHtml(slide.title, slide.highlight, accentColor),
+            }}
+          />
         </div>
 
         {subtitle && (

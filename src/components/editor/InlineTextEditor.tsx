@@ -146,9 +146,74 @@ const InlineTextEditor = ({ value, onChange, placeholder, defaultTextColor, defa
     exec("foreColor", textColor);
   }, [exec, textColor]);
 
+  /** Оборачивает текущий Range в канонический pill-span (совпадает с
+   *  prepareTitleHtml/canonicalPillStyle). Если селекция пуста — no-op.
+   *  Пробелы внутри заменяются на NBSP чтобы плашка не разрывалась.
+   *  Если селекция уже внутри pill-span — удаляет фон (toggle off). */
+  const applyHighlightAsPill = useCallback((bgColor: string) => {
+    if (!editorRef.current) return;
+    editorRef.current.focus();
+    restoreSelection();
+
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const range = sel.getRangeAt(0);
+    if (range.collapsed) return;
+
+    // Toggle off: если весь range уже внутри background-span — снимаем фон.
+    const ancestor = range.commonAncestorContainer;
+    const hostEl = ancestor.nodeType === 1
+      ? (ancestor as HTMLElement)
+      : (ancestor.parentElement as HTMLElement | null);
+    const existingPill = hostEl?.closest(
+      'span[style*="background"]'
+    ) as HTMLSpanElement | null;
+    if (existingPill && editorRef.current.contains(existingPill)) {
+      // Разворачиваем pill полностью, не пытаясь частично — так проще и
+      // консистентнее с пользовательским ожиданием.
+      const parent = existingPill.parentNode;
+      if (parent) {
+        while (existingPill.firstChild) parent.insertBefore(existingPill.firstChild, existingPill);
+        parent.removeChild(existingPill);
+      }
+      onChange(editorRef.current.innerHTML);
+      return;
+    }
+
+    // Собираем содержимое выделения, заменяя пробелы на NBSP в text nodes.
+    const frag = range.extractContents();
+    const walker = document.createTreeWalker(frag, NodeFilter.SHOW_TEXT);
+    const toReplace: Text[] = [];
+    let n: Node | null = walker.nextNode();
+    while (n) {
+      toReplace.push(n as Text);
+      n = walker.nextNode();
+    }
+    toReplace.forEach((t) => {
+      if (t.nodeValue) t.nodeValue = t.nodeValue.replace(/ /g, "\u00A0");
+    });
+
+    const span = document.createElement("span");
+    span.setAttribute(
+      "style",
+      `display:inline-block;background:${bgColor};padding:0.08em 14px 0.12em;border-radius:999px;line-height:1`,
+    );
+    span.appendChild(frag);
+    range.insertNode(span);
+
+    // Восстановить селекцию вокруг нового span, чтобы повторный клик снимал.
+    const newRange = document.createRange();
+    newRange.selectNode(span);
+    sel.removeAllRanges();
+    sel.addRange(newRange);
+    selectionRef.current = newRange.cloneRange();
+
+    onChange(editorRef.current.innerHTML);
+  }, [onChange, restoreSelection]);
+
   const applyHighlight = useCallback(() => {
-    exec("hiliteColor", highlightColor);
-  }, [exec, highlightColor]);
+    applyHighlightAsPill(highlightColor);
+  }, [applyHighlightAsPill, highlightColor]);
 
   const handleTextColorPick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const c = e.target.value;
@@ -162,10 +227,7 @@ const InlineTextEditor = ({ value, onChange, placeholder, defaultTextColor, defa
   const handleHighlightColorPick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const c = e.target.value;
     setHighlightColor(c);
-    editorRef.current?.focus();
-    restoreSelection();
-    document.execCommand("hiliteColor", false, c);
-    if (editorRef.current) onChange(editorRef.current.innerHTML);
+    applyHighlightAsPill(c);
   };
 
   const btnBase: React.CSSProperties = {
