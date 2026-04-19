@@ -17,55 +17,235 @@ export interface SlideTemplate {
   accentMode?: "color" | "highlight";
 }
 
-/** Декоративная halftone-"звезда" / астериск — для превью и cover-слайда.
- * Форма астериска заполнена паттерном точек с радиальным фейдом к краям. */
-const DecorShape = ({ color, size = 56 }: { color: string; size?: number }) => {
-  const uid = `tpl-${Math.random().toString(36).slice(2, 8)}`;
+/** Декоративный 6-лепестковый астериск с halftone-эффектом (1-в-1 с эталоном
+ *  claude.design / Yalo Carousel Slide.html). ViewBox 520×520.
+ *
+ *  Анатомия:
+ *    1. flowerMask — силуэт из 6 эллипсов-лепестков (rx=62 ry=108, cx=260 cy=110)
+ *       повёрнутых 0/60/120/180/240/300 вокруг (260,260) + центральный круг r=90.
+ *    2. Halftone-паттерн: 9×9 тайл, точка r=2.4 at (4.5, 4.5) цветом decor.
+ *    3. Над точками — сплошной слой decor, но с альфа-маской radial fade
+ *       (solid в центре → прозрачный на краях). Итог: центр плотный,
+ *       края видны только как точки.
+ *
+ *  Параметр `width` задаёт ширину в px (SVG auto-height); по умолчанию
+ *  использовать процентную ширину от контейнера через прямой стиль. */
+const DecorShape = ({
+  color,
+  size,
+  style,
+}: {
+  color: string;
+  size?: number;
+  style?: React.CSSProperties;
+}) => {
+  const uid = `decor-${Math.random().toString(36).slice(2, 8)}`;
+  const mergedStyle: React.CSSProperties = {
+    width: size ?? "100%",
+    height: size ?? "auto",
+    display: "block",
+    overflow: "visible",
+    ...(style || {}),
+  };
   return (
     <svg
-      viewBox="0 0 280 280"
+      viewBox="0 0 520 520"
       xmlns="http://www.w3.org/2000/svg"
-      style={{ width: size, height: size, display: "block", overflow: "visible" }}
+      style={mergedStyle}
       aria-hidden="true"
     >
       <defs>
-        <pattern id={`${uid}-dots`} x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
-          <circle cx="6" cy="6" r="2.8" fill={color} />
+        <pattern
+          id={`${uid}-dots`}
+          x="0"
+          y="0"
+          width="9"
+          height="9"
+          patternUnits="userSpaceOnUse"
+        >
+          <circle cx="4.5" cy="4.5" r="2.4" fill={color} />
         </pattern>
-        <radialGradient id={`${uid}-fade`} cx="50%" cy="50%" r="55%">
+        <g id={`${uid}-petal`}>
+          <ellipse cx="260" cy="110" rx="62" ry="108" fill="white" />
+        </g>
+        <mask id={`${uid}-flower`} maskUnits="userSpaceOnUse" x="0" y="0" width="520" height="520">
+          <rect width="520" height="520" fill="black" />
+          <circle cx="260" cy="260" r="90" fill="white" />
+          <use href={`#${uid}-petal`} transform="rotate(0 260 260)" />
+          <use href={`#${uid}-petal`} transform="rotate(60 260 260)" />
+          <use href={`#${uid}-petal`} transform="rotate(120 260 260)" />
+          <use href={`#${uid}-petal`} transform="rotate(180 260 260)" />
+          <use href={`#${uid}-petal`} transform="rotate(240 260 260)" />
+          <use href={`#${uid}-petal`} transform="rotate(300 260 260)" />
+        </mask>
+        <radialGradient id={`${uid}-core`} cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="white" stopOpacity="1" />
-          <stop offset="70%" stopColor="white" stopOpacity="1" />
-          <stop offset="100%" stopColor="white" stopOpacity="0.25" />
+          <stop offset="40%" stopColor="white" stopOpacity="1" />
+          <stop offset="65%" stopColor="white" stopOpacity="0.6" />
+          <stop offset="100%" stopColor="white" stopOpacity="0" />
         </radialGradient>
-        <mask id={`${uid}-mask`}>
-          <rect width="280" height="280" fill="black" />
-          <g fill={`url(#${uid}-fade)`}>
-            <g transform="translate(140 140)">
-              <rect x="-36" y="-126" width="72" height="150" rx="36" ry="36" />
-              <rect x="-34" y="-122" width="68" height="146" rx="34" ry="34" transform="rotate(60)" />
-              <rect x="-37" y="-128" width="74" height="152" rx="37" ry="37" transform="rotate(120)" />
-              <rect x="-35" y="-124" width="70" height="148" rx="35" ry="35" transform="rotate(180)" />
-              <rect x="-36" y="-126" width="72" height="150" rx="36" ry="36" transform="rotate(240)" />
-              <rect x="-34" y="-120" width="68" height="144" rx="34" ry="34" transform="rotate(300)" />
-              <circle cx="0" cy="0" r="58" />
-              <circle cx="-8" cy="6" r="50" />
-              <circle cx="10" cy="-4" r="46" />
-            </g>
-          </g>
+        <mask id={`${uid}-fade`} maskUnits="userSpaceOnUse" x="0" y="0" width="520" height="520">
+          <rect width="520" height="520" fill={`url(#${uid}-core)`} />
         </mask>
       </defs>
-      <rect width="280" height="280" fill={`url(#${uid}-dots)`} mask={`url(#${uid}-mask)`} />
+      <g mask={`url(#${uid}-flower)`}>
+        <rect width="520" height="520" fill={`url(#${uid}-dots)`} />
+        <g mask={`url(#${uid}-fade)`}>
+          <rect width="520" height="520" fill={color} />
+        </g>
+      </g>
     </svg>
   );
 };
 
 export { DecorShape };
 
-// Шаблон «Минимализм» удалён — массив пуст. Панель шаблонов рендерит
-// пустой ряд, пользователь не может применить Минимализм. Инфраструктура
-// (HookContent, isMinimalism-флаги в SlideFrame) остаётся на месте,
-// но не триггерится, пока ни у одного слайда нет bgPattern: "dots".
-const TEMPLATES: SlideTemplate[] = [];
+// Шаблон «Минимализм» — 1-в-1 с эталоном claude.design (см.
+// ./Яло/carousel-slide-standalone-src.html). Стилевой пакет задаёт
+// палитру + шрифты + фоновый dot-pattern; конкретный layout для hook —
+// в HookContent.tsx. Другие slide-types пока не переработаны.
+const TEMPLATES: SlideTemplate[] = [
+  {
+    id: "minimalism",
+    name: "Минимализм",
+    accentColor: "#CDE0FA",
+    accentMode: "highlight",
+    apply: {
+      bgColor: "#FFFFFF",
+      bgImage: undefined,
+      bgVideo: undefined,
+      bgType: "color",
+      overlayType: "none",
+      overlayOpacity: 0,
+      bgDarken: 0,
+      titleColor: "#0A0A0A",
+      bodyColor: "#666666",
+      metaColor: "#999999",
+      showFooter: false,
+      footerText: "",
+      showArrow: false,
+      showUsername: true,
+      showSlideCount: true,
+      titleFont: "'Marvin Visions', 'Space Grotesk', 'Inter', sans-serif",
+      titleLetterSpacing: -0.015,
+      titleCase: "none",
+      bodyFont: "'Inter', sans-serif",
+      bodyLetterSpacing: 0,
+      bodyCase: "none",
+      hAlign: "left",
+      vAlign: "end",
+      decorShape: "none",
+      bgPattern: "dots",
+      accentMode: "highlight",
+      accentColor: "#CDE0FA",
+    },
+    coverApply: {
+      bgColor: "#FFFFFF",
+      overlayType: "none",
+      overlayOpacity: 0,
+      titleColor: "#0A0A0A",
+      bodyColor: "#666666",
+      metaColor: "#999999",
+      hAlign: "left",
+      vAlign: "end",
+      decorShape: "asterisk",
+      decorColor: "#D6E8F7",
+      // 520×520 астериск в правом-верхнем, right:-60px. В % 1080-слайда:
+      //   decorSize = 520/1080 ≈ 48%
+      //   decorTop = 80/1350 ≈ 6%
+      //   decorLeft = 100% − 48% + (-60/1080×100%) = 57.4%
+      decorSize: 48,
+      decorTop: 6,
+      decorLeft: 57,
+      bgPattern: "dots",
+      accentMode: "highlight",
+      accentColor: "#CDE0FA",
+    },
+    preview: (
+      <div
+        className="w-full h-full relative overflow-hidden"
+        style={{
+          background: "#FFFFFF",
+          backgroundImage:
+            "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'><circle cx='10' cy='10' r='1' fill='%23CCCCCC' opacity='0.35'/></svg>\")",
+          backgroundSize: "6px 6px",
+          backgroundRepeat: "repeat",
+          fontFamily: "'Inter', sans-serif",
+        }}
+      >
+        {/* Top bar: @username слева, pill-counter справа */}
+        <div
+          className="absolute flex items-center justify-between"
+          style={{ top: 4, left: 6, right: 6, zIndex: 5 }}
+        >
+          <span style={{ fontSize: 4, color: "#999999" }}>@username</span>
+          <div
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: "50%",
+              background: "#F0F0F0",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 3,
+              fontWeight: 500,
+              color: "#0A0A0A",
+            }}
+          >
+            1/6
+          </div>
+        </div>
+        {/* Астериск: top-right, срезан правым краем */}
+        <div style={{ position: "absolute", top: "6%", left: "57%", width: "48%", zIndex: 2 }}>
+          <DecorShape color="#D6E8F7" />
+        </div>
+        {/* Content — примерно на 58% по вертикали */}
+        <div style={{ position: "absolute", top: "58%", left: 7, right: 7, zIndex: 4 }}>
+          <h3
+            style={{
+              fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+              fontWeight: 700,
+              fontSize: 8.5,
+              lineHeight: 1.1,
+              color: "#0A0A0A",
+              margin: 0,
+              textAlign: "left",
+              letterSpacing: "-0.015em",
+            }}
+          >
+            Почему одни бренды{" "}
+            <span
+              style={{
+                display: "inline-block",
+                background: "#CDE0FA",
+                color: "#0A0A0A",
+                borderRadius: 999,
+                padding: "0.08em 3px 0.12em",
+                marginLeft: -3,
+                lineHeight: 1,
+              }}
+            >
+              запоминаются&nbsp;сразу,
+            </span>{" "}
+            а другие — нет?
+          </h3>
+          <p
+            style={{
+              fontSize: 4,
+              color: "#666666",
+              margin: "3px 0 0 0",
+              lineHeight: 1.4,
+              textAlign: "left",
+            }}
+          >
+            Потому что внимание нельзя купить.
+          </p>
+        </div>
+      </div>
+    ),
+  },
+];
 
 interface TemplatesPanelProps {
   onApplyTemplate: (tpl: SlideTemplate) => void;

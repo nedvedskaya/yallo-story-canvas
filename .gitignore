@@ -14,6 +14,10 @@ dist-ssr
 .env
 .env.local
 
+# Локальные референсы дизайна (claude.design эталоны, скриншоты)
+Яло/
+.yalo_ref/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

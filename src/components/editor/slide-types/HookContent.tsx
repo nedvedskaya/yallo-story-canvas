@@ -42,20 +42,24 @@ function renderTitleWithHighlight(
   // на размер padding-а).
   const pad = 14 * scale;
   const pillStyle: React.CSSProperties = {
+    display: "inline-block",
     background: accentColor,
     color: "#0A0A0A",
     borderRadius: 999,
     padding: `0.08em ${pad}px 0.12em`,
     marginLeft: -pad,
-    display: "inline",
-    WebkitBoxDecorationBreak: "clone",
-    boxDecorationBreak: "clone",
+    lineHeight: 1,
   };
+
+  // Внутри pill-плашки пробелы заменяем на NBSP, чтобы слова не разрывались
+  // между строк и плашка оставалась единым цельным блоком (в эталоне —
+  // "запоминаются&nbsp;сразу,").
+  const pillText = highlight.replace(/ /g, "\u00A0");
 
   return (
     <>
       {before}
-      <span style={pillStyle}>{highlight}</span>
+      <span style={pillStyle}>{pillText}</span>
       {after}
     </>
   );

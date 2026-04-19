@@ -6,6 +6,7 @@ import React from "react";
 import SlideOverlay from "./SlideOverlay";
 import StickerLayer from "./StickerLayer";
 import SlideFactory from "./SlideFactory";
+import { DecorShape } from "./TemplatesPanel";
 import type { Slide } from "./SlideCarousel";
 import type { SlideFormat } from "./SizePanel";
 import {
@@ -147,63 +148,23 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
       {/* Overlay pattern */}
       {!overlayOnly && <SlideOverlay type={slide.overlayType} opacity={slide.overlayOpacity} color={slide.overlayColor} scale={scale} />}
 
-      {/* Decorative shape (e.g. halftone asterisk) — rendered above overlay, below content.
-          Shape is filled with a dot pattern masked by the asterisk silhouette. */}
-      {!overlayOnly && slide.decorShape === 'asterisk' && (() => {
-        const uid = `decor-${dataSlideId ?? 'x'}`;
-        const patternId = `${uid}-dots`;
-        const maskId = `${uid}-mask`;
-        const fadeId = `${uid}-fade`;
-        const color = slide.decorColor || '#CDE0FA';
-        return (
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              top: `${slide.decorTop ?? -8}%`,
-              left: `${slide.decorLeft ?? 42}%`,
-              width: `${slide.decorSize ?? 75}%`,
-              zIndex: 2,
-              pointerEvents: 'none',
-            }}
-          >
-            <svg
-              viewBox="0 0 280 280"
-              xmlns="http://www.w3.org/2000/svg"
-              style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}
-            >
-              <defs>
-                <pattern id={patternId} x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
-                  <circle cx="6" cy="6" r="2.8" fill={color} />
-                </pattern>
-                {/* Radial fade: dots are denser/opaque in center, fade toward the edges */}
-                <radialGradient id={fadeId} cx="50%" cy="50%" r="55%">
-                  <stop offset="0%" stopColor="white" stopOpacity="1" />
-                  <stop offset="70%" stopColor="white" stopOpacity="1" />
-                  <stop offset="100%" stopColor="white" stopOpacity="0.25" />
-                </radialGradient>
-                <mask id={maskId}>
-                  <rect width="280" height="280" fill="black" />
-                  <g fill={`url(#${fadeId})`}>
-                    <g transform="translate(140 140)">
-                      <rect x="-36" y="-126" width="72" height="150" rx="36" ry="36" />
-                      <rect x="-34" y="-122" width="68" height="146" rx="34" ry="34" transform="rotate(60)" />
-                      <rect x="-37" y="-128" width="74" height="152" rx="37" ry="37" transform="rotate(120)" />
-                      <rect x="-35" y="-124" width="70" height="148" rx="35" ry="35" transform="rotate(180)" />
-                      <rect x="-36" y="-126" width="72" height="150" rx="36" ry="36" transform="rotate(240)" />
-                      <rect x="-34" y="-120" width="68" height="144" rx="34" ry="34" transform="rotate(300)" />
-                      <circle cx="0" cy="0" r="58" />
-                      <circle cx="-8" cy="6" r="50" />
-                      <circle cx="10" cy="-4" r="46" />
-                    </g>
-                  </g>
-                </mask>
-              </defs>
-              <rect width="280" height="280" fill={`url(#${patternId})`} mask={`url(#${maskId})`} />
-            </svg>
-          </div>
-        );
-      })()}
+      {/* Декоративный астериск (Minimalism cover) — над overlay, под контентом.
+          SVG живёт в TemplatesPanel.tsx/DecorShape (1-в-1 с claude.design эталоном). */}
+      {!overlayOnly && slide.decorShape === 'asterisk' && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            top: `${slide.decorTop ?? 6}%`,
+            left: `${slide.decorLeft ?? 57}%`,
+            width: `${slide.decorSize ?? 48}%`,
+            zIndex: 2,
+            pointerEvents: 'none',
+          }}
+        >
+          <DecorShape color={slide.decorColor || '#D6E8F7'} />
+        </div>
+      )}
 
       {/* Content layer — pointer-events: none on wrapper so stickers (above) can be dragged anywhere.
           Interactive children re-enable pointer-events. */}
