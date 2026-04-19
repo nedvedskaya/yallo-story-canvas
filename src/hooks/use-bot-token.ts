@@ -37,8 +37,10 @@ export function getTokenFromUrl(): string | null {
   return params.get("token");
 }
 
+const API_BASE = import.meta.env.VITE_API_URL ?? "/api";
+
 export function notifyExported(token: string) {
-  fetch("https://ai.yalokontent.ru/api/generation/exported", {
+  fetch(`${API_BASE}/generation/exported`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ token }),
@@ -63,7 +65,7 @@ export function useBotToken(
     tokenRef.current = token;
     setLoading(true);
 
-    fetch(`https://ai.yalokontent.ru/api/generation?token=${encodeURIComponent(token)}`)
+    fetch(`${API_BASE}/generation?token=${encodeURIComponent(token)}`)
       .then(r => {
         if (!r.ok) throw new Error("bad response");
         return r.json() as Promise<BotResponse>;
