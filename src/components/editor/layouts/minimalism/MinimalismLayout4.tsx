@@ -1,18 +1,22 @@
 /**
- * MinimalismLayout4 — title + subtitle + quote-card ниже с акцент-dot (🔥)
- * в правом-нижнем углу карточки.
+ * MinimalismLayout4 — title + subtitle + quote-card с акцент-эмодзи в углу.
  *
- * HTML-эталон: /Яло/минимализм/layout4.html
- *   - title 96px Space Grotesk/Marvin Visions 700, text-wrap: balance;
- *   - subtitle Inter 30px 400, color #666;
- *   - quote block: скруглённая карточка (radius 28) #F0F0F0, padding 32×36,
- *     внутри text 26px Inter 400 (с поддержкой <b> для акцентной фразы) и
- *     круглая "mark" с эмодзи в правом-нижнем углу;
- *   - цвет mark = accentColor.
+ * Эталон (v2 от 19 Apr): /Яло/минимализм/layout4.html + скриншот «Внимание —
+ * это не охват» + quote «Охват можно купить…». Отличия от v1:
+ *   - убран Marvin Visions в title (не поддерживает кириллицу нормально),
+ *     вместо него Space Grotesk 700 как в Layout2 → читаемый bold sans-serif;
+ *   - title уменьшен до ~80px@1080 (в v1 было 96px — слишком крупно);
+ *   - эмодзи в акцент-dot настраиваемый (slide.markEmoji, дефолт 🔥).
+ *     Если markEmoji=='' — сам кружок всё равно рендерится (акцент-пятно),
+ *     просто без эмодзи внутри.
  *
- * Контент quote — из slide.body (полностью plain-text). Если slide.body пустой,
- * quote-блок не рендерится. Эмодзи в mark — 🔥 (жёстко из эталона); можно
- * сделать настраиваемым через slide.markEmoji, но пока Ольга этого не просила.
+ * Три текстовых поля:
+ *   - slide.title  → заголовок;
+ *   - slide.subtitle → "текст перед плашкой" (серый intro между title и card);
+ *   - slide.body → текст внутри quote-card (с поддержкой <b> акцентной фразы).
+ *
+ * Text-панель (см. TextPanel.tsx) показывает отдельный редактор для subtitle,
+ * когда slide.layout === 4, чтобы пользователь мог редактировать оба блока.
  */
 import React from "react";
 import type { SlideContentProps } from "../../SlideFactory";
@@ -31,14 +35,17 @@ import {
 } from "./tokens";
 import { prepareTitleHtml } from "@/lib/title-html";
 
-// Layout4 использует subtitle для «подписи» под заголовком (как Layout1/Base),
-// а slide.body — для quote-текста. Если только одно из этих полей — показываем
-// только его.
+/** Шрифт title для Layout4 — Space Grotesk 700 (cyrillic-compatible).
+ *  Override только если пользователь не менял titleFont вручную. */
+const LAYOUT4_TITLE_FONT = "'Space Grotesk', 'Inter', sans-serif";
+
+/** Layout4-специфичные размеры. v1 был 0.92× базы (96px@1080) — крупно;
+ *  по скриншоту Ольги реально ~80px@1080 → 0.77×. */
 function getLayout4Sizes(base: ReturnType<typeof getMinimalismSizes>) {
   return {
-    titleSize: Math.round(base.titleSize * 0.92),
-    bodySize: Math.round(base.bodySize * 0.75),
-    titleBodyGap: Math.round(base.titleBodyGap * 1.15),
+    titleSize: Math.round(base.titleSize * 0.77),
+    bodySize: Math.round(base.bodySize * 0.70),
+    titleBodyGap: Math.round(base.titleBodyGap * 0.9),
   };
 }
 
@@ -60,17 +67,20 @@ const MinimalismLayout4: React.FC<SlideContentProps> = ({
   onBodyMouseDown,
   onBodyClick,
 }) => {
-  // Для layout4 subtitle = slide.subtitle (подзаголовок под title),
-  // quote = slide.body (цитата в карточке). Разделение осмысленно, потому что
-  // это композиция из двух текстовых блоков.
+  // subtitle = intro-текст перед плашкой; quote = контент внутри плашки.
   const subtitle = stripHtml(slide.subtitle || "");
   const quote = stripHtml(slide.body || "");
+  // Эмодзи для акцент-dot. undefined → дефолт 🔥; пустая строка → кружок без эмодзи.
+  const markEmoji = slide.markEmoji ?? "🔥";
 
   const accentColor = slide.accentColor || MINIMALISM_ACCENT;
   const titleColor = slide.titleColor || MINIMALISM_TITLE;
   const bodyColor = slide.bodyColor || MINIMALISM_BODY;
 
-  const titleFontFamily = slide.titleFont || MINIMALISM_TITLE_FONT;
+  const titleFontFamily =
+    slide.titleFont && slide.titleFont !== MINIMALISM_TITLE_FONT
+      ? slide.titleFont
+      : LAYOUT4_TITLE_FONT;
   const bodyFontFamily = slide.bodyFont || MINIMALISM_BODY_FONT;
 
   const rs = metrics.renderScale;
@@ -79,7 +89,7 @@ const MinimalismLayout4: React.FC<SlideContentProps> = ({
   const titleFontSize = (slide.titleSize ?? sizes.titleSize) * rs;
   const subtitleFontSize = (slide.bodySize ?? sizes.bodySize) * rs;
   const subtitleMarginTop = sizes.titleBodyGap * rs;
-  const quoteFontSize = 26 * rs;
+  const quoteFontSize = Math.round(sizes.bodySize * 0.92) * rs;
 
   const textAlign = hAlignToText(slide.hAlign);
 
@@ -118,7 +128,7 @@ const MinimalismLayout4: React.FC<SlideContentProps> = ({
               fontWeight: 700,
               fontSize: `${titleFontSize}px`,
               lineHeight: slide.titleLineHeight ?? 1.05,
-              letterSpacing: `${slide.titleLetterSpacing ?? -0.025}em`,
+              letterSpacing: `${slide.titleLetterSpacing ?? -0.02}em`,
               textTransform: caseToTransform(slide.titleCase),
               color: titleColor,
               textAlign,
@@ -130,7 +140,7 @@ const MinimalismLayout4: React.FC<SlideContentProps> = ({
           />
         </div>
 
-        {/* Subtitle под заголовком */}
+        {/* Subtitle — intro-текст перед плашкой */}
         {subtitle && (
           <div
             onTouchStart={onBodyTouchStart}
@@ -153,7 +163,7 @@ const MinimalismLayout4: React.FC<SlideContentProps> = ({
                 fontFamily: bodyFontFamily,
                 fontWeight: 400,
                 fontSize: `${subtitleFontSize}px`,
-                lineHeight: slide.bodyLineHeight ?? 1.35,
+                lineHeight: slide.bodyLineHeight ?? 1.4,
                 letterSpacing: `${slide.bodyLetterSpacing ?? 0}em`,
                 textTransform: caseToTransform(slide.bodyCase),
                 color: bodyColor,
@@ -165,7 +175,7 @@ const MinimalismLayout4: React.FC<SlideContentProps> = ({
           </div>
         )}
 
-        {/* Quote-блок — скруглённая серая карточка с акцент-dot в углу */}
+        {/* Quote-card — скруглённая серая плашка с акцент-эмодзи справа-снизу */}
         {quote && (
           <div
             onClick={onBodyClick}
@@ -187,13 +197,15 @@ const MinimalismLayout4: React.FC<SlideContentProps> = ({
                 fontSize: `${quoteFontSize}px`,
                 lineHeight: 1.4,
                 color: "#2A2A2A",
-                paddingRight: `${64 * rs}px`,
+                paddingRight: `${76 * rs}px`,
                 textAlign,
               }}
-            >
-              {quote}
-            </p>
-            {/* Акцент-mark — круг с эмодзи 🔥 в правом-нижнем углу */}
+              // Позволяем <b>жирному</b> из InlineTextEditor работать.
+              dangerouslySetInnerHTML={{
+                __html: prepareTitleHtml(slide.body || "", undefined, accentColor),
+              }}
+            />
+            {/* Акцент-dot: кружок с (опциональным) эмодзи в правом-нижнем углу */}
             <span
               aria-hidden
               style={{
@@ -211,7 +223,7 @@ const MinimalismLayout4: React.FC<SlideContentProps> = ({
                 lineHeight: 1,
               }}
             >
-              🔥
+              {markEmoji}
             </span>
           </div>
         )}

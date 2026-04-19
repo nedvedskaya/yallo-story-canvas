@@ -147,6 +147,9 @@ export interface Slide {
   decorSize?: number;
   decorTop?: number;
   decorLeft?: number;
+  /** Эмодзи в акцент-dot Layout4 (правый-нижний угол quote-карточки).
+   *  Любой unicode-эмодзи, дефолт 🔥. Пустая строка = скрыть эмодзи. */
+  markEmoji?: string;
   /** Decorative background pattern that tiles across the whole slide (e.g. notebook-paper dots). */
   bgPattern?: 'dots' | 'none';
   accentMode?: 'highlight' | 'color' | 'none';

@@ -180,13 +180,58 @@ const TextPanel = ({ currentSlide, initialSection, initialSectionNonce, onSave, 
         </>
       ) : (
         <>
-          <InlineTextEditor
-            value={currentSlide.body}
-            onChange={(html) => onSave({ body: html })}
-            placeholder="Введите основной текст"
-            defaultTextColor={toHex(currentSlide.bodyColor)}
-            defaultHighlightColor={toHex(currentSlide.accentColor)}
-          />
+          {/* Layout 4 (Minimalism) имеет два текстовых блока: intro ("текст
+              перед плашкой") и quote (внутри карточки). Редактируем отдельно,
+              чтобы пользователь мог заполнить оба. Другие layouts используют
+              только slide.body. */}
+          {currentSlide.template === 'minimalism' && currentSlide.layout === 4 ? (
+            <>
+              <p className="text-[11px] font-medium" style={{ color: 'rgba(26,26,46,0.7)' }}>Текст перед плашкой</p>
+              <InlineTextEditor
+                value={currentSlide.subtitle || ""}
+                onChange={(html) => onSave({ subtitle: html })}
+                placeholder="Это секунда, когда человек замедлился…"
+                defaultTextColor={toHex(currentSlide.bodyColor)}
+                defaultHighlightColor={toHex(currentSlide.accentColor)}
+              />
+              <p className="text-[11px] font-medium" style={{ color: 'rgba(26,26,46,0.7)' }}>Текст внутри плашки</p>
+              <InlineTextEditor
+                value={currentSlide.body}
+                onChange={(html) => onSave({ body: html })}
+                placeholder="Основная мысль в плашке"
+                defaultTextColor={toHex(currentSlide.bodyColor)}
+                defaultHighlightColor={toHex(currentSlide.accentColor)}
+              />
+              {/* Эмодзи-dot в углу плашки. input type=text принимает любой
+                  unicode-эмодзи. maxLength=4 — многие эмодзи — composite (🇺🇸
+                  = 2 code points × 2 = 4). Пустое значение = кружок без
+                  эмодзи. */}
+              <div className="flex items-center justify-between">
+                <span className="text-xs" style={{ color: 'rgba(26,26,46,0.6)' }}>Эмодзи в углу</span>
+                <input
+                  type="text"
+                  value={currentSlide.markEmoji ?? "🔥"}
+                  maxLength={4}
+                  onChange={(e) => onSave({ markEmoji: e.target.value })}
+                  placeholder="🔥"
+                  className="w-[56px] rounded-lg px-2 py-1.5 text-base text-center"
+                  style={{
+                    background: 'rgba(255,255,255,0.6)',
+                    border: '1px solid rgba(200,200,220,0.5)',
+                    color: '#1a1a2e',
+                  }}
+                />
+              </div>
+            </>
+          ) : (
+            <InlineTextEditor
+              value={currentSlide.body}
+              onChange={(html) => onSave({ body: html })}
+              placeholder="Введите основной текст"
+              defaultTextColor={toHex(currentSlide.bodyColor)}
+              defaultHighlightColor={toHex(currentSlide.accentColor)}
+            />
+          )}
           <div className="h-px" style={{ background: 'rgba(26,26,46,0.08)' }} />
           <FontSection label="Шрифт основного текста" settings={bodySettings} onChange={handleChange("body")} onCommit={handleCommit("body")} customFonts={customFonts} onAddCustomFont={handleAddCustomFont} />
           <div className="h-px" style={{ background: 'rgba(26,26,46,0.08)' }} />
