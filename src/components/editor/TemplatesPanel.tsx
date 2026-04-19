@@ -76,9 +76,9 @@ const TEMPLATES: SlideTemplate[] = [
       vAlign: "center",
       decorShape: "asterisk",
       decorColor: "#E7F0FB",
-      decorSize: 30,
-      decorTop: 13,
-      decorLeft: 9,
+      decorSize: 52,
+      decorTop: 8,
+      decorLeft: -5,
       accentMode: "highlight",
       accentColor: "#CDE0FA",
     },
@@ -94,9 +94,9 @@ const TEMPLATES: SlideTemplate[] = [
       vAlign: "center",
       decorShape: "asterisk",
       decorColor: "#E7F0FB",
-      decorSize: 30,
-      decorTop: 13,
-      decorLeft: 9,
+      decorSize: 52,
+      decorTop: 8,
+      decorLeft: -5,
       accentMode: "highlight",
       accentColor: "#CDE0FA",
     },
@@ -140,8 +140,8 @@ const TEMPLATES: SlideTemplate[] = [
           </div>
         </div>
         {/* Decor */}
-        <div style={{ position: "absolute", top: "13%", left: "9%", zIndex: 2 }}>
-          <DecorShape color="#E7F0FB" size={28} />
+        <div style={{ position: "absolute", top: "8%", left: "-5%", width: "52%", zIndex: 2 }}>
+          <DecorShape color="#E7F0FB" size={50} />
         </div>
         {/* Content */}
         <div style={{ position: "absolute", top: "55%", left: 7, right: 7, zIndex: 4 }}>

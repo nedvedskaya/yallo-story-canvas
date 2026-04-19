@@ -45,7 +45,7 @@ export interface FormatDesign {
 
 export const FORMAT_DESIGN: Record<SlideFormat, FormatDesign> = {
   carousel: {
-    safeZone: { top: 80, bottom: 80, left: 72, right: 72 },
+    safeZone: { top: 80, bottom: 80, left: 80, right: 80 },
     titleSize: 68, bodySize: 38, bulletSize: 36,
     usernameSize: 24, counterSize: 24, footerSize: 22,
     titleLineHeight: 1.05, bodyLineHeight: 1.45, bulletLineHeight: 1.5,
