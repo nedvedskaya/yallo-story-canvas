@@ -1,14 +1,58 @@
 import { useState, useEffect, useRef } from "react";
-import type { Slide } from "@/components/editor/SlideCarousel";
+import type { Slide, SlideType, ComparisonSide } from "@/components/editor/SlideCarousel";
 import type { SlideFormat } from "@/components/editor/SizePanel";
 import type { SlideTemplate } from "@/components/editor/TemplatesPanel";
 
+/** Raw slide envelope from /api/generation — keys match backend contract. */
 interface BotSlide {
   index: number;
-  title: string;
-  body: string;
-  type: string;
+  type?: string;
+  // shared / legacy
+  title?: string;
+  body?: string;
+  text?: string;
   has_list?: boolean;
+  design_hint?: string;
+  // typed content
+  subtitle?: string;
+  highlight?: string;
+  accent_text?: string;
+  pain_points?: string[];
+  items?: string[];
+  numbered?: boolean;
+  action_hint?: string;
+  value?: string;
+  caption?: string;
+  context?: string;
+  author?: string;
+  author_role?: string;
+  steps?: { label: string; description?: string }[];
+  left?: ComparisonSide;
+  right?: ComparisonSide;
+  time_marker?: string;
+  scene?: string;
+  emotion?: string;
+  sensory_detail?: string;
+  name?: string;
+  role?: string;
+  description?: string;
+  stats?: { value: string; label: string }[];
+  question?: string;
+  image_url?: string;
+  annotation?: string;
+}
+
+const VALID_TYPES: readonly SlideType[] = [
+  'hook', 'problem', 'thesis', 'list', 'cta', 'big_number',
+  'quote', 'steps', 'comparison', 'story_moment', 'hero_card',
+  'question', 'visual_focus', 'text_block',
+] as const;
+
+function coerceType(raw: string | undefined): SlideType {
+  if (raw && (VALID_TYPES as readonly string[]).includes(raw)) {
+    return raw as SlideType;
+  }
+  return 'text_block';
 }
 
 interface BotResponse {
@@ -80,7 +124,7 @@ export function useBotToken(
           id: nextBotId++,
           username: data.author_username || "@username",
           title: s.title || "Заголовок",
-          body: s.body || "",
+          body: s.body || s.text || "",
           bgColor: "#F3F3F3",
           bgType: "color" as const,
           hAlign: "left" as const,
@@ -104,6 +148,34 @@ export function useBotToken(
           titleCase: "none",
           bodyFont: "'Inter', sans-serif",
           ...tplApply,
+          // Type + type-specific fields (after tplApply so API wins over template defaults).
+          type: coerceType(s.type),
+          subtitle: s.subtitle,
+          highlight: s.highlight,
+          accent_text: s.accent_text,
+          pain_points: s.pain_points,
+          items: s.items,
+          numbered: s.numbered,
+          action_hint: s.action_hint,
+          value: s.value,
+          caption: s.caption,
+          context: s.context,
+          author: s.author,
+          author_role: s.author_role,
+          steps_items: s.steps,
+          comparison_left: s.left,
+          comparison_right: s.right,
+          time_marker: s.time_marker,
+          scene: s.scene,
+          emotion: s.emotion,
+          sensory_detail: s.sensory_detail,
+          hero_name: s.name,
+          hero_role: s.role,
+          hero_description: s.description,
+          hero_stats: s.stats,
+          question_text: s.question,
+          image_url: s.image_url,
+          annotation: s.annotation,
         }));
 
         setBotSlides(slides);

@@ -8,11 +8,73 @@ import type { OverlayType } from "./BackgroundPanel";
 import { FORMAT_OPTIONS, type SlideFormat } from "./SizePanel";
 import SlideFrame from "./SlideFrame";
 
+/**
+ * SlideType — discriminator for type-specific layout dispatch.
+ * Layout is determined by `type`; visual style (colors, fonts, decor) by the template.
+ * See src/components/editor/SlideFactory.tsx and src/components/editor/slide-types/*.
+ */
+export type SlideType =
+  | 'hook'
+  | 'problem'
+  | 'thesis'
+  | 'list'
+  | 'cta'
+  | 'big_number'
+  | 'quote'
+  | 'steps'
+  | 'comparison'
+  | 'story_moment'
+  | 'hero_card'
+  | 'question'
+  | 'visual_focus'
+  | 'text_block';
+
+export interface ComparisonSide {
+  label: string;
+  text?: string;
+  items?: string[];
+}
+
 export interface Slide {
   id: number;
   username: string;
   title: string;
   body: string;
+
+  /** Slide type — drives layout dispatch in SlideFactory. Undefined = 'text_block' fallback. */
+  type?: SlideType;
+
+  // Type-specific content fields (all optional; each *Content component reads only its own).
+  // Names are prefixed (steps_items, comparison_left, hero_*, question_text) where API keys
+  // like `steps`, `left`, `right`, `name`, `role`, `description`, `question` would collide with
+  // existing Slide fields or reserved React/DOM names.
+  subtitle?: string;
+  highlight?: string;
+  accent_text?: string;
+  pain_points?: string[];
+  items?: string[];
+  numbered?: boolean;
+  action_hint?: string;
+  value?: string;
+  caption?: string;
+  context?: string;
+  author?: string;
+  author_role?: string;
+  steps_items?: { label: string; description?: string }[];
+  comparison_left?: ComparisonSide;
+  comparison_right?: ComparisonSide;
+  time_marker?: string;
+  scene?: string;
+  emotion?: string;
+  sensory_detail?: string;
+  hero_name?: string;
+  hero_role?: string;
+  hero_description?: string;
+  hero_stats?: { value: string; label: string }[];
+  question_text?: string;
+  image_url?: string;
+  annotation?: string;
+
   bgColor: string;
   bgType: BgType;
   hAlign: HAlign;
@@ -58,6 +120,8 @@ export interface Slide {
   decorSize?: number;
   decorTop?: number;
   decorLeft?: number;
+  /** Decorative background pattern that tiles across the whole slide (e.g. notebook-paper dots). */
+  bgPattern?: 'dots' | 'none';
   accentMode?: 'highlight' | 'color' | 'none';
   accentColor?: string;
   stickers?: Array<{

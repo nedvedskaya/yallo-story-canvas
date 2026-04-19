@@ -64,7 +64,7 @@ export { DecorShape };
 const TEMPLATES: SlideTemplate[] = [
   {
     id: "hook",
-    name: "Hook",
+    name: "Минимализм",
     accentColor: "#CDE0FA",
     accentMode: "highlight",
     apply: {
@@ -91,11 +91,8 @@ const TEMPLATES: SlideTemplate[] = [
       bodyCase: "none",
       hAlign: "left",
       vAlign: "end",
-      decorShape: "asterisk",
-      decorColor: "#CDE0FA",
-      decorSize: 75,
-      decorTop: -8,
-      decorLeft: 42,
+      decorShape: "none",
+      bgPattern: "dots",
       accentMode: "highlight",
       accentColor: "#CDE0FA",
     },
@@ -109,10 +106,11 @@ const TEMPLATES: SlideTemplate[] = [
       hAlign: "left",
       vAlign: "end",
       decorShape: "asterisk",
-      decorColor: "#CDE0FA",
+      decorColor: "#E7F0FB",
       decorSize: 75,
       decorTop: -8,
       decorLeft: 42,
+      bgPattern: "dots",
       accentMode: "highlight",
       accentColor: "#CDE0FA",
     },
@@ -150,8 +148,11 @@ const TEMPLATES: SlideTemplate[] = [
             <span
               style={{
                 background: "#CDE0FA",
-                borderRadius: 2,
-                padding: "0 2px",
+                color: "#0A0A0A",
+                borderRadius: 3,
+                padding: "0.5px 3px",
+                display: "inline",
+                lineHeight: "inherit",
                 boxDecorationBreak: "clone",
                 WebkitBoxDecorationBreak: "clone",
               }}

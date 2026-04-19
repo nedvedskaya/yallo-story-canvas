@@ -3,18 +3,15 @@
  * Used by SlideCarousel for preview and DownloadModal for export.
  */
 import React from "react";
-import { sanitizeHtml } from "@/lib/sanitize";
 import SlideOverlay from "./SlideOverlay";
 import StickerLayer from "./StickerLayer";
+import SlideFactory from "./SlideFactory";
 import type { Slide } from "./SlideCarousel";
 import type { SlideFormat } from "./SizePanel";
 import {
   H_ALIGN_TO_TEXT,
-  V_ALIGN_TO_JUSTIFY,
   getSlideMetrics,
   getMediaStyle,
-  getTitleStyle,
-  getBodyStyle,
 } from "./slide-render-model";
 
 export interface SlideFrameProps {
@@ -50,21 +47,6 @@ export interface SlideFrameProps {
   watermark?: string;
 }
 
-/** Parse body text into list items */
-function parseListItems(body: string): string[] {
-  return body
-    .split(/\n/)
-    .map(l => l.trim())
-    .filter(Boolean)
-    .flatMap(line => {
-      if ((line.match(/[•→]/g) || []).length > 1) {
-        return line.split(/(?=[•→])/).map(s => s.trim()).filter(Boolean);
-      }
-      return [line];
-    })
-    .map(line => line.replace(/^[•→]\s*/, ''));
-}
-
 const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
   slide, slideIndex, totalSlides, format, scale = 1,
   width, height,
@@ -78,11 +60,11 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
   const metrics = getSlideMetrics(slide, format, scale);
   const isExport = !!(width && height);
   const mediaStyle = getMediaStyle(slide, undefined, isExport ? width : undefined, isExport ? height : undefined);
-  const title = getTitleStyle(slide, metrics, titleOverrides);
-  const body = getBodyStyle(slide, metrics, bodyOverrides);
 
-  const isList = slide.hasList || /[•→]/.test(slide.body);
-  const listItems = isList ? parseListItems(slide.body) : [];
+  // Minimalism template marker: asterisk decor triggers 8% side padding AND
+  // absolute top:52% content positioning. The regular (non-asterisk) flow
+  // keeps the format's safeZone-driven metrics untouched.
+  const isAsteriskTemplate = slide.decorShape === 'asterisk';
 
   const rootStyle: React.CSSProperties = {
     width: width ? `${width}px` : '100%',
@@ -94,11 +76,19 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
     textAlign: H_ALIGN_TO_TEXT[slide.hAlign] as React.CSSProperties['textAlign'],
     paddingTop: `${metrics.paddingTop}px`,
     paddingBottom: `${metrics.paddingBottom}px`,
-    paddingLeft: `${metrics.paddingLeft}px`,
-    paddingRight: `${metrics.paddingRight}px`,
+    paddingLeft: isAsteriskTemplate ? '8%' : `${metrics.paddingLeft}px`,
+    paddingRight: isAsteriskTemplate ? '8%' : `${metrics.paddingRight}px`,
     display: 'flex',
     flexDirection: 'column',
   };
+
+  // Factory props bundle — identical for both positioning branches below.
+  const factoryProps = {
+    slide, slideIndex, totalSlides, format, scale, metrics,
+    titleOverrides, bodyOverrides, editorOpen,
+    onTitleTouchStart, onTitleTouchMove, onTitleTouchEnd, onTitleMouseDown, onTitleClick,
+    onBodyTouchStart, onBodyTouchMove, onBodyTouchEnd, onBodyMouseDown, onBodyClick,
+  } as const;
 
   return (
     <div ref={ref} style={rootStyle} data-slide-id={dataSlideId}>
@@ -122,6 +112,31 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
           )}
         </div>
       )}
+
+      {/* Background dot pattern (Minimalism template): tiny grey circles tiled across the whole slide.
+          Renders BELOW the overlay layer so overlays still compose on top. Uses an inline SVG
+          data-URI so density scales with `scale` (preview 20px tile, export 20×scale px tile). */}
+      {!overlayOnly && slide.bgPattern === 'dots' && (() => {
+        const tile = 20 * scale;
+        // Fixed 20×20 SVG tile with a 1.5r circle at (10,10), fill #CCCCCC, opacity 0.4.
+        const svg = encodeURIComponent(
+          "<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'>" +
+          "<circle cx='10' cy='10' r='1.5' fill='#CCCCCC' opacity='0.4'/></svg>"
+        );
+        return (
+          <div
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{
+              zIndex: 1,
+              backgroundImage: `url("data:image/svg+xml,${svg}")`,
+              backgroundSize: `${tile}px ${tile}px`,
+              backgroundRepeat: 'repeat',
+              pointerEvents: 'none',
+            }}
+          />
+        );
+      })()}
 
       {/* Overlay pattern */}
       {!overlayOnly && <SlideOverlay type={slide.overlayType} opacity={slide.overlayOpacity} color={slide.overlayColor} scale={scale} />}
@@ -197,67 +212,15 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
           ) : <span />}
         </div>
 
-        {/* Content area */}
-        <div className="flex flex-col flex-1 min-h-0" style={{ justifyContent: V_ALIGN_TO_JUSTIFY[slide.vAlign] || 'center' }}>
-          <div>
-            {/* Title */}
-            <div
-              onTouchStart={onTitleTouchStart}
-              onTouchMove={onTitleTouchMove}
-              onTouchEnd={onTitleTouchEnd}
-              onMouseDown={onTitleMouseDown}
-              style={{ ...title.wrapperStyle, touchAction: 'none', cursor: editorOpen ? 'text' : 'grab', pointerEvents: 'auto' }}
-            >
-              <h2
-                onClick={onTitleClick}
-                className="outline-none cursor-pointer"
-                style={title.textStyle}
-                dangerouslySetInnerHTML={{ __html: sanitizeHtml(slide.title) }}
-              />
-            </div>
-            {/* Body */}
-            <div
-              onTouchStart={onBodyTouchStart}
-              onTouchMove={onBodyTouchMove}
-              onTouchEnd={onBodyTouchEnd}
-              onMouseDown={onBodyMouseDown}
-              style={{ ...body.wrapperStyle, touchAction: 'none', cursor: editorOpen ? 'text' : 'grab', marginTop: `${metrics.titleBodyGap}px`, pointerEvents: 'auto' }}
-            >
-              {isList ? (
-                <ul
-                  onClick={onBodyClick}
-                  className="outline-none cursor-pointer"
-                  style={{
-                    ...body.textStyle,
-                    fontSize: `${metrics.bulletSize}px`,
-                    lineHeight: metrics.bulletLineHeight,
-                    listStyle: 'none',
-                    padding: 0,
-                    margin: 0,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: `${metrics.bulletGap}px`,
-                    maxWidth: `${metrics.bulletMaxWidth * 100}%`,
-                  }}
-                >
-                  {listItems.map((line, i) => (
-                    <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: `${metrics.bulletIndent}px` }}>
-                      <span style={{ flexShrink: 0, opacity: 0.7, lineHeight: metrics.bulletLineHeight }}>•</span>
-                      <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(line) }} />
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p
-                  onClick={onBodyClick}
-                  className="outline-none cursor-pointer"
-                  style={body.textStyle}
-                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(slide.body) }}
-                />
-              )}
-            </div>
-          </div>
-        </div>
+        {/* Content area.
+            - asterisk template: spacer here; SlideFactory rendered as an absolute layer (see below)
+              so its content block starts at exactly top:52% of slide height.
+            - other templates: SlideFactory fills the flex-1 slot with its own vAlign-driven layout. */}
+        {isAsteriskTemplate ? (
+          <div className="flex-1" />
+        ) : (
+          <SlideFactory {...factoryProps} />
+        )}
 
         {/* Bottom bar */}
         <div className="flex items-end justify-between w-full flex-shrink-0" style={{ pointerEvents: 'auto' }}>
@@ -271,6 +234,23 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
           ) : <span />}
         </div>
       </div>
+
+      {/* Asterisk template: content block positioned absolutely at top:48% of slide,
+          with the same 8% side insets the root already applies for flex children. */}
+      {isAsteriskTemplate && (
+        <div
+          className="absolute"
+          style={{
+            top: '48%',
+            left: '8%',
+            right: '8%',
+            zIndex: 10,
+            pointerEvents: 'auto',
+          }}
+        >
+          <SlideFactory {...factoryProps} />
+        </div>
+      )}
 
       {/* Sticker layer — rendered ABOVE content so they can be dragged anywhere on the slide */}
       {slide.stickers && slide.stickers.length > 0 && (
