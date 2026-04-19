@@ -53,14 +53,36 @@ export function usePersistentSlides(initial: Slide[]) {
     return initial;
   });
 
+  // Debounced write: ~250 мс. При живом drag'е (sticker/slider) slides[]
+  // обновляется до 60 раз/сек — без debounce это означало 60 JSON.stringify+
+  // localStorage.setItem в секунду. Теперь пишем только когда пользователь
+  // «успокоился» на 250мс. Важно: на unmount (например reload) сбрасываем
+  // pending write синхронно, чтобы не потерять последнюю версию.
   useEffect(() => {
     if (skipPersist.current) return;
-    try {
-      const sanitized = slides.map(sanitizeForStorage);
-      localStorage.setItem(SLIDES_KEY, JSON.stringify(sanitized));
-    } catch {
-      // Quota or serialization failure — ignore
-    }
+    const timer = window.setTimeout(() => {
+      try {
+        const sanitized = slides.map(sanitizeForStorage);
+        localStorage.setItem(SLIDES_KEY, JSON.stringify(sanitized));
+      } catch {
+        // Quota or serialization failure — ignore
+      }
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [slides]);
+
+  // Flush на unload — на случай если пользователь закроет вкладку быстрее,
+  // чем сработает debounced write.
+  useEffect(() => {
+    const flush = () => {
+      if (skipPersist.current) return;
+      try {
+        const sanitized = slides.map(sanitizeForStorage);
+        localStorage.setItem(SLIDES_KEY, JSON.stringify(sanitized));
+      } catch {}
+    };
+    window.addEventListener("beforeunload", flush);
+    return () => window.removeEventListener("beforeunload", flush);
   }, [slides]);
 
   return [slides, setSlides] as const;

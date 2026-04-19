@@ -120,12 +120,18 @@ const Index = () => {
   const undoStack = useRef<Slide[][]>([]);
   const redoStack = useRef<Slide[][]>([]);
   const skipHistory = useRef(false);
+  // Version counter — бьётся при push/pop стеков, чтобы React сделал
+  // re-render и кнопки Undo/Redo перечитали `.current.length` (сами refs
+  // не триггерят рендер). canUndo/canRedo читается от ref'ов после bump.
+  const [, bumpHistory] = useState(0);
+  const bump = useCallback(() => bumpHistory(v => v + 1), []);
 
   const pushUndo = useCallback((prev: Slide[]) => {
     if (skipHistory.current) return;
     undoStack.current = [...undoStack.current.slice(-(MAX_UNDO - 1)), prev];
     redoStack.current = [];
-  }, []);
+    bump();
+  }, [bump]);
 
   const setSlidesWithHistory = useCallback((updater: Slide[] | ((prev: Slide[]) => Slide[])) => {
     setSlides(prev => {
@@ -142,7 +148,8 @@ const Index = () => {
       redoStack.current.push(current);
       return prev;
     });
-  }, []);
+    bump();
+  }, [bump]);
 
   const handleRedo = useCallback(() => {
     if (redoStack.current.length === 0) return;
@@ -151,7 +158,8 @@ const Index = () => {
       undoStack.current.push(current);
       return next;
     });
-  }, []);
+    bump();
+  }, [bump]);
 
   const safeActiveSlide = Math.max(0, Math.min(activeSlide, slides.length - 1));
   const currentSlide = slides[safeActiveSlide];
@@ -302,12 +310,35 @@ const Index = () => {
     ));
   }, [currentSlide, setSlidesWithHistory]);
 
+  // Стикеры во время drag'а апдейтятся 60 раз/сек — пушить каждый tick в undo
+  // было бы бессмысленно. Используем trailing-debounce: первый update запоминает
+  // pre-drag snapshot; следующие tick'и только сбрасывают таймер; когда 400мс
+  // нет новых апдейтов — drag считается завершённым, pre-drag snapshot идёт в
+  // undoStack. Один тап на стикер и одно перетаскивание = одна запись в истории.
+  const stickerDragRef = useRef<{ slides: Slide[]; timer: number } | null>(null);
   const handleUpdateSticker = useCallback((stickerId: string, updates: Partial<{x:number;y:number;scale:number;rotation:number}>) => {
     if (!currentSlide) return;
-    setSlides(prev => prev.map(s =>
-      s.id === currentSlide.id ? { ...s, stickers: (s.stickers || []).map(st => st.id === stickerId ? { ...st, ...updates } : st) } : s
-    ));
-  }, [currentSlide]);
+    setSlides(prev => {
+      if (!stickerDragRef.current) {
+        stickerDragRef.current = { slides: prev, timer: 0 };
+      }
+      const snap = stickerDragRef.current;
+      if (snap.timer) window.clearTimeout(snap.timer);
+      snap.timer = window.setTimeout(() => {
+        if (stickerDragRef.current) {
+          undoStack.current = [...undoStack.current.slice(-(MAX_UNDO - 1)), stickerDragRef.current.slides];
+          redoStack.current = [];
+          stickerDragRef.current = null;
+          bump();
+        }
+      }, 400);
+      return prev.map(s =>
+        s.id === currentSlide.id
+          ? { ...s, stickers: (s.stickers || []).map(st => st.id === stickerId ? { ...st, ...updates } : st) }
+          : s
+      );
+    });
+  }, [currentSlide, bump]);
 
   const handleAddSlide = useCallback((atIndex: number) => {
     const isCover = atIndex === 0;

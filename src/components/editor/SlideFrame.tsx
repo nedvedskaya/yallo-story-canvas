@@ -236,20 +236,19 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
           <SlideFactory {...factoryProps} />
         )}
 
-        {/* Bottom bar — для Minimalism скрываем целиком (arrow/footer уводит
-            фокус с заголовка, в референсе их нет). */}
-        {!isMinimalism && (
-          <div className="flex items-end justify-between w-full flex-shrink-0" style={{ pointerEvents: 'auto' }}>
-            {slide.showFooter ? (
-              <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.6)', fontSize: `${metrics.footerSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>
-                {slide.footerText || ""}
-              </span>
-            ) : <span />}
-            {slide.showArrow !== false && slideIndex < totalSlides - 1 ? (
-              <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.5)', fontSize: `${(metrics.footerSize + 2 * scale)}px` }}>→</span>
-            ) : <span />}
-          </div>
-        )}
+        {/* Bottom bar — управляется флагами slide.showFooter/showArrow во всех
+            шаблонах (включая Minimalism). Для Minimalism цвет footer/arrow
+            берётся из slide.metaColor = #999999 по умолчанию шаблона. */}
+        <div className="flex items-end justify-between w-full flex-shrink-0" style={{ pointerEvents: 'auto' }}>
+          {slide.showFooter ? (
+            <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.6)', fontSize: `${metrics.footerSize}px`, fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>
+              {slide.footerText || ""}
+            </span>
+          ) : <span />}
+          {slide.showArrow !== false && slideIndex < totalSlides - 1 ? (
+            <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.5)', fontSize: `${(metrics.footerSize + 2 * scale)}px` }}>→</span>
+          ) : <span />}
+        </div>
       </div>
 
       {/* Minimalism Hook: content block positioned absolutely at top:48% of slide

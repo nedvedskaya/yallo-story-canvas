@@ -83,41 +83,31 @@ export function getSlideMetrics(slide: Slide, format: SlideFormat, scale = 1): S
   };
 }
 
+/** Единая формула media-стиля для preview и export.
+ *  Раньше было две ветки (% в preview через scale-transform, абсолютные px в
+ *  export через width/height) — они расходились на bgScale≠100 и non-center
+ *  posY, поэтому «элементы съезжали» при экспорте PNG/PDF. Теперь везде %:
+ *  width/height = bgScale% от контейнера, позиция = bgPosX%/bgPosY% от
+ *  контейнера, translate(-50%, -50%) центрирует изображение по точке.
+ *  object-fit:cover сохраняет aspect ratio, обрезая переполнение. */
 export function getMediaStyle(
   slide: Slide,
   overrides?: { posX?: number; posY?: number; scale?: number },
-  containerWidth?: number,
-  containerHeight?: number,
+  _containerWidth?: number,
+  _containerHeight?: number,
 ): React.CSSProperties {
   const posX = overrides?.posX ?? slide.bgPosX;
   const posY = overrides?.posY ?? slide.bgPosY;
   const sc = overrides?.scale ?? slide.bgScale;
 
-  if (containerWidth && containerHeight) {
-    const scaleFactor = sc / 100;
-    const w = containerWidth * scaleFactor;
-    const h = containerHeight * scaleFactor;
-    const cx = (posX / 100) * containerWidth;
-    const cy = (posY / 100) * containerHeight;
-    return {
-      position: 'absolute',
-      left: `${cx}px`,
-      top: `${cy}px`,
-      width: `${w}px`,
-      height: `${h}px`,
-      transform: 'translate(-50%, -50%)',
-      objectFit: 'cover' as const,
-    };
-  }
-
   return {
     position: 'absolute',
     left: `${posX}%`,
     top: `${posY}%`,
-    transform: `translate(-50%, -50%) scale(${sc / 100})`,
-    transformOrigin: 'center center',
-    minWidth: '100%',
-    minHeight: '100%',
+    width: `${sc}%`,
+    height: `${sc}%`,
+    transform: 'translate(-50%, -50%)',
+    objectFit: 'cover' as const,
   };
 }
 

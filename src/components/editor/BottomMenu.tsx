@@ -40,7 +40,7 @@ const BottomMenu = ({ activeTab, onTabChange, hidden }: BottomMenuProps) => {
               <button
                 key={item.id}
                 onClick={() => onTabChange(isActive ? null : item.id)}
-                className="relative flex flex-col items-center gap-1 rounded-xl px-3 py-2"
+                className="relative flex flex-col items-center gap-1 rounded-xl px-3 py-2 transition-opacity active:opacity-80"
               >
                 {isActive && (
                   <div

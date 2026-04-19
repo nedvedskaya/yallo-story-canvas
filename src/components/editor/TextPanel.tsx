@@ -65,6 +65,16 @@ const ColorPicker = ({
   );
 };
 
+/** Нормализация color в #RRGGBB для <input type="color"> и свотчей.
+ *  Принимает hex/rgba/undefined. Возвращает undefined, если не удалось
+ *  распарсить — чтобы InlineTextEditor мог применить свой fallback. */
+function toHex(c: string | undefined): string | undefined {
+  if (!c) return undefined;
+  if (/^#[0-9a-fA-F]{6}$/.test(c)) return c;
+  if (c.startsWith('rgb')) return rgbaToHex(c);
+  return undefined;
+}
+
 /** Map FontSettings updates to Slide fields for a given prefix */
 function mapFontSettings(prefix: "title" | "body", updates: Partial<FontSettings>): Partial<Slide> {
   const mapped: Partial<Slide> = {};
@@ -126,6 +136,8 @@ const TextPanel = ({ currentSlide, onSave, onSaveLive, onApplyTextToAll, slideFo
             value={currentSlide.title}
             onChange={(html) => onSave({ title: html })}
             placeholder="Введите заголовок"
+            defaultTextColor={toHex(currentSlide.titleColor)}
+            defaultHighlightColor={toHex(currentSlide.accentColor)}
           />
           <div className="h-px" style={{ background: 'rgba(26,26,46,0.08)' }} />
           <FontSection label="Шрифт заголовка" settings={titleSettings} onChange={handleChange("title")} onCommit={handleCommit("title")} customFonts={customFonts} onAddCustomFont={handleAddCustomFont} />
@@ -142,6 +154,8 @@ const TextPanel = ({ currentSlide, onSave, onSaveLive, onApplyTextToAll, slideFo
             value={currentSlide.body}
             onChange={(html) => onSave({ body: html })}
             placeholder="Введите основной текст"
+            defaultTextColor={toHex(currentSlide.bodyColor)}
+            defaultHighlightColor={toHex(currentSlide.accentColor)}
           />
           <div className="h-px" style={{ background: 'rgba(26,26,46,0.08)' }} />
           <FontSection label="Шрифт основного текста" settings={bodySettings} onChange={handleChange("body")} onCommit={handleCommit("body")} customFonts={customFonts} onAddCustomFont={handleAddCustomFont} />

@@ -7,19 +7,35 @@ interface InlineTextEditorProps {
   /** Called on every change with new HTML */
   onChange: (html: string) => void;
   placeholder?: string;
+  /** Default text-color for the "Цвет" swatch (falls back to red for back-compat).
+   *  Should match slide.titleColor / bodyColor so the button visually matches the
+   *  active template. Changing slides re-syncs the swatch. */
+  defaultTextColor?: string;
+  /** Default highlight color for the "Фон" swatch (falls back to light yellow).
+   *  Should match slide.accentColor so Minimalism shows blue, etc. */
+  defaultHighlightColor?: string;
 }
 
 /**
  * Inline rich-text editor for use inside the Text panel.
  * Provides Bold/Italic/Underline/Strikethrough/Light/List/Color/Highlight controls.
  */
-const InlineTextEditor = ({ value, onChange, placeholder }: InlineTextEditorProps) => {
+const InlineTextEditor = ({ value, onChange, placeholder, defaultTextColor, defaultHighlightColor }: InlineTextEditorProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const textColorInputRef = useRef<HTMLInputElement>(null);
   const highlightColorInputRef = useRef<HTMLInputElement>(null);
 
-  const [textColor, setTextColor] = useState("#FF4200");
-  const [highlightColor, setHighlightColor] = useState("#FFF3CD");
+  const [textColor, setTextColor] = useState(defaultTextColor || "#FF4200");
+  const [highlightColor, setHighlightColor] = useState(defaultHighlightColor || "#FFF3CD");
+
+  // Re-sync swatches when the active slide/template changes so the buttons
+  // reflect the current palette (Minimalism = blue highlight, etc.).
+  useEffect(() => {
+    if (defaultTextColor) setTextColor(defaultTextColor);
+  }, [defaultTextColor]);
+  useEffect(() => {
+    if (defaultHighlightColor) setHighlightColor(defaultHighlightColor);
+  }, [defaultHighlightColor]);
   const selectionRef = useRef<Range | null>(null);
   const isFocusedRef = useRef(false);
 
@@ -243,7 +259,7 @@ const IconBtn = ({
     onMouseDown={(e) => e.preventDefault()}
     onClick={onClick}
     title={title}
-    className="flex items-center justify-center transition-all active:scale-90"
+    className="flex items-center justify-center transition-all active:scale-90 active:opacity-80"
     style={{ ...style, width: 30, height: 30 }}
   >
     {icon}
@@ -266,7 +282,7 @@ const ColorActionBtn = ({
       onMouseDown={(e) => e.preventDefault()}
       onClick={onIconClick}
       title={title}
-      className="flex items-center justify-center transition-all active:scale-90"
+      className="flex items-center justify-center transition-all active:scale-90 active:opacity-80"
       style={{ ...style, width: 30, height: 26, color }}
     >
       {icon}
@@ -276,7 +292,7 @@ const ColorActionBtn = ({
       onMouseDown={(e) => e.preventDefault()}
       onClick={onStripClick}
       title={`Сменить ${title.toLowerCase()}`}
-      className="rounded-full transition-all active:scale-90"
+      className="rounded-full transition-all active:scale-90 active:opacity-80"
       style={{ width: 18, height: 4, background: color, border: '1px solid rgba(0,0,0,0.1)' }}
     />
   </div>

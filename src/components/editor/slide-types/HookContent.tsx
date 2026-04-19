@@ -22,6 +22,28 @@
 import React from "react";
 import type { SlideContentProps } from "../SlideFactory";
 
+/** Убираем HTML-теги + декодируем базовые entity. Title может содержать
+ *  `<span>`-pill или иные теги от InlineTextEditor; HookContent рендерит
+ *  текст как React-ноду (не innerHTML), поэтому теги иначе отобразились бы
+ *  буквально, а `indexOf(highlight)` не находил бы подстроку. */
+function stripHtml(s: string): string {
+  if (!s) return "";
+  return s
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"');
+}
+
+/** CSS `text-transform` из slide.titleCase/bodyCase. */
+function caseToTransform(c: string | undefined): React.CSSProperties["textTransform"] {
+  if (c === "uppercase") return "uppercase";
+  if (c === "lowercase") return "lowercase";
+  return "none";
+}
+
 /** Разбивает title на React-ноды с pill-span на месте highlight. */
 function renderTitleWithHighlight(
   title: string,
@@ -82,8 +104,11 @@ const HookContent: React.FC<SlideContentProps> = ({
   onBodyMouseDown,
   onBodyClick,
 }) => {
-  const title = slide.title || "";
-  const subtitle = slide.subtitle || slide.body || "";
+  // Strip HTML: InlineTextEditor или миграция могут вставить `<span>`-pill в
+  // title, а HookContent рисует highlight своим React-span'ом (не innerHTML).
+  // Без очистки теги бы показались буквально и indexOf(highlight) падал.
+  const title = stripHtml(slide.title || "");
+  const subtitle = stripHtml(slide.subtitle || slide.body || "");
   const highlight = slide.highlight;
 
   const accentColor = slide.accentColor || "#CDE0FA";
@@ -129,7 +154,8 @@ const HookContent: React.FC<SlideContentProps> = ({
             fontWeight: 700,
             fontSize: `${titleFontSize}px`,
             lineHeight: 1.1,
-            letterSpacing: "-0.015em",
+            letterSpacing: `${slide.titleLetterSpacing ?? -0.015}em`,
+            textTransform: caseToTransform(slide.titleCase),
             color: titleColor,
             textAlign: "left",
           }}
@@ -161,6 +187,8 @@ const HookContent: React.FC<SlideContentProps> = ({
               fontWeight: 400,
               fontSize: `${subtitleFontSize}px`,
               lineHeight: 1.4,
+              letterSpacing: `${slide.bodyLetterSpacing ?? 0}em`,
+              textTransform: caseToTransform(slide.bodyCase),
               color: bodyColor,
               textAlign: "left",
             }}

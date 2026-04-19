@@ -66,7 +66,7 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onUpdate
               <><Info size={18} style={{ color: 'rgba(26, 26, 46, 0.5)' }} /><h3 className="text-base font-semibold" style={{ color: '#1a1a2e' }}>Инфо</h3></>
             ) : null}
           </div>
-          <button onClick={onClose} className="rounded-full p-1.5 glass-pill" style={{ color: 'rgba(26, 26, 46, 0.5)' }}>
+          <button onClick={onClose} className="rounded-full p-1.5 glass-pill transition-opacity active:opacity-80" style={{ color: 'rgba(26, 26, 46, 0.5)' }}>
             <X size={16} />
           </button>
         </div>

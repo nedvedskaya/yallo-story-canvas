@@ -15,7 +15,7 @@ const GlassTabBar = ({ tabs, activeId, onChange }: GlassTabBarProps) => (
       <button
         key={t.id}
         onClick={() => onChange(t.id)}
-        className="flex-1 rounded-lg py-1.5 text-[11px] font-medium"
+        className="flex-1 rounded-lg py-1.5 text-[11px] font-medium transition-opacity active:opacity-80"
         style={{
           background: activeId === t.id ? "rgba(255,255,255,0.7)" : "transparent",
           color: activeId === t.id ? "#1a1a2e" : "rgba(26,26,46,0.45)",

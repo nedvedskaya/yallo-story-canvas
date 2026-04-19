@@ -266,7 +266,7 @@ const TemplatesPanel = ({ onApplyTemplate }: TemplatesPanelProps) => {
         <button
           key={tpl.id}
           onClick={() => onApplyTemplate(tpl)}
-          className="flex flex-col items-center gap-1.5 flex-shrink-0 transition-all active:scale-95"
+          className="flex flex-col items-center gap-1.5 flex-shrink-0 transition-all active:scale-95 active:opacity-80"
         >
           <div
             className="overflow-hidden"

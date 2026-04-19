@@ -79,6 +79,25 @@ async function renderSlideToDOM(
     );
 
     requestAnimationFrame(() => requestAnimationFrame(async () => {
+      // Явный font-load для шрифтов из slide.titleFont/bodyFont. `document.fonts.ready`
+      // не ждёт шрифты, которые ещё не активировались CSS-ом — а именно так
+      // ведут себя lazy-подгружаемые `Marvin Visions` / `Space Grotesk`.
+      // Без этого preload'а html2canvas мерил бы title на Inter-fallback и
+      // после подгрузки настоящего шрифта элементы «съезжали» (разная ширина).
+      try {
+        const fontsToPreload: string[] = [];
+        const extract = (css: string | undefined, size: number) => {
+          if (!css) return;
+          // Берём первое семейство из стека "'Marvin Visions', 'Inter', ..."
+          const m = css.match(/['"]([^'"]+)['"]/);
+          if (m) fontsToPreload.push(`700 ${size}px "${m[1]}"`, `400 ${size}px "${m[1]}"`);
+        };
+        extract(slide.titleFont, 88);
+        extract(slide.bodyFont, 28);
+        await Promise.all(fontsToPreload.map(spec =>
+          document.fonts.load(spec).catch(() => {})
+        ));
+      } catch {}
       await document.fonts.ready;
 
       const promises: Promise<void>[] = [];
