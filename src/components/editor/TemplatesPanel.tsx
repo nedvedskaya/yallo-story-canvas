@@ -115,6 +115,11 @@ const TEMPLATES: SlideTemplate[] = [
       // padding 56/80/80, pill-counter, скрытый bottom bar. Не навязывает
       // фоновый паттерн (user включает точки сам в BG panel при желании).
       template: "minimalism",
+      // type='hook' включает absolute-layout (текст на top:48% слайда,
+      // pill-highlight, Marvin Visions шрифт). Без него Minimalism-слайд
+      // рендерился бы как text_block с vAlign:end — текст уезжал бы в
+      // самый низ, что и показалось в экспортном PNG пользователя.
+      type: "hook",
       bgColor: "#FFFFFF",
       bgImage: undefined,
       bgVideo: undefined,
@@ -145,6 +150,7 @@ const TEMPLATES: SlideTemplate[] = [
     },
     coverApply: {
       template: "minimalism",
+      type: "hook",
       bgColor: "#FFFFFF",
       overlayType: "none",
       overlayOpacity: 0,

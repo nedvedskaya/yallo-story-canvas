@@ -90,15 +90,23 @@ const Index = () => {
             .replace(/padding:\s*2px\s+6px/gi, 'padding:0.08em 14px 0.12em');
         }
 
+        // Без type='hook' Minimalism-слайды рендерятся как text_block
+        // (vAlign:end = текст внизу) — это расходилось с hook-layout'ом
+        // в редакторе. Ставим hook для старых сохранённых слайдов, чтобы
+        // они поднялись на top:48% с pill-подсветкой.
+        const nextType = s.type || 'hook';
+
         const patched = {
           ...s,
           template: 'minimalism' as const,
+          type: nextType,
           bgPattern: (looksOldMinimalism ? 'none' : s.bgPattern) as typeof s.bgPattern,
           titleFont: nextTitleFont,
           title: nextTitle,
         };
         if (
           patched.template !== s.template ||
+          patched.type !== s.type ||
           patched.bgPattern !== s.bgPattern ||
           patched.titleFont !== s.titleFont ||
           patched.title !== s.title

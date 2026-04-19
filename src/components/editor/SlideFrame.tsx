@@ -245,7 +245,11 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
               {slide.footerText || ""}
             </span>
           ) : <span />}
-          {slide.showArrow !== false && slideIndex < totalSlides - 1 ? (
+          {slide.showArrow ? (
+            // Раньше был гейт `slideIndex < totalSlides - 1` — стрелка
+            // автоматически скрывалась на последнем слайде. Убрал, потому что
+            // пользователь ожидает: toggle ON → видно. На одном единственном
+            // слайде это тоже работает, показывая что переключатель живой.
             <span style={{ color: slide.metaColor || 'rgba(255,255,255,0.5)', fontSize: `${(metrics.footerSize + 2 * scale)}px` }}>→</span>
           ) : <span />}
         </div>
