@@ -9,6 +9,7 @@ import GlassTabBar from "./GlassTabBar";
 import ApplyToAllButton from "./ApplyToAllButton";
 import { rgbaToHex } from "@/lib/utils";
 import type { Sticker } from "./StickerLayer";
+import { DecorShape } from "./TemplatesPanel";
 
 export type OverlayType = "none" | "dots" | "lines" | "grid" | "cells" | "blobs" | "gradient";
 type BgTab = "color" | "photo" | "video";
@@ -55,6 +56,11 @@ interface BackgroundPanelProps {
   stickers?: Sticker[];
   onAddSticker?: (src: string, width: number, height: number) => void;
   onDeleteSticker?: (id: string) => void;
+  /** Шаблонный декор (Minimalism cover — halftone-звезда). Управляется здесь:
+   *  show/hide через переключатель в разделе «Декоративные элементы». */
+  decorShape?: 'asterisk' | 'none';
+  decorColor?: string;
+  onDecorChange?: (shape: 'asterisk' | 'none') => void;
 }
 
 const BackgroundPanel = ({
@@ -62,6 +68,7 @@ const BackgroundPanel = ({
   bgImage, bgVideo, bgScale, bgPosX, bgPosY, bgDarken, bgMuted,
   onSave, onApplyToAll,
   stickers = [], onAddSticker, onDeleteSticker,
+  decorShape, decorColor, onDecorChange,
 }: BackgroundPanelProps) => {
   const [bgTab, setBgTab] = useState<BgTab>(bgVideo ? "video" : bgImage ? "photo" : "color");
   const [hexInput, setHexInput] = useState(bgColor.startsWith("#") ? bgColor : "#667eea");
@@ -359,10 +366,56 @@ const BackgroundPanel = ({
         </>
       )}
 
-      {/* Decorative elements (stickers) */}
-      {onAddSticker && (
+      {/* Decorative elements (stickers + template decor) */}
+      {(onAddSticker || onDecorChange) && (
         <div>
           <p className="text-[11px] font-medium mb-1.5" style={labelStyle}>Декоративные элементы</p>
+
+          {/* Шаблонный декор (цветок-астериск Minimalism). Показываем только если
+              шаблон его поддерживает (onDecorChange передан). Мини-превью + переключатель.
+              Клик по превью — скрыть; кнопка «Добавить» — показать снова. */}
+          {onDecorChange && (
+            <div className="flex items-center gap-2 mb-2">
+              {decorShape === 'asterisk' ? (
+                <>
+                  <div
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 10,
+                      background: 'rgba(26,26,46,0.04)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      overflow: 'hidden',
+                      padding: 4,
+                    }}
+                  >
+                    <DecorShape color={decorColor || '#D6E8F7'} />
+                  </div>
+                  <button
+                    onClick={() => onDecorChange('none')}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium active:scale-95"
+                    style={{ background: 'rgba(220,40,40,0.1)', color: '#c02626' }}
+                  >
+                    <Trash2 size={12} />
+                    Удалить цветок
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => onDecorChange('asterisk')}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium active:scale-95"
+                  style={{ background: 'rgba(26,26,46,0.06)', color: '#1a1a2e' }}
+                >
+                  <Plus size={14} />
+                  Добавить цветок
+                </button>
+              )}
+            </div>
+          )}
+
+          {onAddSticker && (<>
           <div className="flex gap-2">
             <button
               onClick={() => stickerInputRef.current?.click()}
@@ -413,6 +466,7 @@ const BackgroundPanel = ({
           <p className="text-[10px] mt-1" style={{ color: 'rgba(26,26,46,0.4)' }}>
             Двойной клик по элементу на слайде — удалить
           </p>
+          </>)}
         </div>
       )}
     </div>

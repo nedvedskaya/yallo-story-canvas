@@ -106,6 +106,9 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onUpdate
               stickers={currentSlide.stickers || []}
               onAddSticker={onAddSticker}
               onDeleteSticker={onDeleteSticker}
+              decorShape={currentSlide.decorShape}
+              decorColor={currentSlide.decorColor}
+              onDecorChange={(shape) => onUpdateSlide(currentSlide.id, { decorShape: shape })}
             />
           ) : isSize && slideFormat && onSlideFormatChange ? (
             <SizePanel

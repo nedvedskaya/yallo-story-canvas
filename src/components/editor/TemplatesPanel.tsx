@@ -206,10 +206,12 @@ const TEMPLATES: SlideTemplate[] = [
           <DecorShape color="#D6E8F7" />
         </div>
         {/* Контент на 58% по вертикали, left/right 7px ≈ 80/1080 × 96 */}
-        <div style={{ position: "absolute", top: "58%", left: 7, right: 7, zIndex: 4 }}>
+        <div style={{ position: "absolute", top: "48%", left: 7, right: 7, zIndex: 4 }}>
           <h3
             style={{
-              fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+              // Тот же шрифт-стек что на реальном слайде (HookContent) —
+              // Marvin Visions → Space Grotesk → Inter. Браузер подхватит первый загруженный.
+              fontFamily: "'Marvin Visions', 'Space Grotesk', 'Inter', sans-serif",
               fontWeight: 700,
               fontSize: 7.8,
               lineHeight: 1.1,

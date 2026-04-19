@@ -57,32 +57,55 @@ const Index = () => {
   const [textEditorOpen, setTextEditorOpen] = useState(false);
   const [activeTemplate, setActiveTemplate] = useState<SlideTemplate | null>(null);
 
-  // Миграция persistent-state: слайды, созданные до введения `slide.template`,
-  // остались с bgPattern:'dots' + titleFont:Dela Gothic, без template-флага.
-  // Если у слайда стоит характерный признак старого Minimalism (bgPattern='dots'
-  // + accentColor='#CDE0FA'), промечаем его как template='minimalism', сбрасываем
-  // точечный паттерн (пользователь может включить его заново через BG panel)
-  // и форсим Marvin-стек шрифтов. Заодно восстанавливаем activeTemplate, чтобы
-  // handleAddSlide создавал новые слайды с Minimalism-стилем. Запускается один
-  // раз при старте.
+  // Миграция persistent-state. Две ветки:
+  //   (a) Слайды со старого Minimalism (bgPattern='dots' + accentColor='#CDE0FA',
+  //       но без template='minimalism') — добавляем template, гасим точки.
+  //   (b) Для всех слайдов с template='minimalism' принудительно обновляем
+  //       titleFont (если Dela Gothic One остался от initialSlide-default) и
+  //       чистим старые inline-span HTML-highlight'ы в title (убираем
+  //       color:#FFFFFF и border-radius:3px от прошлых версий — делаем их pill).
+  // Также восстанавливаем activeTemplate, чтобы handleAddSlide создавал новые
+  // слайды с Minimalism-стилем. Запускается один раз при старте.
   useEffect(() => {
     let anyMinimalism = false;
     setSlides(prev => {
       let changed = false;
       const migrated = prev.map(s => {
-        const oldMinimalism = s.bgPattern === 'dots' && s.accentColor === '#CDE0FA';
-        if (s.template === 'minimalism') anyMinimalism = true;
-        if (!oldMinimalism || s.template === 'minimalism') return s;
+        const looksOldMinimalism = s.bgPattern === 'dots' && s.accentColor === '#CDE0FA';
+        const isMinimalism = s.template === 'minimalism' || looksOldMinimalism;
+        if (!isMinimalism) return s;
         anyMinimalism = true;
-        changed = true;
-        return {
+
+        const nextTitleFont = s.titleFont === "'Dela Gothic One', sans-serif" || !s.titleFont
+          ? "'Marvin Visions', 'Space Grotesk', 'Inter', sans-serif"
+          : s.titleFont;
+
+        // Чистим старый HTML-highlight (color:#FFFFFF, border-radius:3px) в title.
+        // Заменяем на pill-стиль (border-radius:999, без color).
+        let nextTitle = s.title || '';
+        if (nextTitle.includes('<span') && nextTitle.includes('background:')) {
+          nextTitle = nextTitle
+            .replace(/color:\s*#FFFFFF\s*;?/gi, '')
+            .replace(/border-radius:\s*3px/gi, 'border-radius:999px')
+            .replace(/padding:\s*2px\s+6px/gi, 'padding:0.08em 14px 0.12em');
+        }
+
+        const patched = {
           ...s,
           template: 'minimalism' as const,
-          bgPattern: 'none' as const,
-          titleFont: s.titleFont === "'Dela Gothic One', sans-serif"
-            ? "'Marvin Visions', 'Space Grotesk', 'Inter', sans-serif"
-            : s.titleFont,
+          bgPattern: (looksOldMinimalism ? 'none' : s.bgPattern) as typeof s.bgPattern,
+          titleFont: nextTitleFont,
+          title: nextTitle,
         };
+        if (
+          patched.template !== s.template ||
+          patched.bgPattern !== s.bgPattern ||
+          patched.titleFont !== s.titleFont ||
+          patched.title !== s.title
+        ) {
+          changed = true;
+        }
+        return patched;
       });
       return changed ? migrated : prev;
     });
@@ -226,12 +249,13 @@ const Index = () => {
 
       const updated = { ...s, ...styleOnly };
       // Apply accent to existing title (only on non-cover slides; cover keeps clean look).
-      // highlight-mode: цвет текста НЕ перекрываем — пусть наследует titleColor,
-      // чтобы выделенное слово читалось в цвет остального заголовка (а не белым).
+      // highlight-mode: цвет текста не перекрываем (наследует titleColor), плашка —
+      // полная pill (border-radius:999 + padding как в HookContent), чтобы совпадало
+      // с эталоном-референсом.
       if (tpl.accentColor && updated.title && idx !== 0) {
         const clean = stripHtml(updated.title);
         if (tpl.accentMode === "highlight") {
-          updated.title = clean.replace(/(\S+)(\s*)$/, `<span style="background:${tpl.accentColor};padding:2px 6px;border-radius:3px">$1</span>$2`);
+          updated.title = clean.replace(/(\S+)(\s*)$/, `<span style="display:inline-block;background:${tpl.accentColor};padding:0.08em 14px 0.12em;border-radius:999px;line-height:1">$1</span>$2`);
         } else {
           updated.title = clean.replace(/(\S+)(\s*)$/, `<span style="color:${tpl.accentColor}">$1</span>$2`);
         }
@@ -314,8 +338,8 @@ const Index = () => {
     if (activeTemplate?.accentColor && baseSlide.title && !isCover) {
       const clean = stripHtml(baseSlide.title);
       if (activeTemplate.accentMode === "highlight") {
-        // Не перекрываем цвет текста — наследуется от titleColor.
-        baseSlide.title = clean.replace(/(\S+)(\s*)$/, `<span style="background:${activeTemplate.accentColor};padding:2px 6px;border-radius:3px">$1</span>$2`);
+        // Pill как в HookContent: полное скругление + цвет текста = titleColor (не хардкод).
+        baseSlide.title = clean.replace(/(\S+)(\s*)$/, `<span style="display:inline-block;background:${activeTemplate.accentColor};padding:0.08em 14px 0.12em;border-radius:999px;line-height:1">$1</span>$2`);
       } else {
         baseSlide.title = clean.replace(/(\S+)(\s*)$/, `<span style="color:${activeTemplate.accentColor}">$1</span>$2`);
       }

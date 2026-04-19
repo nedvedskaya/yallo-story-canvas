@@ -45,10 +45,6 @@ export interface SlideFrameProps {
   onUpdateSticker?: (id: string, updates: Partial<{x:number;y:number;scale:number;rotation:number}>) => void;
   onDeleteSticker?: (id: string) => void;
   stickerInteractive?: boolean;
-  /** Called when user clicks the ×-button on the decor shape (active slide only).
-   *  When provided AND slide.decorShape is set, a small delete handle is rendered
-   *  in the top-right of the decor. Carousel wires this to `onUpdateSlide(id, { decorShape: 'none' })`. */
-  onDeleteDecor?: () => void;
   watermark?: string;
 }
 
@@ -60,7 +56,6 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
   onBodyTouchStart, onBodyTouchMove, onBodyTouchEnd, onBodyMouseDown, onBodyClick,
   editorOpen, videoRefCallback, videoMuted = true, overlayOnly = false, dataSlideId,
   onUpdateSticker, onDeleteSticker, stickerInteractive = false,
-  onDeleteDecor,
   watermark,
 }, ref) => {
   const metrics = getSlideMetrics(slide, format, scale);
@@ -162,7 +157,7 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
 
       {/* Декоративный астериск (Minimalism cover) — над overlay, под контентом.
           SVG живёт в TemplatesPanel.tsx/DecorShape (1-в-1 с claude.design эталоном).
-          Если передан onDeleteDecor — добавляем ×-кнопку для удаления. */}
+          Управление видимостью — через BG panel → «Декоративные элементы». */}
       {!overlayOnly && slide.decorShape === 'asterisk' && (
         <div
           aria-hidden="true"
@@ -176,39 +171,6 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
           }}
         >
           <DecorShape color={slide.decorColor || '#D6E8F7'} />
-          {onDeleteDecor && (
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); onDeleteDecor(); }}
-              aria-label="Удалить декор"
-              style={{
-                position: 'absolute',
-                top: 6,
-                right: 6,
-                width: `${20 * metrics.renderScale + 14}px`,
-                height: `${20 * metrics.renderScale + 14}px`,
-                minWidth: 22,
-                minHeight: 22,
-                borderRadius: '50%',
-                background: 'rgba(0,0,0,0.55)',
-                color: '#fff',
-                border: 'none',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 13,
-                lineHeight: 1,
-                fontWeight: 600,
-                fontFamily: 'system-ui, sans-serif',
-                pointerEvents: 'auto',
-                padding: 0,
-                boxShadow: '0 2px 6px rgba(0,0,0,0.25)',
-              }}
-            >
-              ×
-            </button>
-          )}
         </div>
       )}
 
@@ -224,10 +186,10 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
             <span
               style={{
                 color: slide.metaColor || 'rgba(255,255,255,0.7)',
-                // Minimalism reference: Inter 400 15px #999 (on 1080×1350). Scale via renderScale
-                // so the handle stays the same visual size in preview and export. Other templates
-                // keep the carousel default usernameSize from metrics.
-                fontSize: isMinimalism ? `${15 * metrics.renderScale}px` : `${metrics.usernameSize}px`,
+                // Minimalism: username Inter 400 24px (увеличено с 15 для лучшей читаемости
+                // в редакторе и экспорте). Масштабируется через renderScale, чтобы визуально
+                // совпадало в превью и экспорте. Другие шаблоны — metrics.usernameSize carousel-дефолт.
+                fontSize: isMinimalism ? `${24 * metrics.renderScale}px` : `${metrics.usernameSize}px`,
                 fontWeight: 400,
                 fontFamily: "'Inter', sans-serif",
               }}
@@ -242,14 +204,14 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  // Reference: 48×48 circle, #F0F0F0 bg, Inter 500 13px #0A0A0A.
-                  // renderScale is (previewW / exportW) * scale → exact pixels at any resolution.
-                  width: `${48 * metrics.renderScale}px`,
-                  height: `${48 * metrics.renderScale}px`,
+                  // Pill-counter: круг 56×56 (увеличено с 48) с #F0F0F0 фоном, текст Inter 500 16px
+                  // (увеличено с 13). renderScale = (previewW/exportW)*scale → точные пиксели.
+                  width: `${56 * metrics.renderScale}px`,
+                  height: `${56 * metrics.renderScale}px`,
                   borderRadius: '50%',
                   background: '#F0F0F0',
                   color: '#0A0A0A',
-                  fontSize: `${13 * metrics.renderScale}px`,
+                  fontSize: `${16 * metrics.renderScale}px`,
                   fontWeight: 500,
                   fontFamily: "'Inter', sans-serif",
                   lineHeight: 1,
@@ -290,15 +252,16 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
         )}
       </div>
 
-      {/* Minimalism Hook: content block positioned absolutely at top:58% of slide,
-          with the same 8% side insets the root already applies for flex children. */}
+      {/* Minimalism Hook: content block positioned absolutely at top:48% of slide
+          (было 58% — поднял чтобы пустого места снизу оставалось больше, как в
+          эталоне-скриншоте от пользователя), side insets те же что у root. */}
       {isMinimalismHook && (
         <div
           className="absolute"
           style={{
-            top: '58%',
-            left: '8%',
-            right: '8%',
+            top: '48%',
+            left: `${80 * metrics.renderScale}px`,
+            right: `${80 * metrics.renderScale}px`,
             zIndex: 10,
             pointerEvents: 'auto',
           }}

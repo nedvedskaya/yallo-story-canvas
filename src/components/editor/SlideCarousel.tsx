@@ -423,7 +423,6 @@ const SlideCarousel = ({
                     onUpdateSticker={isActive ? onUpdateSticker : undefined}
                     onDeleteSticker={isActive ? onDeleteSticker : undefined}
                     stickerInteractive={isActive}
-                    onDeleteDecor={isActive ? () => onUpdateSlide(slide.id, { decorShape: 'none' }) : undefined}
                     watermark={watermark}
                   />
                 </div>
