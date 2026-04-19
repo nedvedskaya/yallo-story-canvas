@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import SlideToolbar, { type HAlign, type VAlign, type BgType } from "./SlideToolbar";
 import { glassBtnStyle, FORMAT_TEXT_DEFAULTS } from "./shared-styles";
 import type { OverlayType } from "./BackgroundPanel";
-import TextEditorModal from "./TextEditorModal";
+
 import { FORMAT_OPTIONS, type SlideFormat } from "./SizePanel";
 import SlideFrame from "./SlideFrame";
 
@@ -91,8 +91,7 @@ const SlideCarousel = ({
 }: SlideCarouselProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const currentSlide = slides[activeSlide];
-  const [editorOpen, setEditorOpen] = useState(false);
-  const [editorField, setEditorField] = useState<"title" | "body">("title");
+  const editorOpen = false;
 
   // Text drag state
   const textDragTarget = useRef<"title" | "body">("title");
@@ -110,10 +109,6 @@ const SlideCarousel = ({
   const slideAspectRatio = `${formatInfo.width}/${formatInfo.height}`;
   const isLandscape = formatInfo.width > formatInfo.height;
 
-  const openEditor = (field: "title" | "body") => {
-    setEditorField(field); setEditorOpen(true); onEditorOpenChange?.(true);
-  };
-  const closeEditor = () => { setEditorOpen(false); onEditorOpenChange?.(false); };
 
   const getTouchDist = (e: React.TouchEvent) => {
     const [a, b] = [e.touches[0], e.touches[1]];
@@ -342,12 +337,12 @@ const SlideCarousel = ({
                     onTitleTouchMove={(e) => handleTextTouchMove(e)}
                     onTitleTouchEnd={() => handleTextTouchEnd(slide.id)}
                     onTitleMouseDown={(e) => handleTextMouseDown(e, slide, "title")}
-                    onTitleClick={() => { if (!textDragMovedRef.current) openEditor("title"); }}
+                    onTitleClick={() => {}}
                     onBodyTouchStart={(e) => handleTextTouchStart(e, slide, "body")}
                     onBodyTouchMove={(e) => handleTextTouchMove(e)}
                     onBodyTouchEnd={() => handleTextTouchEnd(slide.id)}
                     onBodyMouseDown={(e) => handleTextMouseDown(e, slide, "body")}
-                    onBodyClick={() => { if (!textDragMovedRef.current) openEditor("body"); }}
+                    onBodyClick={() => {}}
                     onUpdateSticker={isActive ? onUpdateSticker : undefined}
                     onDeleteSticker={isActive ? onDeleteSticker : undefined}
                     stickerInteractive={isActive}
@@ -371,15 +366,6 @@ const SlideCarousel = ({
           onVAlignChange={(v) => onUpdateSlide(currentSlide.id, { vAlign: v, titleOffsetX: 0, titleOffsetY: 0, bodyOffsetX: 0, bodyOffsetY: 0, titleScale: 1, bodyScale: 1 })}
           onBgClick={() => {}}
           onCropClick={() => {}}
-        />
-      )}
-      {currentSlide && (
-        <TextEditorModal
-          open={editorOpen}
-          field={editorField}
-          initialHtml={editorField === "title" ? currentSlide.title : currentSlide.body}
-          onSave={(html) => onUpdateSlide(currentSlide.id, { [editorField]: html })}
-          onClose={closeEditor}
         />
       )}
     </div>
