@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import FontSection, { type FontSettings, type CustomFont } from "./FontSection";
 import type { Slide } from "./SlideCarousel";
 import GlassTabBar from "./GlassTabBar";
@@ -10,6 +10,12 @@ import InlineTextEditor from "./InlineTextEditor";
 
 interface TextPanelProps {
   currentSlide: Slide;
+  /** Секция, на которой открыть панель. Устанавливается родителем, когда пользователь
+   *  явно кликнул по title/body в карусели. `initialSectionNonce` обновляется на
+   *  каждый клик, чтобы useEffect переключил секцию даже если пользователь
+   *  кликнул на ту же секцию повторно. */
+  initialSection?: 'title' | 'body';
+  initialSectionNonce?: number;
   onSave: (updates: Partial<Slide>) => void;
   onSaveLive?: (updates: Partial<Slide>) => void;
   onApplyTextToAll: () => void;
@@ -86,9 +92,17 @@ function mapFontSettings(prefix: "title" | "body", updates: Partial<FontSettings
   return mapped;
 }
 
-const TextPanel = ({ currentSlide, onSave, onSaveLive, onApplyTextToAll, slideFormat = "carousel" }: TextPanelProps) => {
-  const [activeSection, setActiveSection] = useState<"title" | "body">("title");
+const TextPanel = ({ currentSlide, initialSection, initialSectionNonce, onSave, onSaveLive, onApplyTextToAll, slideFormat = "carousel" }: TextPanelProps) => {
+  const [activeSection, setActiveSection] = useState<"title" | "body">(initialSection ?? "title");
   const [customFonts, setCustomFonts] = useState<CustomFont[]>([]);
+
+  // Sync вкладки с внешним сигналом (клик по title/body в карусели).
+  // Зависимость на nonce — чтобы повторный клик по той же секции тоже
+  // сработал (state уже равен, но эффект перезапускается по nonce).
+  useEffect(() => {
+    if (initialSection) setActiveSection(initialSection);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialSection, initialSectionNonce]);
 
   const handleAddCustomFont = useCallback((font: CustomFont) => {
     setCustomFonts(prev => [...prev, font]);

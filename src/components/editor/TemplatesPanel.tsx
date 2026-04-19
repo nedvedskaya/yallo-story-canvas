@@ -111,15 +111,13 @@ const TEMPLATES: SlideTemplate[] = [
     accentColor: "#CDE0FA",
     accentMode: "highlight",
     apply: {
-      // template — независимая ось от type. Включает Minimalism-рамку:
-      // padding 56/80/80, pill-counter, скрытый bottom bar. Не навязывает
-      // фоновый паттерн (user включает точки сам в BG panel при желании).
+      // template — включает Minimalism-стилевую рамку в SlideFrame
+      // (padding 56/80/80, pill-counter). В новой архитектуре конкретная
+      // вёрстка определяется полем `layout` (1..4) на уровне слайда —
+      // handleApplyTemplate раскидывает layouts циклично. Поэтому type/hAlign/
+      // vAlign из шаблона ушли: layout-компонент сам задаёт вёрстку, а
+      // hAlign/vAlign остаются пользовательскими ручками.
       template: "minimalism",
-      // type='hook' включает absolute-layout (текст на top:48% слайда,
-      // pill-highlight, Marvin Visions шрифт). Без него Minimalism-слайд
-      // рендерился бы как text_block с vAlign:end — текст уезжал бы в
-      // самый низ, что и показалось в экспортном PNG пользователя.
-      type: "hook",
       bgColor: "#FFFFFF",
       bgImage: undefined,
       bgVideo: undefined,
@@ -141,8 +139,6 @@ const TEMPLATES: SlideTemplate[] = [
       bodyFont: "'Inter', sans-serif",
       bodyLetterSpacing: 0,
       bodyCase: "none",
-      hAlign: "left",
-      vAlign: "end",
       decorShape: "none",
       bgPattern: "none",
       accentMode: "highlight",
@@ -150,15 +146,12 @@ const TEMPLATES: SlideTemplate[] = [
     },
     coverApply: {
       template: "minimalism",
-      type: "hook",
       bgColor: "#FFFFFF",
       overlayType: "none",
       overlayOpacity: 0,
       titleColor: "#0A0A0A",
       bodyColor: "#666666",
       metaColor: "#999999",
-      hAlign: "left",
-      vAlign: "end",
       decorShape: "asterisk",
       decorColor: "#D6E8F7",
       // 520×520 астериск в правом-верхнем, right:-60px. В % 1080-слайда:

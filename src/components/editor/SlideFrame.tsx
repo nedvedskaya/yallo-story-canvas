@@ -68,10 +68,11 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
   // dot-pattern (`bgPattern: 'dots'`) is a SEPARATE flag — off by default for Minimalism,
   // user re-enables via the BG panel. Asterisk decor is also separate (`decorShape`).
   const isMinimalism = slide.template === 'minimalism';
-  // Hook-specific: absolute top:58% positioning only for `type === 'hook'`
-  // inside Minimalism. Other Minimalism types (big_number, quote...) fall
-  // back to the normal flex-column flow with their own vAlign.
-  const isMinimalismHook = isMinimalism && slide.type === 'hook';
+  // До дизайнов от Ольги все 4 MinimalismLayout-файла идентичны (MinimalismBase):
+  // рендерят title/body/highlight в flex-колонке с vAlign пользователя. Поэтому
+  // layout-specific ветки (absolute top:48% для layout1, dark inversion для layout4)
+  // из SlideFrame убраны — вернутся, когда Ольга пришлёт уникальные HTML для каждого
+  // layout.
 
   // Reference-px paddings from Minimalism HTML (/Яло/carousel-slide-standalone-src.html):
   //   top: 56px, left/right: 80px on a 1080×1350 slide. We scale via renderScale so
@@ -225,16 +226,11 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
           ) : <span />}
         </div>
 
-        {/* Content area.
-            - Minimalism Hook: spacer here; SlideFactory рендерится как absolute
-              слой (см. ниже) с контентом, стартующим на top:58% слайда.
-            - Все остальные: SlideFactory заполняет flex-1 слот, используя
-              собственный vAlign. */}
-        {isMinimalismHook ? (
-          <div className="flex-1" />
-        ) : (
-          <SlideFactory {...factoryProps} />
-        )}
+        {/* Content area. SlideFactory заполняет flex-1 слот и сам распоряжается
+            вертикальным выравниванием. Ветки для конкретных layouts (absolute
+            top:48% для hero-эталона) вернутся, когда Ольга пришлёт дизайн для
+            соответствующего layout. */}
+        <SlideFactory {...factoryProps} />
 
         {/* Bottom bar — управляется флагами slide.showFooter/showArrow во всех
             шаблонах (включая Minimalism). Для Minimalism цвет footer/arrow
@@ -255,23 +251,8 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
         </div>
       </div>
 
-      {/* Minimalism Hook: content block positioned absolutely at top:48% of slide
-          (было 58% — поднял чтобы пустого места снизу оставалось больше, как в
-          эталоне-скриншоте от пользователя), side insets те же что у root. */}
-      {isMinimalismHook && (
-        <div
-          className="absolute"
-          style={{
-            top: '48%',
-            left: `${80 * metrics.renderScale}px`,
-            right: `${80 * metrics.renderScale}px`,
-            zIndex: 10,
-            pointerEvents: 'auto',
-          }}
-        >
-          <SlideFactory {...factoryProps} />
-        </div>
-      )}
+      {/* Место для absolute-слоёв конкретных layouts (например, hero-hook с
+          top:48%). Будет заполнено по мере прихода дизайнов от Ольги. */}
 
       {/* Sticker layer — rendered ABOVE content so they can be dragged anywhere on the slide */}
       {slide.stickers && slide.stickers.length > 0 && (

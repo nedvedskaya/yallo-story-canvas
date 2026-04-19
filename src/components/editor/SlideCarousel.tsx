@@ -29,6 +29,18 @@ export type SlideType =
   | 'visual_focus'
   | 'text_block';
 
+/**
+ * LayoutId — номер вёрстки внутри текущего шаблона (1..4).
+ *
+ * Архитектура: slide.template (палитра/шрифты) × slide.layout (вёрстка 1-4) = визуал.
+ * Layouts раскидываются циклично при применении шаблона; пользователь может вручную
+ * переключать layout для отдельного слайда кнопкой Shuffle.
+ *
+ * Интерпретация номера зависит от template: MinimalismLayout1 ≠ TetradiLayout1.
+ * См. `src/components/editor/layouts/{template}/*Layout{1..4}.tsx`.
+ */
+export type LayoutId = 1 | 2 | 3 | 4;
+
 export interface ComparisonSide {
   label: string;
   text?: string;
@@ -41,14 +53,21 @@ export interface Slide {
   title: string;
   body: string;
 
-  /** Slide type — drives layout dispatch in SlideFactory. Undefined = 'text_block' fallback. */
+  /** Slide type — legacy поле от системы 14 типов (hook/list/quote/...). В текущей
+   *  архитектуре (layouts внутри шаблона) НЕ используется в рендере — оставлено
+   *  в интерфейсе для обратной совместимости с сохранённым localStorage-state. */
   type?: SlideType;
 
-  /** Style template — drives visual axis (palette, fonts, decor). Independent of `type`.
+  /** Style template — drives visual axis (palette, fonts, decor). Independent of `layout`.
    *  'minimalism' activates the Minimalism styling branch in SlideFrame (topbar variant,
    *  side padding 80px, bottom bar hidden). Background dot-pattern is a SEPARATE flag
    *  (`bgPattern: 'dots'`) and off by default for Minimalism — user re-enables via the BG panel. */
   template?: 'minimalism';
+
+  /** Layout внутри шаблона (1..4). Определяет вёрстку контента. При применении шаблона
+   *  раскладывается циклично (1→2→3→4→1…). Пользователь может вручную переключать через
+   *  кнопку Shuffle в карусели. undefined = fallback MinimalismLayout1 для minimalism. */
+  layout?: LayoutId;
 
   // Type-specific content fields (all optional; each *Content component reads only its own).
   // Names are prefixed (steps_items, comparison_left, hero_*, question_text) where API keys
@@ -158,13 +177,16 @@ interface SlideCarouselProps {
   onEditorOpenChange?: (open: boolean) => void;
   onUpdateSticker?: (stickerId: string, updates: Partial<{x:number;y:number;scale:number;rotation:number}>) => void;
   onDeleteSticker?: (stickerId: string) => void;
+  /** Открыть Text-панель на вкладке 'title' или 'body'. Зовётся при клике
+   *  по соответствующему тексту в активном слайде. */
+  onOpenTextSection?: (section: 'title' | 'body') => void;
   watermark?: string;
 }
 
 const SlideCarousel = ({
   slides, activeSlide, onSlideChange, isSheetOpen = false, slideFormat = "carousel",
   onUpdateSlide, onAddSlide, onMoveSlide, onDuplicateSlide, onDeleteSlide, onEditorOpenChange,
-  onUpdateSticker, onDeleteSticker, watermark,
+  onUpdateSticker, onDeleteSticker, onOpenTextSection, watermark,
 }: SlideCarouselProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const currentSlide = slides[activeSlide];
@@ -331,6 +353,26 @@ const SlideCarousel = ({
   const handleDuplicate = useCallback((idx: number) => { onDuplicateSlide(idx); scrollToIndex(idx + 1); }, [onDuplicateSlide]);
   const handleDelete = useCallback((idx: number) => { onDeleteSlide(idx); scrollToIndex(Math.min(idx, slides.length - 2)); }, [onDeleteSlide, slides.length]);
 
+  // Переключает layout активного слайда по кругу 1→2→3→4→1.
+  // Определение layout живёт в SlideFactory/MinimalismLayout*.tsx.
+  // Работает только для слайдов с template, у которых layouts определены
+  // (сейчас только Minimalism) — для остальных silently игнорируем клик.
+  const handleShuffle = useCallback((idx: number) => {
+    const s = slides[idx];
+    if (!s || s.template !== 'minimalism') return;
+    const current = (s.layout ?? 1) as LayoutId;
+    const next = (((current % 4) + 1) as LayoutId);
+    onUpdateSlide(s.id, { layout: next });
+  }, [slides, onUpdateSlide]);
+
+  // Click на текст: отличаем клик от drag — если мышь/палец сдвинулись больше 5px
+  // (textDragMovedRef выставлен в move-handler'ах), это drag, игнорируем клик.
+  // Иначе открываем Text-панель на соответствующей вкладке.
+  const handleTextClick = useCallback((section: 'title' | 'body') => {
+    if (textDragMovedRef.current) return;
+    onOpenTextSection?.(section);
+  }, [onOpenTextSection]);
+
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-0 py-2 min-h-0">
       {currentSlide && !isSheetOpen && (
@@ -414,12 +456,12 @@ const SlideCarousel = ({
                     onTitleTouchMove={(e) => handleTextTouchMove(e)}
                     onTitleTouchEnd={() => handleTextTouchEnd(slide.id)}
                     onTitleMouseDown={(e) => handleTextMouseDown(e, slide, "title")}
-                    onTitleClick={() => {}}
+                    onTitleClick={isActive ? () => handleTextClick("title") : undefined}
                     onBodyTouchStart={(e) => handleTextTouchStart(e, slide, "body")}
                     onBodyTouchMove={(e) => handleTextTouchMove(e)}
                     onBodyTouchEnd={() => handleTextTouchEnd(slide.id)}
                     onBodyMouseDown={(e) => handleTextMouseDown(e, slide, "body")}
-                    onBodyClick={() => {}}
+                    onBodyClick={isActive ? () => handleTextClick("body") : undefined}
                     onUpdateSticker={isActive ? onUpdateSticker : undefined}
                     onDeleteSticker={isActive ? onDeleteSticker : undefined}
                     stickerInteractive={isActive}
@@ -443,6 +485,8 @@ const SlideCarousel = ({
           onVAlignChange={(v) => onUpdateSlide(currentSlide.id, { vAlign: v, titleOffsetX: 0, titleOffsetY: 0, bodyOffsetX: 0, bodyOffsetY: 0, titleScale: 1, bodyScale: 1 })}
           onBgClick={() => {}}
           onCropClick={() => {}}
+          onShuffle={() => handleShuffle(activeSlide)}
+          shuffleEnabled={currentSlide.template === 'minimalism'}
         />
       )}
     </div>

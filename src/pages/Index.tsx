@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { getContrastColors } from "@/lib/utils";
 import TopBar from "@/components/editor/TopBar";
 import SlideCarousel from "@/components/editor/SlideCarousel";
-import type { Slide } from "@/components/editor/SlideCarousel";
+import type { Slide, LayoutId } from "@/components/editor/SlideCarousel";
 import BottomMenu from "@/components/editor/BottomMenu";
 import BottomSheet from "@/components/editor/BottomSheet";
 import type { MenuId } from "@/components/editor/BottomMenu";
@@ -50,6 +50,16 @@ const initialSlides: Slide[] = [
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<MenuId | null>(null);
+  // Когда SlideCarousel сообщает клик на конкретной секции (title/body),
+  // мы открываем Text-панель и прокидываем нужный initialSection внутрь
+  // TextPanel. Nonce используется, чтобы TextPanel перевыставлял вкладку даже
+  // на повторные клики подряд (иначе `initialSection` не меняется и effect
+  // не стреляет).
+  const [textSection, setTextSection] = useState<{ section: 'title' | 'body'; nonce: number } | null>(null);
+  const handleOpenTextSection = useCallback((section: 'title' | 'body') => {
+    setActiveTab('text');
+    setTextSection({ section, nonce: Date.now() });
+  }, []);
   const [activeSlide, setActiveSlide] = usePersistentActiveSlide(0);
   const [slides, setSlides] = usePersistentSlides(initialSlides);
   const [slideFormat, setSlideFormat] = usePersistentFormat("carousel");
@@ -96,10 +106,16 @@ const Index = () => {
         // они поднялись на top:48% с pill-подсветкой.
         const nextType = s.type || 'hook';
 
+        // Новая архитектура — layout. Старые сохранённые слайды приходят
+        // без layout; назначаем 1 (hero-hook эталон), чтобы визуально ничего
+        // не менялось. Юзер может переключить кнопкой Shuffle.
+        const nextLayout: LayoutId = (s.layout ?? 1) as LayoutId;
+
         const patched = {
           ...s,
           template: 'minimalism' as const,
           type: nextType,
+          layout: nextLayout,
           bgPattern: (looksOldMinimalism ? 'none' : s.bgPattern) as typeof s.bgPattern,
           titleFont: nextTitleFont,
           title: nextTitle,
@@ -107,6 +123,7 @@ const Index = () => {
         if (
           patched.template !== s.template ||
           patched.type !== s.type ||
+          patched.layout !== s.layout ||
           patched.bgPattern !== s.bgPattern ||
           patched.titleFont !== s.titleFont ||
           patched.title !== s.title
@@ -264,6 +281,13 @@ const Index = () => {
       delete (styleOnly as any).body;
 
       const updated = { ...s, ...styleOnly };
+      // Циклично раскидываем layout 1→2→3→4→1… при применении шаблона,
+      // чтобы карусель из N слайдов выглядела разнообразно даже с одним
+      // шаблоном. Пользователь может потом руками переключить layout
+      // любого слайда кнопкой Shuffle.
+      if (tpl.id === 'minimalism') {
+        updated.layout = (((idx % 4) + 1) as LayoutId);
+      }
       // Apply accent to existing title (only on non-cover slides; cover keeps clean look).
       // highlight-mode: цвет текста не перекрываем (наследует titleColor), плашка —
       // полная pill (border-radius:999 + padding как в HookContent), чтобы совпадало
@@ -441,6 +465,7 @@ const Index = () => {
             onEditorOpenChange={setTextEditorOpen}
             onUpdateSticker={handleUpdateSticker}
             onDeleteSticker={handleDeleteSticker}
+            onOpenTextSection={handleOpenTextSection}
             watermark={watermark ? "Создано в @yalokontent_bot" : undefined}
           />
         </main>
@@ -450,6 +475,8 @@ const Index = () => {
         activeTab={activeTab}
         onClose={handleClosePanel}
         currentSlide={currentSlide}
+        textInitialSection={textSection?.section}
+        textInitialNonce={textSection?.nonce}
         onUpdateSlide={handleUpdateSlide}
         onUpdateSlideLive={handleUpdateSlideLive}
         onApplyBgToAll={handleApplyBgToAll}

@@ -11,6 +11,12 @@ interface BottomSheetProps {
   activeTab: MenuId | null;
   onClose: () => void;
   currentSlide?: Slide;
+  /** Куда открывать Text-панель при явном клике на title/body в SlideCarousel.
+   *  Undefined = пользователь сам переключит вкладку. `nonce` нужен, чтобы
+   *  повторный клик на ту же секцию всё равно перевыставлял вкладку
+   *  (через useEffect внутри TextPanel). */
+  textInitialSection?: 'title' | 'body';
+  textInitialNonce?: number;
   onUpdateSlide?: (id: number, updates: Partial<Slide>) => void;
   onUpdateSlideLive?: (id: number, updates: Partial<Slide>) => void;
   onApplyBgToAll?: () => void;
@@ -23,7 +29,7 @@ interface BottomSheetProps {
   onDeleteSticker?: (id: string) => void;
 }
 
-const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onUpdateSlideLive, onApplyBgToAll, onApplyTextToAll, onApplyInfoToAll, onApplyTemplate, slideFormat, onSlideFormatChange, onAddSticker, onDeleteSticker }: BottomSheetProps) => {
+const BottomSheet = ({ activeTab, onClose, currentSlide, textInitialSection, textInitialNonce, onUpdateSlide, onUpdateSlideLive, onApplyBgToAll, onApplyTextToAll, onApplyInfoToAll, onApplyTemplate, slideFormat, onSlideFormatChange, onAddSticker, onDeleteSticker }: BottomSheetProps) => {
   const isBackground = activeTab === "background";
   const isText = activeTab === "text";
   const isSize = activeTab === "size";
@@ -83,6 +89,8 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, onUpdateSlide, onUpdate
           ) : isText && currentSlide && onUpdateSlide ? (
             <TextPanel
               currentSlide={currentSlide}
+              initialSection={textInitialSection}
+              initialSectionNonce={textInitialNonce}
               onSave={(updates) => onUpdateSlide(currentSlide.id, updates)}
               onSaveLive={onUpdateSlideLive ? (updates) => onUpdateSlideLive(currentSlide.id, updates) : undefined}
               onApplyTextToAll={() => onApplyTextToAll?.()}

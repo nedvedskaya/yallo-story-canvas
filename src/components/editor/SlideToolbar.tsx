@@ -7,6 +7,7 @@ import {
   AlignVerticalJustifyStart,
   AlignVerticalJustifyCenter,
   AlignVerticalJustifyEnd,
+  Shuffle,
 } from "lucide-react";
 
 export type HAlign = "left" | "center" | "right";
@@ -21,6 +22,12 @@ interface SlideToolbarProps {
   onVAlignChange: (v: VAlign) => void;
   onBgClick: () => void;
   onCropClick: () => void;
+  /** Переключатель layout 1→2→3→4→1. Если undefined — кнопка не отрисовывается
+   *  (например, слайд без шаблона, где layouts не определены). */
+  onShuffle?: () => void;
+  /** true, если шаблон поддерживает layouts (Minimalism etc). При false —
+   *  кнопка серая и не реагирует на клик. */
+  shuffleEnabled?: boolean;
 }
 
 const hAlignCycle: HAlign[] = ["left", "center", "right"];
@@ -40,6 +47,8 @@ const SlideToolbar = ({
   vAlign,
   onHAlignChange,
   onVAlignChange,
+  onShuffle,
+  shuffleEnabled = false,
 }: SlideToolbarProps) => {
   const [activeTool, setActiveTool] = useState<ActiveTool>(null);
   const HIcon = hAlignIcons[hAlign];
@@ -95,6 +104,22 @@ const SlideToolbar = ({
         )}
         <VIcon size={15} />
       </button>
+
+      {/* Shuffle — переключает layout 1→2→3→4→1 для шаблонов, где layouts
+          определены. Живёт в одной строке с hAlign/vAlign (нижняя полоса
+          инструментов слайда), справа. Disabled-стиль для слайдов без
+          поддерживаемого шаблона. */}
+      {onShuffle && (
+        <button
+          onClick={shuffleEnabled ? onShuffle : undefined}
+          disabled={!shuffleEnabled}
+          className="flex items-center justify-center transition-all active:scale-90 disabled:opacity-30 disabled:active:scale-100"
+          style={btnStyle(false)}
+          title="Сменить раскладку"
+        >
+          <Shuffle size={15} />
+        </button>
+      )}
     </div>
   );
 };
