@@ -57,6 +57,42 @@ const Index = () => {
   const [textEditorOpen, setTextEditorOpen] = useState(false);
   const [activeTemplate, setActiveTemplate] = useState<SlideTemplate | null>(null);
 
+  // Миграция persistent-state: слайды, созданные до введения `slide.template`,
+  // остались с bgPattern:'dots' + titleFont:Dela Gothic, без template-флага.
+  // Если у слайда стоит характерный признак старого Minimalism (bgPattern='dots'
+  // + accentColor='#CDE0FA'), промечаем его как template='minimalism', сбрасываем
+  // точечный паттерн (пользователь может включить его заново через BG panel)
+  // и форсим Marvin-стек шрифтов. Заодно восстанавливаем activeTemplate, чтобы
+  // handleAddSlide создавал новые слайды с Minimalism-стилем. Запускается один
+  // раз при старте.
+  useEffect(() => {
+    let anyMinimalism = false;
+    setSlides(prev => {
+      let changed = false;
+      const migrated = prev.map(s => {
+        const oldMinimalism = s.bgPattern === 'dots' && s.accentColor === '#CDE0FA';
+        if (s.template === 'minimalism') anyMinimalism = true;
+        if (!oldMinimalism || s.template === 'minimalism') return s;
+        anyMinimalism = true;
+        changed = true;
+        return {
+          ...s,
+          template: 'minimalism' as const,
+          bgPattern: 'none' as const,
+          titleFont: s.titleFont === "'Dela Gothic One', sans-serif"
+            ? "'Marvin Visions', 'Space Grotesk', 'Inter', sans-serif"
+            : s.titleFont,
+        };
+      });
+      return changed ? migrated : prev;
+    });
+    if (anyMinimalism) {
+      const tpl = TEMPLATES.find(t => t.id === "minimalism");
+      if (tpl) setActiveTemplate(tpl);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Undo/Redo stacks
   const undoStack = useRef<Slide[][]>([]);
   const redoStack = useRef<Slide[][]>([]);
@@ -278,7 +314,8 @@ const Index = () => {
     if (activeTemplate?.accentColor && baseSlide.title && !isCover) {
       const clean = stripHtml(baseSlide.title);
       if (activeTemplate.accentMode === "highlight") {
-        baseSlide.title = clean.replace(/(\S+)(\s*)$/, `<span style="background:${activeTemplate.accentColor};color:#FFFFFF;padding:2px 6px;border-radius:3px">$1</span>$2`);
+        // Не перекрываем цвет текста — наследуется от titleColor.
+        baseSlide.title = clean.replace(/(\S+)(\s*)$/, `<span style="background:${activeTemplate.accentColor};padding:2px 6px;border-radius:3px">$1</span>$2`);
       } else {
         baseSlide.title = clean.replace(/(\S+)(\s*)$/, `<span style="color:${activeTemplate.accentColor}">$1</span>$2`);
       }
