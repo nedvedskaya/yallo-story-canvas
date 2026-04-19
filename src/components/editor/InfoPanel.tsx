@@ -3,6 +3,17 @@ import type { Slide } from "./SlideCarousel";
 import { labelStyle } from "./shared-styles";
 import ApplyToAllButton from "./ApplyToAllButton";
 
+/** Поля слайда, которые копируются при "применить инфо ко всем слайдам".
+ *  Единый источник истины. */
+export const INFO_APPLY_KEYS: readonly (keyof Slide)[] = [
+  "showUsername",
+  "username",
+  "showSlideCount",
+  "showArrow",
+  "showFooter",
+  "footerText",
+] as const;
+
 interface InfoPanelProps {
   currentSlide: Slide;
   onSave: (updates: Partial<Slide>) => void;

@@ -1,4 +1,12 @@
 import type { Slide } from "./SlideCarousel";
+import {
+  MINIMALISM_ACCENT,
+  MINIMALISM_TITLE,
+  MINIMALISM_BODY,
+  MINIMALISM_TITLE_FONT,
+  MINIMALISM_BODY_FONT,
+} from "./layouts/minimalism/tokens";
+import { DEFAULT_META_COLOR } from "./shared-styles";
 // Reference: standalone HookSlide component (1080×1350 fixed) lives at ./HookSlide.jsx.
 // The template below configures editable slides to visually match HookSlide.
 
@@ -108,7 +116,7 @@ const TEMPLATES: SlideTemplate[] = [
   {
     id: "minimalism",
     name: "Минимализм",
-    accentColor: "#CDE0FA",
+    accentColor: MINIMALISM_ACCENT,
     accentMode: "highlight",
     apply: {
       // template — включает Minimalism-стилевую рамку в SlideFrame
@@ -125,33 +133,33 @@ const TEMPLATES: SlideTemplate[] = [
       overlayType: "none",
       overlayOpacity: 0,
       bgDarken: 0,
-      titleColor: "#0A0A0A",
-      bodyColor: "#666666",
-      metaColor: "#999999",
+      titleColor: MINIMALISM_TITLE,
+      bodyColor: MINIMALISM_BODY,
+      metaColor: DEFAULT_META_COLOR,
       showFooter: false,
       footerText: "",
       showArrow: false,
       showUsername: true,
       showSlideCount: true,
-      titleFont: "'Marvin Visions', 'Space Grotesk', 'Inter', sans-serif",
+      titleFont: MINIMALISM_TITLE_FONT,
       titleLetterSpacing: -0.015,
       titleCase: "none",
-      bodyFont: "'Inter', sans-serif",
+      bodyFont: MINIMALISM_BODY_FONT,
       bodyLetterSpacing: 0,
       bodyCase: "none",
       decorShape: "none",
       bgPattern: "none",
       accentMode: "highlight",
-      accentColor: "#CDE0FA",
+      accentColor: MINIMALISM_ACCENT,
     },
     coverApply: {
       template: "minimalism",
       bgColor: "#FFFFFF",
       overlayType: "none",
       overlayOpacity: 0,
-      titleColor: "#0A0A0A",
-      bodyColor: "#666666",
-      metaColor: "#999999",
+      titleColor: MINIMALISM_TITLE,
+      bodyColor: MINIMALISM_BODY,
+      metaColor: DEFAULT_META_COLOR,
       decorShape: "asterisk",
       decorColor: "#D6E8F7",
       // 520×520 астериск в правом-верхнем, right:-60px. В % 1080-слайда:
@@ -163,7 +171,7 @@ const TEMPLATES: SlideTemplate[] = [
       decorLeft: 57,
       bgPattern: "none",
       accentMode: "highlight",
-      accentColor: "#CDE0FA",
+      accentColor: MINIMALISM_ACCENT,
     },
     // Превью 1-в-1 с реальным cover: белый фон (без точек), pill-counter,
     // 6-лепестковый астериск top-right, контент на 58% от высоты.
@@ -182,7 +190,7 @@ const TEMPLATES: SlideTemplate[] = [
           className="absolute flex items-center justify-between"
           style={{ top: 5, left: 7, right: 7, zIndex: 5 }}
         >
-          <span style={{ fontSize: 4, color: "#999999", fontWeight: 400 }}>@username</span>
+          <span style={{ fontSize: 4, color: DEFAULT_META_COLOR, fontWeight: 400 }}>@username</span>
           <div
             style={{
               width: 9,
@@ -208,13 +216,12 @@ const TEMPLATES: SlideTemplate[] = [
         <div style={{ position: "absolute", top: "48%", left: 7, right: 7, zIndex: 4 }}>
           <h3
             style={{
-              // Тот же шрифт-стек что на реальном слайде (HookContent) —
-              // Marvin Visions → Space Grotesk → Inter. Браузер подхватит первый загруженный.
-              fontFamily: "'Marvin Visions', 'Space Grotesk', 'Inter', sans-serif",
+              // Тот же шрифт-стек что на реальном слайде — токен MINIMALISM_TITLE_FONT.
+              fontFamily: MINIMALISM_TITLE_FONT,
               fontWeight: 700,
               fontSize: 7.8,
               lineHeight: 1.1,
-              color: "#0A0A0A",
+              color: MINIMALISM_TITLE,
               margin: 0,
               textAlign: "left",
               letterSpacing: "-0.015em",
@@ -224,8 +231,8 @@ const TEMPLATES: SlideTemplate[] = [
             <span
               style={{
                 display: "inline-block",
-                background: "#CDE0FA",
-                color: "#0A0A0A",
+                background: MINIMALISM_ACCENT,
+                color: MINIMALISM_TITLE,
                 borderRadius: 999,
                 padding: "0.08em 1.2px 0.12em",
                 marginLeft: -1.2,

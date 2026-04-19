@@ -8,6 +8,22 @@ import { FORMAT_DESIGN } from "./shared-styles";
 import type { SlideFormat } from "./SizePanel";
 import InlineTextEditor from "./InlineTextEditor";
 
+/** Поля слайда, которые копируются при "применить текст ко всем слайдам".
+ *  Единый источник истины. При добавлении нового контрола в TextPanel,
+ *  который должен раскатываться на все слайды, — добавляй сюда. */
+export const TEXT_APPLY_KEYS: readonly (keyof Slide)[] = [
+  "titleFont",
+  "titleSize",
+  "titleCase",
+  "titleLineHeight",
+  "titleLetterSpacing",
+  "bodyFont",
+  "bodySize",
+  "bodyCase",
+  "bodyLineHeight",
+  "bodyLetterSpacing",
+] as const;
+
 interface TextPanelProps {
   currentSlide: Slide;
   /** Секция, на которой открыть панель. Устанавливается родителем, когда пользователь

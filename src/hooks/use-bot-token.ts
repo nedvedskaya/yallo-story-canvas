@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import type { Slide, SlideType, ComparisonSide } from "@/components/editor/SlideCarousel";
 import type { SlideFormat } from "@/components/editor/SizePanel";
 import type { SlideTemplate } from "@/components/editor/TemplatesPanel";
+import { DEFAULT_META_COLOR } from "@/components/editor/shared-styles";
 
 /** Raw slide envelope from /api/generation — keys match backend contract. */
 interface BotSlide {
@@ -138,7 +139,7 @@ export function useBotToken(
           hasList: !!s.has_list,
           titleColor: "#1A1A1A",
           bodyColor: "#1A1A1A",
-          metaColor: "#999999",
+          metaColor: DEFAULT_META_COLOR,
           overlayColor: "rgba(0,0,0,0.08)",
           showFooter: false,
           showArrow: true,

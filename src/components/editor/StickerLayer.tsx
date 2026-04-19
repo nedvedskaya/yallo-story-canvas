@@ -1,4 +1,5 @@
 import React, { useRef, useCallback } from "react";
+import { useDragTracker } from "@/hooks/use-drag-tracker";
 
 export interface Sticker {
   id: string;
@@ -19,37 +20,36 @@ interface StickerLayerProps {
   scale?: number;
 }
 
+/** Контекст, который drag-трекер помнит между pointerdown и pointermove: id
+ *  стикера и его исходные координаты в процентах. */
+interface DragCtx {
+  id: string;
+  origX: number;
+  origY: number;
+}
+
 const StickerLayer: React.FC<StickerLayerProps> = ({ stickers, onUpdateSticker, onDeleteSticker, interactive = true, scale = 1 }) => {
-  const dragRef = useRef<{ id: string; startX: number; startY: number; origX: number; origY: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const movedRef = useRef(false);
 
   const getContainerRect = useCallback(() => containerRef.current?.getBoundingClientRect(), []);
 
-  const handlePointerDown = useCallback((e: React.PointerEvent, sticker: Sticker) => {
-    if (!interactive || !onUpdateSticker) return;
-    e.stopPropagation();
-    e.preventDefault();
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-    movedRef.current = false;
-    dragRef.current = { id: sticker.id, startX: e.clientX, startY: e.clientY, origX: sticker.x, origY: sticker.y };
-  }, [interactive, onUpdateSticker]);
-
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!dragRef.current || !onUpdateSticker) return;
+  // Переводим px-дельту указателя в проценты от размера контейнера (так хранится
+  // позиция стикера — x/y в %). Позволяет корректно работать при любом масштабе.
+  const handleMove = useCallback((ctx: DragCtx, dx: number, dy: number) => {
+    if (!onUpdateSticker) return;
     const rect = getContainerRect();
     if (!rect) return;
-    const dx = e.clientX - dragRef.current.startX;
-    const dy = e.clientY - dragRef.current.startY;
-    if (Math.abs(dx) + Math.abs(dy) > 3) movedRef.current = true;
-    const newX = dragRef.current.origX + (dx / rect.width) * 100;
-    const newY = dragRef.current.origY + (dy / rect.height) * 100;
-    onUpdateSticker(dragRef.current.id, { x: newX, y: newY });
+    const newX = ctx.origX + (dx / rect.width) * 100;
+    const newY = ctx.origY + (dy / rect.height) * 100;
+    onUpdateSticker(ctx.id, { x: newX, y: newY });
   }, [onUpdateSticker, getContainerRect]);
 
-  const handlePointerUp = useCallback(() => {
-    dragRef.current = null;
-  }, []);
+  const drag = useDragTracker<DragCtx>({ onMove: handleMove });
+
+  const handlePointerDown = useCallback((e: React.PointerEvent, sticker: Sticker) => {
+    if (!interactive || !onUpdateSticker) return;
+    drag.onPointerDown(e, { id: sticker.id, origX: sticker.x, origY: sticker.y });
+  }, [interactive, onUpdateSticker, drag]);
 
   const handleDoubleClick = useCallback((e: React.MouseEvent, sticker: Sticker) => {
     e.stopPropagation();
@@ -63,8 +63,8 @@ const StickerLayer: React.FC<StickerLayerProps> = ({ stickers, onUpdateSticker, 
       ref={containerRef}
       className="absolute inset-0 z-[5]"
       style={{ pointerEvents: 'none' }}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
+      onPointerMove={drag.onPointerMove}
+      onPointerUp={drag.onPointerUp}
     >
       {stickers.map((s) => (
         <img

@@ -10,6 +10,17 @@ import ApplyToAllButton from "./ApplyToAllButton";
 import { rgbaToHex } from "@/lib/utils";
 import type { Sticker } from "./StickerLayer";
 import { DecorShape } from "./TemplatesPanel";
+import type { Slide } from "./SlideCarousel";
+
+/** Поля слайда, которые копируются при "применить фон ко всем слайдам".
+ *  Единый источник истины — этот массив. Если в BackgroundPanel появляется
+ *  новый контрол, влияющий на визуал фона для ВСЕХ слайдов, — добавляй сюда. */
+export const BG_APPLY_KEYS: readonly (keyof Slide)[] = [
+  "bgColor",
+  "overlayType",
+  "overlayOpacity",
+  "overlayColor",
+] as const;
 
 export type OverlayType = "none" | "dots" | "lines" | "grid" | "cells" | "blobs" | "gradient";
 type BgTab = "color" | "photo" | "video";

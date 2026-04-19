@@ -28,6 +28,13 @@ import {
   hAlignToText,
   getMinimalismSizes,
 } from "../shared";
+import {
+  MINIMALISM_ACCENT,
+  MINIMALISM_TITLE,
+  MINIMALISM_BODY,
+  MINIMALISM_TITLE_FONT,
+  MINIMALISM_BODY_FONT,
+} from "./tokens";
 
 const MinimalismBase: React.FC<SlideContentProps> = ({
   slide,
@@ -51,14 +58,12 @@ const MinimalismBase: React.FC<SlideContentProps> = ({
   const subtitle = stripHtml(slide.subtitle || slide.body || "");
   const highlight = slide.highlight;
 
-  const accentColor = slide.accentColor || "#CDE0FA";
-  const titleColor = slide.titleColor || "#0A0A0A";
-  const bodyColor = slide.bodyColor || "#666666";
+  const accentColor = slide.accentColor || MINIMALISM_ACCENT;
+  const titleColor = slide.titleColor || MINIMALISM_TITLE;
+  const bodyColor = slide.bodyColor || MINIMALISM_BODY;
 
-  const titleFontFamily =
-    slide.titleFont ||
-    "'Marvin Visions', 'Space Grotesk', 'Inter', sans-serif";
-  const bodyFontFamily = slide.bodyFont || "'Inter', sans-serif";
+  const titleFontFamily = slide.titleFont || MINIMALISM_TITLE_FONT;
+  const bodyFontFamily = slide.bodyFont || MINIMALISM_BODY_FONT;
 
   // Format-aware размеры (см. MINIMALISM_SIZES в shared.ts). Если пользователь
   // уже подменил slide.titleSize/bodySize вручную — уважаем это. В preview

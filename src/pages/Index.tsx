@@ -12,19 +12,19 @@ import type { SlideTemplate } from "@/components/editor/TemplatesPanel";
 import { TEMPLATES } from "@/components/editor/TemplatesPanel";
 import { useBotToken, getTokenFromUrl, notifyExported } from "@/hooks/use-bot-token";
 import { usePersistentSlides, usePersistentFormat, usePersistentActiveSlide } from "@/hooks/use-persistent-slides";
+import { stripHtml } from "@/components/editor/layouts/shared";
+import { wrapLastWordAsAccent } from "@/lib/accent";
+import { pickApplyPatch } from "@/lib/slide-apply";
+import { BG_APPLY_KEYS } from "@/components/editor/BackgroundPanel";
+import { TEXT_APPLY_KEYS } from "@/components/editor/TextPanel";
+import { INFO_APPLY_KEYS } from "@/components/editor/InfoPanel";
+import { MINIMALISM_ACCENT, MINIMALISM_TITLE_FONT } from "@/components/editor/layouts/minimalism/tokens";
+import { DEFAULT_META_COLOR } from "@/components/editor/shared-styles";
 
 
 let nextId = 2;
 
 const MAX_UNDO = 50;
-
-/** Strip all inline-style spans from HTML */
-/** Strip ALL HTML tags, returning plain text */
-function stripHtml(html: string): string {
-  const tmp = document.createElement('div');
-  tmp.innerHTML = html;
-  return tmp.textContent || tmp.innerText || '';
-}
 
 const initialSlides: Slide[] = [
   {
@@ -81,13 +81,13 @@ const Index = () => {
     setSlides(prev => {
       let changed = false;
       const migrated = prev.map(s => {
-        const looksOldMinimalism = s.bgPattern === 'dots' && s.accentColor === '#CDE0FA';
+        const looksOldMinimalism = s.bgPattern === 'dots' && s.accentColor === MINIMALISM_ACCENT;
         const isMinimalism = s.template === 'minimalism' || looksOldMinimalism;
         if (!isMinimalism) return s;
         anyMinimalism = true;
 
         const nextTitleFont = s.titleFont === "'Dela Gothic One', sans-serif" || !s.titleFont
-          ? "'Marvin Visions', 'Space Grotesk', 'Inter', sans-serif"
+          ? MINIMALISM_TITLE_FONT
           : s.titleFont;
 
         // Чистим старый HTML-highlight (color:#FFFFFF, border-radius:3px) в title.
@@ -207,52 +207,18 @@ const Index = () => {
     skipHistory.current = false;
   }, []);
 
-  const handleApplyBgToAll = useCallback(() => {
+  // Универсальная фабрика: "применить <keys> ко всем". Списки ключей живут
+  // рядом с соответствующими панелями (BG_APPLY_KEYS в BackgroundPanel.tsx и т.д.),
+  // чтобы при добавлении нового контрола правилось в одном месте.
+  const applyPatchToAll = useCallback((keys: readonly (keyof Slide)[]) => {
     if (!currentSlide) return;
-    setSlidesWithHistory(prev =>
-      prev.map(s => ({
-        ...s,
-        bgColor: currentSlide.bgColor,
-        overlayType: currentSlide.overlayType,
-        overlayOpacity: currentSlide.overlayOpacity,
-        overlayColor: currentSlide.overlayColor,
-      }))
-    );
+    const patch = pickApplyPatch(currentSlide, keys);
+    setSlidesWithHistory(prev => prev.map(s => ({ ...s, ...patch })));
   }, [currentSlide, setSlidesWithHistory]);
 
-  const handleApplyTextToAll = useCallback(() => {
-    if (!currentSlide) return;
-    setSlidesWithHistory(prev =>
-      prev.map(s => ({
-        ...s,
-        titleFont: currentSlide.titleFont,
-        titleSize: currentSlide.titleSize,
-        titleCase: currentSlide.titleCase,
-        titleLineHeight: currentSlide.titleLineHeight,
-        titleLetterSpacing: currentSlide.titleLetterSpacing,
-        bodyFont: currentSlide.bodyFont,
-        bodySize: currentSlide.bodySize,
-        bodyCase: currentSlide.bodyCase,
-        bodyLineHeight: currentSlide.bodyLineHeight,
-        bodyLetterSpacing: currentSlide.bodyLetterSpacing,
-      }))
-    );
-  }, [currentSlide, setSlidesWithHistory]);
-
-  const handleApplyInfoToAll = useCallback(() => {
-    if (!currentSlide) return;
-    setSlidesWithHistory(prev =>
-      prev.map(s => ({
-        ...s,
-        showUsername: currentSlide.showUsername,
-        username: currentSlide.username,
-        showSlideCount: currentSlide.showSlideCount,
-        showArrow: currentSlide.showArrow,
-        showFooter: currentSlide.showFooter,
-        footerText: currentSlide.footerText,
-      }))
-    );
-  }, [currentSlide, setSlidesWithHistory]);
+  const handleApplyBgToAll = useCallback(() => applyPatchToAll(BG_APPLY_KEYS), [applyPatchToAll]);
+  const handleApplyTextToAll = useCallback(() => applyPatchToAll(TEXT_APPLY_KEYS), [applyPatchToAll]);
+  const handleApplyInfoToAll = useCallback(() => applyPatchToAll(INFO_APPLY_KEYS), [applyPatchToAll]);
 
   const handleApplyTemplate = useCallback((tpl: SlideTemplate) => {
     setActiveTemplate(tpl);
@@ -294,11 +260,7 @@ const Index = () => {
       // с эталоном-референсом.
       if (tpl.accentColor && updated.title && idx !== 0) {
         const clean = stripHtml(updated.title);
-        if (tpl.accentMode === "highlight") {
-          updated.title = clean.replace(/(\S+)(\s*)$/, `<span style="display:inline-block;background:${tpl.accentColor};padding:0.08em 14px 0.12em;border-radius:999px;line-height:1">$1</span>$2`);
-        } else {
-          updated.title = clean.replace(/(\S+)(\s*)$/, `<span style="color:${tpl.accentColor}">$1</span>$2`);
-        }
+        updated.title = wrapLastWordAsAccent(clean, tpl.accentColor, tpl.accentMode ?? "highlight");
       }
       return updated;
     }));
@@ -387,7 +349,7 @@ const Index = () => {
       bgScale: 100, bgPosX: 50, bgPosY: 50, bgDarken: 0,
       titleColor: "#1A1A1A",
       bodyColor: "#1A1A1A",
-      metaColor: "#999999",
+      metaColor: DEFAULT_META_COLOR,
       overlayColor: "rgba(0,0,0,0.08)",
       showFooter: false,
       showArrow: true,
@@ -400,12 +362,7 @@ const Index = () => {
     };
     if (activeTemplate?.accentColor && baseSlide.title && !isCover) {
       const clean = stripHtml(baseSlide.title);
-      if (activeTemplate.accentMode === "highlight") {
-        // Pill как в HookContent: полное скругление + цвет текста = titleColor (не хардкод).
-        baseSlide.title = clean.replace(/(\S+)(\s*)$/, `<span style="display:inline-block;background:${activeTemplate.accentColor};padding:0.08em 14px 0.12em;border-radius:999px;line-height:1">$1</span>$2`);
-      } else {
-        baseSlide.title = clean.replace(/(\S+)(\s*)$/, `<span style="color:${activeTemplate.accentColor}">$1</span>$2`);
-      }
+      baseSlide.title = wrapLastWordAsAccent(clean, activeTemplate.accentColor, activeTemplate.accentMode ?? "highlight");
     }
     setSlidesWithHistory(prev => { const next = [...prev]; next.splice(atIndex, 0, baseSlide); return next; });
     setActiveSlide(atIndex);

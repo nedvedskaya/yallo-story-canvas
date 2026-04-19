@@ -2,8 +2,10 @@ import { useRef, useCallback, useState, useEffect } from "react";
 import { Plus, ChevronLeft, ChevronRight, Copy, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SlideToolbar, { type HAlign, type VAlign, type BgType } from "./SlideToolbar";
-import { glassBtnStyle, FORMAT_TEXT_DEFAULTS } from "./shared-styles";
+import { glassBtnStyle, glassCardStyle } from "./shared-styles";
 import type { OverlayType } from "./BackgroundPanel";
+import { DRAG_THRESHOLD_PX } from "@/hooks/use-drag-tracker";
+import type { Sticker } from "./StickerLayer";
 
 import { FORMAT_OPTIONS, type SlideFormat } from "./SizePanel";
 import SlideFrame from "./SlideFrame";
@@ -149,16 +151,7 @@ export interface Slide {
   bgPattern?: 'dots' | 'none';
   accentMode?: 'highlight' | 'color' | 'none';
   accentColor?: string;
-  stickers?: Array<{
-    id: string;
-    src: string;
-    x: number;
-    y: number;
-    scale: number;
-    rotation: number;
-    width: number;
-    height: number;
-  }>;
+  stickers?: Sticker[];
 }
 
 const addBtnStyle: React.CSSProperties = { ...glassBtnStyle, width: 32, height: 32, flexShrink: 0 };
@@ -252,7 +245,7 @@ const SlideCarousel = ({
     } else if (e.touches.length === 1 && touchStartRef.current) {
       const dx = e.touches[0].clientX - touchStartRef.current.x;
       const dy = e.touches[0].clientY - touchStartRef.current.y;
-      if (Math.abs(dx) + Math.abs(dy) > 5) {
+      if (Math.abs(dx) + Math.abs(dy) > DRAG_THRESHOLD_PX) {
         e.stopPropagation();
         textDragMovedRef.current = true;
         setDragForTarget(t, {
@@ -292,7 +285,7 @@ const SlideCarousel = ({
       if (!mouseDragRef.current) return;
       const dx = e.clientX - mouseDragRef.current.x;
       const dy = e.clientY - mouseDragRef.current.y;
-      if (Math.abs(dx) + Math.abs(dy) > 5) textDragMovedRef.current = true;
+      if (Math.abs(dx) + Math.abs(dy) > DRAG_THRESHOLD_PX) textDragMovedRef.current = true;
       setDragForTarget(mouseDragRef.current.target, { x: mouseDragRef.current.offsetX + dx, y: mouseDragRef.current.offsetY + dy });
     };
     const onMouseUp = () => {
@@ -419,14 +412,7 @@ const SlideCarousel = ({
               >
                 <div
                   className="h-full w-full p-[5px]"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.45)',
-                    backdropFilter: 'blur(24px) saturate(180%)',
-                    WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-                    border: '1.5px solid rgba(200, 200, 220, 0.5)',
-                    borderRadius: '0px',
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9)',
-                  }}
+                  style={glassCardStyle}
                 >
                   <SlideFrame
                     slide={slide}
