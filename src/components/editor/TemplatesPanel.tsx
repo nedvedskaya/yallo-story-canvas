@@ -1,4 +1,6 @@
 import type { Slide } from "./SlideCarousel";
+// Reference: standalone HookSlide component (1080×1350 fixed) lives at ./HookSlide.jsx.
+// The template below configures editable slides to visually match HookSlide.
 
 export interface SlideTemplate {
   id: string;
@@ -52,12 +54,12 @@ const TEMPLATES: SlideTemplate[] = [
       bgImage: undefined,
       bgVideo: undefined,
       bgType: "color",
-      overlayType: "none",
-      overlayOpacity: 0,
+      overlayType: "dots",
+      overlayOpacity: 40,
+      overlayColor: "#CCCCCC",
       titleColor: "#0A0A0A",
       bodyColor: "#666666",
       metaColor: "#999999",
-      overlayColor: "rgba(0,0,0,0.04)",
       showFooter: false,
       footerText: "",
       showArrow: true,
@@ -65,7 +67,7 @@ const TEMPLATES: SlideTemplate[] = [
       showSlideCount: true,
       bgDarken: 0,
       titleFont: "'Inter', sans-serif",
-      titleLetterSpacing: 0,
+      titleLetterSpacing: -0.015,
       titleCase: "none",
       bodyFont: "'Inter', sans-serif",
       bodyLetterSpacing: 0,
@@ -75,6 +77,9 @@ const TEMPLATES: SlideTemplate[] = [
     },
     coverApply: {
       bgColor: "#FFFFFF",
+      overlayType: "dots",
+      overlayOpacity: 40,
+      overlayColor: "#CCCCCC",
       titleColor: "#0A0A0A",
       bodyColor: "#666666",
       metaColor: "#999999",
