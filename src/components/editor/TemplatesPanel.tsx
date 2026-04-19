@@ -106,10 +106,10 @@ const TEMPLATES: SlideTemplate[] = [
       hAlign: "left",
       vAlign: "end",
       decorShape: "asterisk",
-      decorColor: "#E7F0FB",
-      decorSize: 75,
-      decorTop: -8,
-      decorLeft: 42,
+      decorColor: "#D6E8F7",
+      decorSize: 39,
+      decorTop: 6,
+      decorLeft: -6,
       bgPattern: "dots",
       accentMode: "highlight",
       accentColor: "#CDE0FA",
@@ -126,12 +126,12 @@ const TEMPLATES: SlideTemplate[] = [
         >
           <span style={{ fontSize: 4, color: "#999999" }}>[ 1/7 ]</span>
         </div>
-        {/* Halftone asterisk — top-right, oversized, clipped */}
-        <div style={{ position: "absolute", top: "-8%", left: "42%", width: "75%", zIndex: 2 }}>
-          <DecorShape color="#CDE0FA" size={72} />
+        {/* Halftone asterisk — top-left, clipped by the slide's left edge */}
+        <div style={{ position: "absolute", top: "6%", left: "-6%", width: "39%", zIndex: 2 }}>
+          <DecorShape color="#D6E8F7" size={38} />
         </div>
-        {/* Content — bottom-left */}
-        <div style={{ position: "absolute", bottom: 16, left: 7, right: 7, zIndex: 4 }}>
+        {/* Content — middle-lower */}
+        <div style={{ position: "absolute", top: "58%", left: 7, right: 7, zIndex: 4 }}>
           <h3
             style={{
               fontFamily: "'Inter', sans-serif",
@@ -150,9 +150,9 @@ const TEMPLATES: SlideTemplate[] = [
                 background: "#CDE0FA",
                 color: "#0A0A0A",
                 borderRadius: 3,
-                padding: "0.5px 3px",
+                padding: "0 3px",
                 display: "inline",
-                lineHeight: "inherit",
+                lineHeight: 1,
                 boxDecorationBreak: "clone",
                 WebkitBoxDecorationBreak: "clone",
               }}

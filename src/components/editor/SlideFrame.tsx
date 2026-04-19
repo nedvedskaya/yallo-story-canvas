@@ -118,10 +118,11 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
           data-URI so density scales with `scale` (preview 20px tile, export 20×scale px tile). */}
       {!overlayOnly && slide.bgPattern === 'dots' && (() => {
         const tile = 20 * scale;
-        // Fixed 20×20 SVG tile with a 1.5r circle at (10,10), fill #CCCCCC, opacity 0.4.
+        // Fixed 20×20 SVG tile with a 1r circle at (10,10), fill #CCCCCC, opacity 0.35.
+        // Matches the Minimalism Hook reference: sparse halftone covering the whole slide.
         const svg = encodeURIComponent(
           "<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'>" +
-          "<circle cx='10' cy='10' r='1.5' fill='#CCCCCC' opacity='0.4'/></svg>"
+          "<circle cx='10' cy='10' r='1' fill='#CCCCCC' opacity='0.35'/></svg>"
         );
         return (
           <div
@@ -235,13 +236,13 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
         </div>
       </div>
 
-      {/* Asterisk template: content block positioned absolutely at top:48% of slide,
+      {/* Asterisk template: content block positioned absolutely at top:58% of slide,
           with the same 8% side insets the root already applies for flex children. */}
       {isAsteriskTemplate && (
         <div
           className="absolute"
           style={{
-            top: '48%',
+            top: '58%',
             left: '8%',
             right: '8%',
             zIndex: 10,

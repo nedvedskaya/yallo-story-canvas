@@ -28,10 +28,10 @@ export function applyHighlight(
   const style = [
     `background:${accentColor}`,
     "color:#0A0A0A",
-    "border-radius:8px",
-    "padding:1px 8px",
+    "border-radius:6px",
+    "padding:0 6px",
     "display:inline",
-    "line-height:inherit",
+    "line-height:1",
     "box-decoration-break:clone",
     "-webkit-box-decoration-break:clone",
   ].join(";");
