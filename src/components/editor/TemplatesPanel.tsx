@@ -15,79 +15,38 @@ export interface SlideTemplate {
   accentMode?: "color" | "highlight";
 }
 
+/** Декоративная "звезда" / астериск из HookSlide.jsx — для превью и cover-слайда */
+const DecorShape = ({ color, size = 56 }: { color: string; size?: number }) => (
+  <svg
+    viewBox="0 0 280 280"
+    xmlns="http://www.w3.org/2000/svg"
+    style={{ width: size, height: size, display: "block", overflow: "visible" }}
+    aria-hidden="true"
+  >
+    <g fill={color}>
+      <g transform="translate(140 140)">
+        <rect x="-36" y="-126" width="72" height="150" rx="36" ry="36" />
+        <rect x="-34" y="-122" width="68" height="146" rx="34" ry="34" transform="rotate(60)" />
+        <rect x="-37" y="-128" width="74" height="152" rx="37" ry="37" transform="rotate(120)" />
+        <rect x="-35" y="-124" width="70" height="148" rx="35" ry="35" transform="rotate(180)" />
+        <rect x="-36" y="-126" width="72" height="150" rx="36" ry="36" transform="rotate(240)" />
+        <rect x="-34" y="-120" width="68" height="144" rx="34" ry="34" transform="rotate(300)" />
+        <circle cx="0" cy="0" r="58" />
+        <circle cx="-8" cy="6" r="50" />
+        <circle cx="10" cy="-4" r="46" />
+      </g>
+    </g>
+  </svg>
+);
+
+export { DecorShape };
+
 const TEMPLATES: SlideTemplate[] = [
   {
-    id: "minimalism",
-    name: "Тетрадь",
-    accentColor: "#FF4200",
-    apply: {
-      bgColor: "#F3F3F3",
-      bgImage: undefined,
-      bgVideo: undefined,
-      bgType: "color",
-      overlayType: "grid",
-      overlayOpacity: 40,
-      titleColor: "#1A1A1A",
-      bodyColor: "#1A1A1A",
-      metaColor: "#999999",
-      overlayColor: "rgba(0,0,0,0.08)",
-      showFooter: false,
-      footerText: "",
-      showArrow: true,
-      showUsername: true,
-      showSlideCount: true,
-      bgDarken: 0,
-      titleFont: "'Dela Gothic One', sans-serif",
-      titleLetterSpacing: 0,
-      titleCase: "none",
-      bodyFont: "'Inter', sans-serif",
-      bodyLetterSpacing: 0,
-      bodyCase: "none",
-      hAlign: "left",
-      vAlign: "center",
-    },
-    coverApply: {
-      bgColor: "#1A1A1A",
-      overlayType: "grid",
-      overlayOpacity: 18,
-      overlayColor: "rgba(255,255,255,0.08)",
-      titleColor: "#FFFFFF",
-      bodyColor: "rgba(255,255,255,0.85)",
-      metaColor: "rgba(255,255,255,0.5)",
-      hAlign: "left",
-      vAlign: "center",
-    },
-    preview: (
-      <div
-        className="w-full h-full flex flex-col justify-between relative"
-        style={{ background: "#1A1A1A", padding: 8, fontFamily: "'Inter', sans-serif" }}
-      >
-        <div
-          style={{
-            position: "absolute", inset: 0,
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)`,
-            backgroundSize: "12px 12px", pointerEvents: "none", zIndex: 0,
-          }}
-        />
-        <div className="flex justify-between items-center relative z-10">
-          <span style={{ fontSize: 5, color: "rgba(255,255,255,0.5)" }}>@username</span>
-          <span style={{ fontSize: 5, color: "rgba(255,255,255,0.5)" }}>[ 1/3 ]</span>
-        </div>
-        <div className="flex-1 flex flex-col justify-center gap-1 py-1 relative z-10">
-          <h3 style={{ fontFamily: "'Dela Gothic One', sans-serif", fontSize: 11, lineHeight: 1.05, color: "#FFFFFF", margin: 0, textAlign: "left" }}>
-            Заголовок
-          </h3>
-          <p style={{ fontSize: 5, color: "rgba(255,255,255,0.85)", margin: 0, lineHeight: 1.5, textAlign: "left" }}>Текст слайда</p>
-        </div>
-        <div className="flex justify-end items-center relative z-10">
-          <div style={{ width: 10, height: 10, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 5, color: "#FFFFFF" }}>→</div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    id: "minimalism-clean",
-    name: "Минимализм",
+    id: "hook",
+    name: "Hook",
+    accentColor: "#CDE0FA",
+    accentMode: "highlight",
     apply: {
       bgColor: "#FFFFFF",
       bgImage: undefined,
@@ -95,70 +54,17 @@ const TEMPLATES: SlideTemplate[] = [
       bgType: "color",
       overlayType: "none",
       overlayOpacity: 0,
-      titleColor: "#1A1A1A",
-      bodyColor: "#1A1A1A",
+      titleColor: "#0A0A0A",
+      bodyColor: "#666666",
       metaColor: "#999999",
-      overlayColor: "rgba(0,0,0,0.08)",
+      overlayColor: "rgba(0,0,0,0.04)",
       showFooter: false,
       footerText: "",
       showArrow: true,
       showUsername: true,
       showSlideCount: true,
       bgDarken: 0,
-      titleFont: "'SONGER Grotesque', sans-serif",
-      titleLetterSpacing: 0,
-      titleCase: "uppercase",
-      bodyFont: "'Inter', sans-serif",
-      bodyLetterSpacing: 0,
-      bodyCase: "none",
-      hAlign: "left",
-      vAlign: "center",
-    },
-    coverApply: {
-      hAlign: "left",
-      vAlign: "center",
-    },
-    preview: (
-      <div className="w-full h-full flex flex-col justify-between" style={{ background: "#FFFFFF", padding: 8, fontFamily: "'Inter', sans-serif" }}>
-        <div className="flex justify-between items-center">
-          <span style={{ fontSize: 5, color: "#999" }}>@username</span>
-          <span style={{ fontSize: 5, color: "#999" }}>[ 1/3 ]</span>
-        </div>
-        <div className="flex-1 flex flex-col justify-center gap-1 py-1">
-          <h3 style={{ fontFamily: "'SONGER Grotesque', sans-serif", fontSize: 12, lineHeight: 1.0, color: "#1A1A1A", margin: 0, textAlign: "left", textTransform: "uppercase", fontWeight: 700 }}>
-            ЗАГОЛОВОК
-          </h3>
-          <p style={{ fontSize: 5, color: "#1A1A1A", margin: 0, lineHeight: 1.5, textAlign: "left" }}>Основной текст слайда</p>
-        </div>
-        <div className="flex justify-end items-center">
-          <div style={{ width: 10, height: 10, borderRadius: "50%", border: "1px solid #1A1A1A", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 5, color: "#1A1A1A" }}>→</div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    id: "bordo",
-    name: "Бордо",
-    accentColor: "#630208",
-    accentMode: "color",
-    apply: {
-      bgColor: "#E5E3D7",
-      bgImage: undefined,
-      bgVideo: undefined,
-      bgType: "color",
-      overlayType: "none",
-      overlayOpacity: 0,
-      titleColor: "#010003",
-      bodyColor: "#49453E",
-      metaColor: "rgba(1,0,3,0.45)",
-      overlayColor: "rgba(0,0,0,0.08)",
-      showFooter: false,
-      footerText: "",
-      showArrow: true,
-      showUsername: true,
-      showSlideCount: true,
-      bgDarken: 0,
-      titleFont: "'Forum', serif",
+      titleFont: "'Inter', sans-serif",
       titleLetterSpacing: 0,
       titleCase: "none",
       bodyFont: "'Inter', sans-serif",
@@ -168,38 +74,118 @@ const TEMPLATES: SlideTemplate[] = [
       vAlign: "center",
     },
     coverApply: {
-      bgColor: "#620107",
-      titleColor: "#FFFFFF",
-      bodyColor: "rgba(255,255,255,0.8)",
-      metaColor: "rgba(255,255,255,0.5)",
+      bgColor: "#FFFFFF",
+      titleColor: "#0A0A0A",
+      bodyColor: "#666666",
+      metaColor: "#999999",
       hAlign: "left",
       vAlign: "center",
     },
     preview: (
       <div
-        className="w-full h-full flex flex-col justify-between"
-        style={{ background: "#620107", padding: 8, fontFamily: "'Inter', sans-serif" }}
+        className="w-full h-full relative overflow-hidden"
+        style={{ background: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}
       >
-        <div className="flex justify-between items-center">
-          <span style={{ fontSize: 5, color: "rgba(255,255,255,0.5)" }}>@username</span>
-          <span style={{ fontSize: 5, color: "rgba(255,255,255,0.5)" }}>[ 1/3 ]</span>
+        {/* Halftone dot pattern */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage:
+              "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'><circle cx='10' cy='10' r='1.5' fill='%23CCCCCC' opacity='0.4'/></svg>\")",
+            backgroundRepeat: "repeat",
+            backgroundSize: "6px 6px",
+            zIndex: 1,
+          }}
+        />
+        {/* Top bar */}
+        <div
+          className="absolute flex items-center justify-between"
+          style={{ top: 6, left: 6, right: 6, zIndex: 5 }}
+        >
+          <svg width="8" height="8" viewBox="0 0 36 36">
+            <polygon points="0,36 18,0 36,36" fill="#0A0A0A" />
+          </svg>
+          <div
+            style={{
+              width: 12,
+              height: 12,
+              borderRadius: "50%",
+              background: "#F0F0F0",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 4,
+              color: "#0A0A0A",
+              fontWeight: 500,
+            }}
+          >
+            1/7
+          </div>
         </div>
-        <div className="flex-1 flex flex-col justify-center gap-1 py-1">
-          <h3 style={{
-            fontFamily: "'Forum', serif",
-            fontSize: 14,
-            lineHeight: 1.0,
-            color: "#FFFFFF",
-            margin: 0,
-            textAlign: "left",
-            fontWeight: 400,
-          }}>
-            Шрифтовые
+        {/* Decor */}
+        <div style={{ position: "absolute", top: "13%", left: "9%", zIndex: 2 }}>
+          <DecorShape color="#E7F0FB" size={28} />
+        </div>
+        {/* Content */}
+        <div style={{ position: "absolute", top: "55%", left: 7, right: 7, zIndex: 4 }}>
+          <h3
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 700,
+              fontSize: 11,
+              lineHeight: 1.1,
+              color: "#0A0A0A",
+              margin: 0,
+              textAlign: "left",
+              letterSpacing: "-0.015em",
+            }}
+          >
+            Как я{" "}
+            <span
+              style={{
+                background: "#CDE0FA",
+                borderRadius: 2,
+                padding: "0 2px",
+              }}
+            >
+              выросла
+            </span>
           </h3>
-          <p style={{ fontSize: 5, color: "rgba(255,255,255,0.8)", margin: 0, lineHeight: 1.5, textAlign: "left" }}>Текст слайда</p>
+          <p
+            style={{
+              fontSize: 4.5,
+              color: "#666666",
+              margin: "3px 0 0 0",
+              lineHeight: 1.4,
+              textAlign: "left",
+            }}
+          >
+            за 1 месяц без рекламы
+          </p>
         </div>
-        <div className="flex justify-end items-center">
-          <div style={{ width: 10, height: 10, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 5, color: "#FFFFFF" }}>→</div>
+        {/* Bottom bar */}
+        <div
+          className="absolute flex items-center justify-between"
+          style={{ bottom: 6, left: 6, right: 6, zIndex: 5 }}
+        >
+          <span style={{ fontSize: 4.5, color: "#999999" }}>@yalokontent</span>
+          <div
+            style={{
+              width: 13,
+              height: 13,
+              borderRadius: "50%",
+              background: "#FFFFFF",
+              border: "1px solid #0A0A0A",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 6,
+              color: "#0A0A0A",
+            }}
+          >
+            →
+          </div>
         </div>
       </div>
     ),
