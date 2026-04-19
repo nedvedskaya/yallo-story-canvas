@@ -189,11 +189,13 @@ const Index = () => {
       delete (styleOnly as any).body;
 
       const updated = { ...s, ...styleOnly };
-      // Apply accent to existing title (only on non-cover slides; cover keeps clean look)
+      // Apply accent to existing title (only on non-cover slides; cover keeps clean look).
+      // highlight-mode: цвет текста НЕ перекрываем — пусть наследует titleColor,
+      // чтобы выделенное слово читалось в цвет остального заголовка (а не белым).
       if (tpl.accentColor && updated.title && idx !== 0) {
         const clean = stripHtml(updated.title);
         if (tpl.accentMode === "highlight") {
-          updated.title = clean.replace(/(\S+)(\s*)$/, `<span style="background:${tpl.accentColor};color:#FFFFFF;padding:2px 6px;border-radius:3px">$1</span>$2`);
+          updated.title = clean.replace(/(\S+)(\s*)$/, `<span style="background:${tpl.accentColor};padding:2px 6px;border-radius:3px">$1</span>$2`);
         } else {
           updated.title = clean.replace(/(\S+)(\s*)$/, `<span style="color:${tpl.accentColor}">$1</span>$2`);
         }

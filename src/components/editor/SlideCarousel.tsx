@@ -44,6 +44,12 @@ export interface Slide {
   /** Slide type — drives layout dispatch in SlideFactory. Undefined = 'text_block' fallback. */
   type?: SlideType;
 
+  /** Style template — drives visual axis (palette, fonts, decor). Independent of `type`.
+   *  'minimalism' activates the Minimalism styling branch in SlideFrame (topbar variant,
+   *  side padding 80px, bottom bar hidden). Background dot-pattern is a SEPARATE flag
+   *  (`bgPattern: 'dots'`) and off by default for Minimalism — user re-enables via the BG panel. */
+  template?: 'minimalism';
+
   // Type-specific content fields (all optional; each *Content component reads only its own).
   // Names are prefixed (steps_items, comparison_left, hero_*, question_text) where API keys
   // like `steps`, `left`, `right`, `name`, `role`, `description`, `question` would collide with
@@ -417,6 +423,7 @@ const SlideCarousel = ({
                     onUpdateSticker={isActive ? onUpdateSticker : undefined}
                     onDeleteSticker={isActive ? onDeleteSticker : undefined}
                     stickerInteractive={isActive}
+                    onDeleteDecor={isActive ? () => onUpdateSlide(slide.id, { decorShape: 'none' }) : undefined}
                     watermark={watermark}
                   />
                 </div>

@@ -111,6 +111,10 @@ const TEMPLATES: SlideTemplate[] = [
     accentColor: "#CDE0FA",
     accentMode: "highlight",
     apply: {
+      // template — независимая ось от type. Включает Minimalism-рамку:
+      // padding 56/80/80, pill-counter, скрытый bottom bar. Не навязывает
+      // фоновый паттерн (user включает точки сам в BG panel при желании).
+      template: "minimalism",
       bgColor: "#FFFFFF",
       bgImage: undefined,
       bgVideo: undefined,
@@ -135,11 +139,12 @@ const TEMPLATES: SlideTemplate[] = [
       hAlign: "left",
       vAlign: "end",
       decorShape: "none",
-      bgPattern: "dots",
+      bgPattern: "none",
       accentMode: "highlight",
       accentColor: "#CDE0FA",
     },
     coverApply: {
+      template: "minimalism",
       bgColor: "#FFFFFF",
       overlayType: "none",
       overlayOpacity: 0,
@@ -157,32 +162,32 @@ const TEMPLATES: SlideTemplate[] = [
       decorSize: 48,
       decorTop: 6,
       decorLeft: 57,
-      bgPattern: "dots",
+      bgPattern: "none",
       accentMode: "highlight",
       accentColor: "#CDE0FA",
     },
+    // Превью 1-в-1 с реальным cover: белый фон (без точек), pill-counter,
+    // 6-лепестковый астериск top-right, контент на 58% от высоты.
+    // Размеры отмасштабированы от 1080×1350 эталона к 96×120 превью
+    // (коэффициент ≈ 96/1080 = 0.0889).
     preview: (
       <div
         className="w-full h-full relative overflow-hidden"
         style={{
           background: "#FFFFFF",
-          backgroundImage:
-            "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'><circle cx='10' cy='10' r='1' fill='%23CCCCCC' opacity='0.35'/></svg>\")",
-          backgroundSize: "6px 6px",
-          backgroundRepeat: "repeat",
           fontFamily: "'Inter', sans-serif",
         }}
       >
-        {/* Top bar: @username слева, pill-counter справа */}
+        {/* Top bar. В эталоне top:56 left/right:80 на 1080×1350 → в превью ≈ top:5 left/right:7 */}
         <div
           className="absolute flex items-center justify-between"
-          style={{ top: 4, left: 6, right: 6, zIndex: 5 }}
+          style={{ top: 5, left: 7, right: 7, zIndex: 5 }}
         >
-          <span style={{ fontSize: 4, color: "#999999" }}>@username</span>
+          <span style={{ fontSize: 4, color: "#999999", fontWeight: 400 }}>@username</span>
           <div
             style={{
-              width: 10,
-              height: 10,
+              width: 9,
+              height: 9,
               borderRadius: "50%",
               background: "#F0F0F0",
               display: "flex",
@@ -196,17 +201,17 @@ const TEMPLATES: SlideTemplate[] = [
             1/6
           </div>
         </div>
-        {/* Астериск: top-right, срезан правым краем */}
+        {/* Астериск: top:6% left:57% width:48% — срезан правым краем слайда */}
         <div style={{ position: "absolute", top: "6%", left: "57%", width: "48%", zIndex: 2 }}>
           <DecorShape color="#D6E8F7" />
         </div>
-        {/* Content — примерно на 58% по вертикали */}
+        {/* Контент на 58% по вертикали, left/right 7px ≈ 80/1080 × 96 */}
         <div style={{ position: "absolute", top: "58%", left: 7, right: 7, zIndex: 4 }}>
           <h3
             style={{
               fontFamily: "'Space Grotesk', 'Inter', sans-serif",
               fontWeight: 700,
-              fontSize: 8.5,
+              fontSize: 7.8,
               lineHeight: 1.1,
               color: "#0A0A0A",
               margin: 0,
@@ -221,8 +226,8 @@ const TEMPLATES: SlideTemplate[] = [
                 background: "#CDE0FA",
                 color: "#0A0A0A",
                 borderRadius: 999,
-                padding: "0.08em 3px 0.12em",
-                marginLeft: -3,
+                padding: "0.08em 1.2px 0.12em",
+                marginLeft: -1.2,
                 lineHeight: 1,
               }}
             >
@@ -232,9 +237,10 @@ const TEMPLATES: SlideTemplate[] = [
           </h3>
           <p
             style={{
-              fontSize: 4,
+              fontSize: 2.5,
+              fontWeight: 400,
               color: "#666666",
-              margin: "3px 0 0 0",
+              margin: "1.8px 0 0 0",
               lineHeight: 1.4,
               textAlign: "left",
             }}

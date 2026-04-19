@@ -32,6 +32,11 @@ export interface SlideMetrics {
   bulletIndent: number;
   /** For legacy compat */
   padding: number;
+  /** Effective render scale: (previewW / exportW) * scale.
+   *  Multiply any design-spec (export-resolution) px value by renderScale
+   *  to get the correct preview/export px. Used by slide-type components
+   *  that hard-code reference values (e.g. Minimalism Hook: 88 title, 28 subtitle). */
+  renderScale: number;
 }
 
 /**
@@ -74,6 +79,7 @@ export function getSlideMetrics(slide: Slide, format: SlideFormat, scale = 1): S
     bulletGap: d.bulletGap * renderScale,
     bulletIndent: d.bulletIndent * renderScale,
     padding: ((d.safeZone.top + d.safeZone.bottom + d.safeZone.left + d.safeZone.right) / 4) * renderScale,
+    renderScale,
   };
 }
 

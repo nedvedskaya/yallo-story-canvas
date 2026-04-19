@@ -27,7 +27,8 @@ function renderTitleWithHighlight(
   title: string,
   highlight: string | undefined,
   accentColor: string,
-  scale: number,
+  titleColor: string,
+  renderScale: number,
 ): React.ReactNode {
   if (!title) return null;
   if (!highlight) return title;
@@ -37,14 +38,15 @@ function renderTitleWithHighlight(
   const before = title.slice(0, idx);
   const after = title.slice(idx + highlight.length);
 
-  // Pill-плашка. margin-left: -14px * scale — чтобы текст внутри плашки
+  // Pill-плашка. margin-left: -14px * renderScale — чтобы текст внутри плашки
   // визуально выровнялся с остальными строками (плашка «выезжает» влево
-  // на размер padding-а).
-  const pad = 14 * scale;
+  // на размер padding-а). Цвет текста внутри pill — titleColor, чтобы выделенное
+  // слово совпадало по цвету с остальным заголовком (а не было белым по умолчанию).
+  const pad = 14 * renderScale;
   const pillStyle: React.CSSProperties = {
     display: "inline-block",
     background: accentColor,
-    color: "#0A0A0A",
+    color: titleColor,
     borderRadius: 999,
     padding: `0.08em ${pad}px 0.12em`,
     marginLeft: -pad,
@@ -67,7 +69,7 @@ function renderTitleWithHighlight(
 
 const HookContent: React.FC<SlideContentProps> = ({
   slide,
-  scale,
+  metrics,
   editorOpen,
   onTitleTouchStart,
   onTitleTouchMove,
@@ -95,10 +97,14 @@ const HookContent: React.FC<SlideContentProps> = ({
     "'Marvin Visions', 'Space Grotesk', 'Inter', sans-serif";
   const bodyFontFamily = slide.bodyFont || "'Inter', sans-serif";
 
-  // Размеры — нормированы на 1080px, масштабируются через scale.
-  const titleFontSize = 88 * scale;
-  const subtitleFontSize = 28 * scale;
-  const subtitleMarginTop = 20 * scale;
+  // Размеры — фиксированы под 1080×1350 эталон и масштабируются через
+  // metrics.renderScale = (previewW / exportW) * scale. Это превращает
+  // design-spec px в корректные px и в превью (≈290px контейнер), и в
+  // экспорте (1080px). Сам `scale` prop слишком грубый — он =1 в превью.
+  const rs = metrics.renderScale;
+  const titleFontSize = 88 * rs;
+  const subtitleFontSize = 28 * rs;
+  const subtitleMarginTop = 20 * rs;
 
   return (
     <div style={{ width: "100%" }}>
@@ -128,7 +134,7 @@ const HookContent: React.FC<SlideContentProps> = ({
             textAlign: "left",
           }}
         >
-          {renderTitleWithHighlight(title, highlight, accentColor, scale)}
+          {renderTitleWithHighlight(title, highlight, accentColor, titleColor, rs)}
         </h1>
       </div>
 
