@@ -42,6 +42,11 @@ export interface SlideContentProps {
   onBodyTouchEnd?: () => void;
   onBodyMouseDown?: (e: React.MouseEvent) => void;
   onBodyClick?: () => void;
+  /** Generic "patch this slide" callback (bound к slide.id в SlideCarousel).
+   *  Нужен layouts, которые в UI меняют поля слайда напрямую, минуя BG-panel —
+   *  например, photo upload в MinimalismLayout2. undefined для неактивных
+   *  слайдов / экспорта (где интерактив не нужен). */
+  onSlidePatch?: (patch: Partial<Slide>) => void;
 }
 
 const MINIMALISM: Record<LayoutId, React.FC<SlideContentProps>> = {

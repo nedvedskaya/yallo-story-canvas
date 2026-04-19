@@ -1,18 +1,23 @@
 /**
- * MinimalismLayout2 — фото-плейсхолдер сверху + title/subtitle снизу.
+ * MinimalismLayout2 — фото-плейсхолдер + title/subtitle снизу.
  *
- * HTML-эталон: /Яло/минимализм/layout2.html
- *   - rectangular photo zone (1:1.5), borderRadius 24, светло-серый #EDEDED с
- *     диагональной штриховкой #D6D6D6, иконка upload + подпись-размер;
- *   - title 72px Marvin Visions внизу, subtitle Inter 22px.
+ * Эталон (v2 от 19 Apr): /Яло/минимализм/layout2.html + скриншот «Внимание —
+ * это не охват» от Ольги. Отличия от v1:
+ *   - убран декоративный цветок-астериск (SlideFrame теперь показывает
+ *     decorShape только на layout 1);
+ *   - title шрифт = Space Grotesk 700 (Marvin Visions не поддерживает
+ *     кириллицу корректно, поэтому насилует текст в CAPS; здесь нужен
+ *     читаемый bold sans-serif);
+ *   - title размер уменьшен до ~52px@1080 (в v1 было 73px — дисбаланс
+ *     с фото-блоком);
+ *   - photo-placeholder кликабельный: по клику открывается диалог выбора
+ *     файла, выбранный blob записывается в slide.image_url через onSlidePatch.
  *
- * Отличие от Layout1: текст внизу, но НЕ прижат к краю — сверху большой
- * photo-блок, под ним компактный текст. Photo рендерим как SVG-плейсхолдер
- * (без user-image пока — Ольга не просила интеграцию со slide.bgImage).
- *
- * Поведение drag/pinch/click — идентично Layout1/Base.
+ * Поведение drag/pinch/click заголовка/подписи — идентично Layout1/Base.
+ * Если пользователь задал slide.titleFont/titleSize вручную — уважаем их
+ * (override только для дефолтов).
  */
-import React from "react";
+import React, { useRef } from "react";
 import type { SlideContentProps } from "../../SlideFactory";
 import {
   stripHtml,
@@ -29,20 +34,26 @@ import {
 } from "./tokens";
 import { prepareTitleHtml } from "@/lib/title-html";
 
-// Export-px константы из HTML-эталона (1080×1350). renderScale применяется
-// ко всем размерам в рендере, чтобы превью и экспорт совпадали.
+// Export-px константы из HTML-эталона (1080×1350).
 const PHOTO_HEIGHT_EXPORT_PX = 620;
 const PHOTO_RADIUS_EXPORT_PX = 24;
 const PHOTO_TO_TEXT_GAP_EXPORT_PX = 40;
 const UPLOAD_ICON_SIZE_EXPORT_PX = 96;
 
-// Layout2 использует собственные размеры title/body (меньше, чем Layout1/Base),
-// чтобы уравновесить photo-блок сверху. Значения из HTML-эталона.
+/** Шрифт для Layout2-дефолта. Space Grotesk имеет хорошую кириллицу и
+ *  bold-рисунок схожий с референсом. Используем только если пользователь
+ *  не менял slide.titleFont вручную (значение MINIMALISM_TITLE_FONT = дефолт
+ *  шаблона → нам позволено override-нуть). */
+const LAYOUT2_TITLE_FONT = "'Space Grotesk', 'Inter', sans-serif";
+
+/** Layout2-специфичные размеры. В v1 было 0.70 от базы — крупно, текст
+ *  перекрывал по визуальному весу photo-блок. Снижаем до 0.50 (carousel:
+ *  104×0.5=52px → совпадает со скриншотом Ольги). */
 function getLayout2Sizes(base: ReturnType<typeof getMinimalismSizes>) {
   return {
-    titleSize: Math.round(base.titleSize * 0.70), // 104→73, 116→81, 108→76
-    bodySize: Math.round(base.bodySize * 0.60),   // 40→24, 46→28, 38→23
-    titleBodyGap: Math.round(base.titleBodyGap * 0.75),
+    titleSize: Math.round(base.titleSize * 0.50),
+    bodySize: Math.round(base.bodySize * 0.55),
+    titleBodyGap: Math.round(base.titleBodyGap * 0.60),
   };
 }
 
@@ -63,6 +74,7 @@ const MinimalismLayout2: React.FC<SlideContentProps> = ({
   onBodyTouchEnd,
   onBodyMouseDown,
   onBodyClick,
+  onSlidePatch,
 }) => {
   const subtitle = stripHtml(slide.subtitle || slide.body || "");
 
@@ -70,7 +82,13 @@ const MinimalismLayout2: React.FC<SlideContentProps> = ({
   const titleColor = slide.titleColor || MINIMALISM_TITLE;
   const bodyColor = slide.bodyColor || MINIMALISM_BODY;
 
-  const titleFontFamily = slide.titleFont || MINIMALISM_TITLE_FONT;
+  // Если titleFont остался дефолтом шаблона (Marvin Visions) — override на
+  // Space Grotesk для корректной кириллицы. Если юзер сознательно выбрал
+  // Marvin Visions или что-то ещё — уважаем выбор.
+  const titleFontFamily =
+    slide.titleFont && slide.titleFont !== MINIMALISM_TITLE_FONT
+      ? slide.titleFont
+      : LAYOUT2_TITLE_FONT;
   const bodyFontFamily = slide.bodyFont || MINIMALISM_BODY_FONT;
 
   const rs = metrics.renderScale;
@@ -89,21 +107,42 @@ const MinimalismLayout2: React.FC<SlideContentProps> = ({
   const bOy = bodyOverrides?.offsetY ?? (slide.bodyOffsetY ?? 0);
   const bSc = bodyOverrides?.scale ?? (slide.bodyScale ?? 1);
 
-  // photo-блок: диагональная штриховка через repeating-linear-gradient.
-  // rgba(0,0,0,0.02) слишком прозрачна на preview — усиливаем до 0.05 чтобы
-  // hatching читалось и в скейле превью.
+  // photo-блок: диагональная штриховка.
   const hatchStyle: React.CSSProperties = {
     backgroundImage: `repeating-linear-gradient(135deg, transparent 0 ${22 * rs}px, rgba(0,0,0,0.05) ${22 * rs}px ${44 * rs}px)`,
+  };
+
+  // Клик по заглушке → открыть диалог выбора файла → blob URL → patch slide.
+  // editorOpen подавляет upload (в этом режиме клик = текстовый фокус).
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const canUpload = !!onSlidePatch && !editorOpen;
+  const handlePhotoClick = () => {
+    if (!canUpload) return;
+    fileInputRef.current?.click();
+  };
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !onSlidePatch) return;
+    // Ревоук предыдущего blob (если это он), чтобы не копить в памяти.
+    if (slide.image_url?.startsWith("blob:")) {
+      try { URL.revokeObjectURL(slide.image_url); } catch { /* noop */ }
+    }
+    onSlidePatch({ image_url: URL.createObjectURL(file) });
+    // Сбрасываем value чтобы при повторной загрузке того же файла сработал onChange.
+    e.target.value = "";
   };
 
   return (
     <div
       className="flex flex-col flex-1 min-h-0 w-full"
-      style={{ pointerEvents: "none", paddingTop: `${60 * rs}px` }}
+      style={{ pointerEvents: "none", paddingTop: `${40 * rs}px` }}
     >
-      {/* Photo placeholder — rectangular, rounded, hatched. Если юзер задал
-          slide.image_url от бота — показываем его вместо плейсхолдера. */}
+      {/* Photo placeholder — rectangular, rounded, hatched.
+          onClick открывает file picker → загрузка в slide.image_url. */}
       <div
+        role={canUpload ? "button" : undefined}
+        aria-label={canUpload ? "Загрузить фото" : undefined}
+        onClick={handlePhotoClick}
         style={{
           width: "100%",
           height: `${PHOTO_HEIGHT_EXPORT_PX * rs}px`,
@@ -112,7 +151,8 @@ const MinimalismLayout2: React.FC<SlideContentProps> = ({
           overflow: "hidden",
           position: "relative",
           flexShrink: 0,
-          pointerEvents: "none",
+          pointerEvents: canUpload ? "auto" : "none",
+          cursor: canUpload ? "pointer" : "default",
         }}
       >
         {slide.image_url ? (
@@ -161,9 +201,16 @@ const MinimalismLayout2: React.FC<SlideContentProps> = ({
             </span>
           </>
         )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: "none" }}
+          onChange={handlePhotoChange}
+        />
       </div>
 
-      {/* Text block — под фото, gap ~40px */}
+      {/* Text block — под фото, tight gap */}
       <div
         style={{
           width: "100%",
@@ -191,8 +238,8 @@ const MinimalismLayout2: React.FC<SlideContentProps> = ({
               fontFamily: titleFontFamily,
               fontWeight: 700,
               fontSize: `${titleFontSize}px`,
-              lineHeight: slide.titleLineHeight ?? 1.06,
-              letterSpacing: `${slide.titleLetterSpacing ?? -0.015}em`,
+              lineHeight: slide.titleLineHeight ?? 1.1,
+              letterSpacing: `${slide.titleLetterSpacing ?? -0.02}em`,
               textTransform: caseToTransform(slide.titleCase),
               color: titleColor,
               textAlign,

@@ -448,6 +448,7 @@ const SlideCarousel = ({
                     onBodyTouchEnd={() => handleTextTouchEnd(slide.id)}
                     onBodyMouseDown={(e) => handleTextMouseDown(e, slide, "body")}
                     onBodyClick={isActive ? () => handleTextClick("body") : undefined}
+                    onSlidePatch={isActive ? (patch) => onUpdateSlide(slide.id, patch) : undefined}
                     onUpdateSticker={isActive ? onUpdateSticker : undefined}
                     onDeleteSticker={isActive ? onDeleteSticker : undefined}
                     stickerInteractive={isActive}

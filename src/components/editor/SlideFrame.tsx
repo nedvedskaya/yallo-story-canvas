@@ -37,6 +37,9 @@ export interface SlideFrameProps {
   onBodyTouchEnd?: () => void;
   onBodyMouseDown?: (e: React.MouseEvent) => void;
   onBodyClick?: () => void;
+  /** Пробрасывается в SlideFactory → layout для patch'а полей слайда
+   *  (photo upload в Layout2 и т.п.). */
+  onSlidePatch?: (patch: Partial<Slide>) => void;
   editorOpen?: boolean;
   videoRefCallback?: (el: HTMLVideoElement | null) => void;
   videoMuted?: boolean;
@@ -54,6 +57,7 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
   titleOverrides, bodyOverrides,
   onTitleTouchStart, onTitleTouchMove, onTitleTouchEnd, onTitleMouseDown, onTitleClick,
   onBodyTouchStart, onBodyTouchMove, onBodyTouchEnd, onBodyMouseDown, onBodyClick,
+  onSlidePatch,
   editorOpen, videoRefCallback, videoMuted = true, overlayOnly = false, dataSlideId,
   onUpdateSticker, onDeleteSticker, stickerInteractive = false,
   watermark,
@@ -102,6 +106,7 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
     titleOverrides, bodyOverrides, editorOpen,
     onTitleTouchStart, onTitleTouchMove, onTitleTouchEnd, onTitleMouseDown, onTitleClick,
     onBodyTouchStart, onBodyTouchMove, onBodyTouchEnd, onBodyMouseDown, onBodyClick,
+    onSlidePatch,
   } as const;
 
   return (
@@ -158,8 +163,11 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
 
       {/* Декоративный астериск (Minimalism cover) — над overlay, под контентом.
           SVG живёт в TemplatesPanel.tsx/DecorShape (1-в-1 с claude.design эталоном).
-          Управление видимостью — через BG panel → «Декоративные элементы». */}
-      {!overlayOnly && slide.decorShape === 'asterisk' && (
+          Управление видимостью — через BG panel → «Декоративные элементы».
+          Показываем ТОЛЬКО на layout 1 (hook/cover) — layouts 2/3/4 имеют
+          собственные декоры внутри своих компонентов. Это защищает от
+          наложения цветка поверх photo-блока Layout2 и halftone-облака Layout3. */}
+      {!overlayOnly && slide.decorShape === 'asterisk' && (!slide.layout || slide.layout === 1) && (
         <div
           aria-hidden="true"
           style={{
