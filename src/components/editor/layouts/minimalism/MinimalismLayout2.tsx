@@ -136,10 +136,21 @@ const MinimalismLayout2: React.FC<SlideContentProps> = ({
         }}
       >
         {slide.image_url ? (
-          <img
-            src={slide.image_url}
-            alt=""
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          // Используем div с background-image вместо <img objectFit:cover>,
+          // потому что html2canvas 1.4.1 не поддерживает object-fit и растягивает
+          // <img> на width×height, ломая пропорции фото в PNG/PDF-экспорте.
+          // background-size:cover html2canvas рендерит корректно.
+          <div
+            role="img"
+            aria-label=""
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage: `url("${slide.image_url}")`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+            }}
           />
         ) : (
           <>

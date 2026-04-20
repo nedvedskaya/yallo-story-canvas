@@ -115,7 +115,21 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
       {!overlayOnly && (slide.bgImage || slide.bgVideo) && (
         <div className="absolute inset-0 z-[1]" style={{ overflow: 'hidden', pointerEvents: 'none' }}>
           {slide.bgImage && (
-            <img src={slide.bgImage} alt="" loading="lazy" decoding="async" style={{ ...mediaStyle, objectFit: 'cover' }} />
+            // div + background-image вместо <img objectFit:cover>: html2canvas 1.4.1
+            // не умеет object-fit и растягивал бы <img> на width/height, ломая
+            // aspect ratio в PNG/PDF. background-size:cover поддерживается корректно.
+            // mediaStyle содержит позиционирование (position:absolute, top/left %,
+            // width/height %), поэтому objectFit убираем и накладываем background-*.
+            <div
+              aria-hidden="true"
+              style={{
+                ...mediaStyle,
+                backgroundImage: `url("${slide.bgImage}")`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+              }}
+            />
           )}
           {slide.bgVideo && (
             <video
