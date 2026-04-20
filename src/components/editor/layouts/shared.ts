@@ -24,11 +24,16 @@ export interface LayoutSizes {
   titleBodyGap: number;
 }
 
+// bodySize увеличен на +10 export-px (было 40/36/46/38 → стало 50/46/56/48).
+// Ольга: «увеличь размера основного текста на +2, очень мелкий». +2 на шкале
+// export-px при renderScale ≈0.4 превращается в <1px в превью и незаметно;
+// +10 даёт +4px preview / +25% визуально — «не очень мелкий». Пользователь
+// может дальше докрутить слайдером в Text-панели.
 const MINIMALISM_SIZES: Record<SlideFormat, LayoutSizes> = {
-  carousel:     { titleSize: 104, bodySize: 40, titleBodyGap: 28 },
-  square:       { titleSize: 92,  bodySize: 36, titleBodyGap: 24 },
-  stories:      { titleSize: 116, bodySize: 46, titleBodyGap: 32 },
-  presentation: { titleSize: 108, bodySize: 38, titleBodyGap: 26 },
+  carousel:     { titleSize: 104, bodySize: 50, titleBodyGap: 28 },
+  square:       { titleSize: 92,  bodySize: 46, titleBodyGap: 24 },
+  stories:      { titleSize: 116, bodySize: 56, titleBodyGap: 32 },
+  presentation: { titleSize: 108, bodySize: 48, titleBodyGap: 26 },
 };
 
 /** Возвращает базовые размеры шрифтов для Minimalism-шаблона в заданном формате. */
@@ -62,7 +67,7 @@ export function caseToTransform(c: string | undefined): React.CSSProperties["tex
  *  Pill-плашка:
  *    - background: accentColor
  *    - color: titleColor (чтобы выделенное слово совпадало с остальным текстом)
- *    - padding 0.08em 14px*renderScale 0.12em (горизонтальный — scale-aware)
+ *    - padding 0.08em 8px*renderScale 0.12em (горизонтальный — scale-aware)
  *    - margin-left = -padding (компенсирует выезд плашки, первая строка визуально выровнена)
  *    - внутри pill пробелы → NBSP чтобы слова не разрывались между строк. */
 export function renderTitleWithHighlight(
@@ -80,7 +85,7 @@ export function renderTitleWithHighlight(
   const before = title.slice(0, idx);
   const after = title.slice(idx + highlight.length);
 
-  const pad = 14 * renderScale;
+  const pad = 8 * renderScale;
   const pillStyle: React.CSSProperties = {
     display: "inline-block",
     background: accentColor,

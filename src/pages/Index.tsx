@@ -18,7 +18,7 @@ import { pickApplyPatch } from "@/lib/slide-apply";
 import { BG_APPLY_KEYS } from "@/components/editor/BackgroundPanel";
 import { TEXT_APPLY_KEYS } from "@/components/editor/TextPanel";
 import { INFO_APPLY_KEYS } from "@/components/editor/InfoPanel";
-import { MINIMALISM_ACCENT, MINIMALISM_TITLE_FONT } from "@/components/editor/layouts/minimalism/tokens";
+import { MINIMALISM_ACCENT, MINIMALISM_TITLE_FONT, MINIMALISM_BODY_FONT } from "@/components/editor/layouts/minimalism/tokens";
 import { DEFAULT_META_COLOR } from "@/components/editor/shared-styles";
 
 
@@ -77,6 +77,31 @@ const Index = () => {
   // Также восстанавливаем activeTemplate, чтобы handleAddSlide создавал новые
   // слайды с Minimalism-стилем. Запускается один раз при старте.
   useEffect(() => {
+    // КРИТИЧНО: nextId — module-level `let nextId = 2`. При загрузке из
+    // localStorage слайды имеют id=1,2,3,…, а nextId сбрасывается в 2 →
+    // handleAddSlide/Duplicate выдаёт ДУБЛИКАТ существующего id, и react
+    // `.map(s => s.id === id ? …)` в handleUpdateSlide задевает ДВА слайда
+    // разом (симптом: «первые два слайда минимализм обновляются одинаково»).
+    // Поднимаем nextId за максимальный существующий id + ДЕДУПЛИЦИРУЕМ
+    // уже существующие коллизии: если два слайда имеют одинаковый id,
+    // второму и последующим выдаём свежий nextId++.
+    setSlides(prev => {
+      const maxId = prev.reduce((m, s) => (s.id > m ? s.id : m), 0);
+      if (nextId <= maxId) nextId = maxId + 1;
+      const seen = new Set<number>();
+      let hasDuplicates = false;
+      const deduped = prev.map(s => {
+        if (seen.has(s.id)) {
+          hasDuplicates = true;
+          const newId = nextId++;
+          seen.add(newId);
+          return { ...s, id: newId };
+        }
+        seen.add(s.id);
+        return s;
+      });
+      return hasDuplicates ? deduped : prev;
+    });
     let anyMinimalism = false;
     setSlides(prev => {
       let changed = false;
@@ -86,18 +111,42 @@ const Index = () => {
         if (!isMinimalism) return s;
         anyMinimalism = true;
 
-        const nextTitleFont = s.titleFont === "'Dela Gothic One', sans-serif" || !s.titleFont
-          ? MINIMALISM_TITLE_FONT
-          : s.titleFont;
+        // Единый стиль Minimalism: всегда принудительно Marvin Visions для
+        // заголовка и Inter для основного текста. Ольга: «сделай единый стиль
+        // у шаблона Минимализм». Любые ранее сохранённые кастомные шрифты на
+        // slide-уровне (Dela Gothic One, Space Grotesk и т.п.) сбрасываются
+        // в template-дефолт — пользователь может поменять вручную через Text-панель.
+        const nextTitleFont = MINIMALISM_TITLE_FONT;
+        const nextBodyFont = MINIMALISM_BODY_FONT;
 
         // Чистим старый HTML-highlight (color:#FFFFFF, border-radius:3px) в title.
         // Заменяем на pill-стиль (border-radius:999, без color).
+        // Дополнительно: убираем inline font-family и font-size из любых span'ов
+        // в title — они могли попасть через InlineTextEditor и перекрывают
+        // шрифт h1-обёртки. Шрифт должен приходить ТОЛЬКО от layout-компонента.
         let nextTitle = s.title || '';
         if (nextTitle.includes('<span') && nextTitle.includes('background:')) {
           nextTitle = nextTitle
             .replace(/color:\s*#FFFFFF\s*;?/gi, '')
             .replace(/border-radius:\s*3px/gi, 'border-radius:999px')
-            .replace(/padding:\s*2px\s+6px/gi, 'padding:0.08em 14px 0.12em');
+            .replace(/padding:\s*2px\s+6px/gi, 'padding:0.08em 0.15em 0.12em')
+            // Мигрируем все прошлые варианты padding → новый em-based.
+            .replace(/padding:\s*0\.08em\s+(?:14px|8px)\s+0\.12em/gi, 'padding:0.08em 0.15em 0.12em');
+        }
+        // Чистим все источники «чужого» шрифта в title, чтобы layout-обёртка
+        // применяла MINIMALISM_TITLE_FONT (Marvin Visions) единообразно:
+        //   1) inline style="font-family:..." / "font-size:..." в любых спанах
+        //   2) deprecated <font face="..." size="..."> теги (вставляет
+        //      document.execCommand('fontName') в InlineTextEditor)
+        // Регекс для font-family/size — по ; или концу style (style value не
+        // содержит двойных кавычек, значит [^;]+ безопасен).
+        if (nextTitle.includes('<span') || nextTitle.includes('<font')) {
+          nextTitle = nextTitle
+            .replace(/font-family\s*:[^;"]*;?/gi, '')
+            .replace(/font-size\s*:[^;"]*;?/gi, '')
+            // <font face="X" size="Y">...</font> → просто инлайн-содержимое
+            .replace(/<font\b[^>]*>/gi, '')
+            .replace(/<\/font>/gi, '');
         }
 
         // Без type='hook' Minimalism-слайды рендерятся как text_block
@@ -118,6 +167,7 @@ const Index = () => {
           layout: nextLayout,
           bgPattern: (looksOldMinimalism ? 'none' : s.bgPattern) as typeof s.bgPattern,
           titleFont: nextTitleFont,
+          bodyFont: nextBodyFont,
           title: nextTitle,
         };
         if (
@@ -126,6 +176,7 @@ const Index = () => {
           patched.layout !== s.layout ||
           patched.bgPattern !== s.bgPattern ||
           patched.titleFont !== s.titleFont ||
+          patched.bodyFont !== s.bodyFont ||
           patched.title !== s.title
         ) {
           changed = true;
@@ -253,6 +304,19 @@ const Index = () => {
       // любого слайда кнопкой Shuffle.
       if (tpl.id === 'minimalism') {
         updated.layout = (((idx % 4) + 1) as LayoutId);
+        // Layout 4 (Minimalism) вёрстка предполагает текст «над плашкой»
+        // (slide.subtitle) + текст «внутри плашки» (slide.body). Чтобы
+        // оба блока сразу были доступны пользователю в TextPanel и в
+        // отрисовке, инициализируем subtitle пустой строкой, если он
+        // ещё не задан. Непустой — уважаем (пользователь мог ввести).
+        if (updated.layout === 4 && typeof updated.subtitle !== 'string') {
+          updated.subtitle = "";
+        }
+        // Layout 3 дефолтно показывает halftone-точки в bottom-right. Это
+        // декоративный элемент — пользователь может его скрыть через BG-панель
+        // → «Декоративные элементы». Другие layouts получают decorDots='none'
+        // (равно скрыто), чтобы декор не тащился при Shuffle-переключении.
+        updated.decorDots = updated.layout === 3 ? 'halftone' : 'none';
       }
       // Apply accent to existing title (only on non-cover slides; cover keeps clean look).
       // highlight-mode: цвет текста не перекрываем (наследует titleColor), плашка —

@@ -40,22 +40,9 @@ const PHOTO_RADIUS_EXPORT_PX = 24;
 const PHOTO_TO_TEXT_GAP_EXPORT_PX = 40;
 const UPLOAD_ICON_SIZE_EXPORT_PX = 96;
 
-/** Шрифт для Layout2-дефолта. Space Grotesk имеет хорошую кириллицу и
- *  bold-рисунок схожий с референсом. Используем только если пользователь
- *  не менял slide.titleFont вручную (значение MINIMALISM_TITLE_FONT = дефолт
- *  шаблона → нам позволено override-нуть). */
-const LAYOUT2_TITLE_FONT = "'Space Grotesk', 'Inter', sans-serif";
-
-/** Layout2-специфичные размеры. В v1 было 0.70 от базы — крупно, текст
- *  перекрывал по визуальному весу photo-блок. Снижаем до 0.50 (carousel:
- *  104×0.5=52px → совпадает со скриншотом Ольги). */
-function getLayout2Sizes(base: ReturnType<typeof getMinimalismSizes>) {
-  return {
-    titleSize: Math.round(base.titleSize * 0.50),
-    bodySize: Math.round(base.bodySize * 0.55),
-    titleBodyGap: Math.round(base.titleBodyGap * 0.60),
-  };
-}
+// Layout 2 использует единые токены шаблона Minimalism: titleFont=Marvin Visions,
+// bodyFont=Inter, размеры из getMinimalismSizes(format). Никаких layout-override'ов
+// — так заголовок/основной текст всех слайдов Minimalism выглядят одинаково.
 
 const MinimalismLayout2: React.FC<SlideContentProps> = ({
   slide,
@@ -82,18 +69,11 @@ const MinimalismLayout2: React.FC<SlideContentProps> = ({
   const titleColor = slide.titleColor || MINIMALISM_TITLE;
   const bodyColor = slide.bodyColor || MINIMALISM_BODY;
 
-  // Если titleFont остался дефолтом шаблона (Marvin Visions) — override на
-  // Space Grotesk для корректной кириллицы. Если юзер сознательно выбрал
-  // Marvin Visions или что-то ещё — уважаем выбор.
-  const titleFontFamily =
-    slide.titleFont && slide.titleFont !== MINIMALISM_TITLE_FONT
-      ? slide.titleFont
-      : LAYOUT2_TITLE_FONT;
+  const titleFontFamily = slide.titleFont || MINIMALISM_TITLE_FONT;
   const bodyFontFamily = slide.bodyFont || MINIMALISM_BODY_FONT;
 
   const rs = metrics.renderScale;
-  const base = getMinimalismSizes(format);
-  const sizes = getLayout2Sizes(base);
+  const sizes = getMinimalismSizes(format);
   const titleFontSize = (slide.titleSize ?? sizes.titleSize) * rs;
   const subtitleFontSize = (slide.bodySize ?? sizes.bodySize) * rs;
   const subtitleMarginTop = sizes.titleBodyGap * rs;

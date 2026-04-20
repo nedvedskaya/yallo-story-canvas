@@ -194,9 +194,11 @@ const InlineTextEditor = ({ value, onChange, placeholder, defaultTextColor, defa
     });
 
     const span = document.createElement("span");
+    // Padding синхронизирован с canonicalPillStyle в lib/title-html.ts.
+    // Em-based, чтобы плашка оставалась пропорциональной буквам на любом размере.
     span.setAttribute(
       "style",
-      `display:inline-block;background:${bgColor};padding:0.08em 14px 0.12em;border-radius:999px;line-height:1`,
+      `display:inline-block;background:${bgColor};padding:0.08em 0.15em 0.12em;border-radius:999px;line-height:1`,
     );
     span.appendChild(frag);
     range.insertNode(span);

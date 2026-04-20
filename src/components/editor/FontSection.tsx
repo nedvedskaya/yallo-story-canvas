@@ -17,10 +17,15 @@ export interface CustomFont {
 
 export const FONT_LIST = [
   { name: "Inter", family: "'Inter', sans-serif" },
+  { name: "Marvin Visions", family: "'Marvin Visions', sans-serif" },
+  { name: "Montserrat", family: "'Montserrat', sans-serif" },
+  { name: "Rubik", family: "'Rubik', sans-serif" },
+  { name: "Jost", family: "'Jost', sans-serif" },
+  { name: "NT Somic", family: "'NT Somic', sans-serif" },
+  { name: "Soyuz Grotesk", family: "'Soyuz Grotesk', sans-serif" },
   { name: "Abraxas", family: "'Abraxas', serif" },
   { name: "HeadingNow", family: "'HeadingNow Trial', sans-serif" },
   { name: "SouthGhetto", family: "'SouthGhetto', sans-serif" },
-  { name: "Marvin Visions", family: "'Marvin Visions', sans-serif" },
   { name: "SONGER", family: "'SONGER Grotesque', sans-serif" },
   { name: "Coolvetica", family: "'Coolvetica', sans-serif" },
   { name: "BeerMoney", family: "'BeerMoney', sans-serif" },
@@ -34,7 +39,18 @@ export const FONT_LIST = [
   { name: "Forum", family: "'Forum', serif" },
   { name: "Cera Pro", family: "'Cera Pro', sans-serif" },
   { name: "Gilroy", family: "'Gilroy', sans-serif" },
-  { name: "Montserrat", family: "'Montserrat', sans-serif" },
+  // Новая пачка (апрель 2026): декоративные и кириллические шрифты. Если
+  // добавляешь сюда новый — проверь, что @font-face есть в src/index.css и
+  // файл лежит в public/fonts/.
+  { name: "Nauryz Redkeds", family: "'Nauryz Redkeds', sans-serif" },
+  { name: "Metal Lord", family: "'Metal Lord', serif" },
+  { name: "Postertoaster", family: "'Postertoaster', sans-serif" },
+  { name: "Ekaterina", family: "'Ekaterina Velikaya', cursive" },
+  { name: "Diploma Script", family: "'Diploma Script', cursive" },
+  { name: "Roslindale", family: "'Roslindale', serif" },
+  { name: "Gloria Script", family: "'Gloria Script', cursive" },
+  { name: "Young Love", family: "'Young Love ES', sans-serif" },
+  { name: "TimesET", family: "'TimesET', serif" },
 ];
 
 interface FontSectionProps {
@@ -117,8 +133,12 @@ const FontSection = ({ label, settings, onChange, onCommit, customFonts = [], on
       {/* Size */}
       <div className="flex items-center gap-3">
         <span className="text-[11px] w-16 flex-shrink-0" style={{ color: 'rgba(26,26,46,0.5)' }}>Размер</span>
-        <Slider min={8} max={140} step={1} value={[settings.size]} onValueChange={([v]) => onChange({ size: v })} onValueCommit={([v]) => onCommit?.({ size: v })} className="flex-1" />
-        <span className="text-[11px] w-6 text-right" style={{ color: 'rgba(26,26,46,0.5)' }}>{settings.size}</span>
+        {/* Размер = export-px (design-pixel при 2160-wide carousel). Layout-компоненты
+            умножают на renderScale (≈0.35-0.5 в превью), поэтому 140 в слайдере
+            выглядело мелко. Max=400 даёт крупные заголовки типа «88% экрана».
+            Step=2 для быстрого перебора. */}
+        <Slider min={8} max={400} step={2} value={[settings.size]} onValueChange={([v]) => onChange({ size: v })} onValueCommit={([v]) => onCommit?.({ size: v })} className="flex-1" />
+        <span className="text-[11px] w-9 text-right" style={{ color: 'rgba(26,26,46,0.5)' }}>{settings.size}</span>
       </div>
 
       {/* Case */}

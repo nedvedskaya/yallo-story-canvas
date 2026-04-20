@@ -9,7 +9,7 @@ import GlassTabBar from "./GlassTabBar";
 import ApplyToAllButton from "./ApplyToAllButton";
 import { rgbaToHex } from "@/lib/utils";
 import type { Sticker } from "./StickerLayer";
-import { DecorShape } from "./TemplatesPanel";
+import { DecorShape, HalftoneDots } from "./TemplatesPanel";
 import type { Slide } from "./SlideCarousel";
 
 /** Поля слайда, которые копируются при "применить фон ко всем слайдам".
@@ -72,6 +72,10 @@ interface BackgroundPanelProps {
   decorShape?: 'asterisk' | 'none';
   decorColor?: string;
   onDecorChange?: (shape: 'asterisk' | 'none') => void;
+  /** Декор-точки (halftone-арка Minimalism Layout 3). Отдельный переключатель
+   *  в том же разделе «Декоративные элементы». */
+  decorDots?: 'halftone' | 'none';
+  onDecorDotsChange?: (dots: 'halftone' | 'none') => void;
 }
 
 const BackgroundPanel = ({
@@ -80,6 +84,7 @@ const BackgroundPanel = ({
   onSave, onApplyToAll,
   stickers = [], onAddSticker, onDeleteSticker,
   decorShape, decorColor, onDecorChange,
+  decorDots, onDecorDotsChange,
 }: BackgroundPanelProps) => {
   const [bgTab, setBgTab] = useState<BgTab>(bgVideo ? "video" : bgImage ? "photo" : "color");
   const [hexInput, setHexInput] = useState(bgColor.startsWith("#") ? bgColor : "#667eea");
@@ -421,6 +426,52 @@ const BackgroundPanel = ({
                 >
                   <Plus size={14} />
                   Добавить цветок
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Halftone-точки — отдельный декор Minimalism Layout 3. Тот же UX,
+              что у цветка: мини-превью + кнопка «Удалить/Добавить». Рендер —
+              в SlideFrame через slide.decorDots. */}
+          {onDecorDotsChange && (
+            <div className="flex items-center gap-2 mb-2">
+              {decorDots === 'halftone' ? (
+                <>
+                  <div
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 10,
+                      background: 'rgba(26,26,46,0.04)',
+                      display: 'flex',
+                      alignItems: 'flex-end',
+                      justifyContent: 'flex-end',
+                      overflow: 'hidden',
+                      padding: 2,
+                    }}
+                  >
+                    <div style={{ width: '100%', height: '100%' }}>
+                      <HalftoneDots color={decorColor || '#D6E8F7'} />
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => onDecorDotsChange('none')}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium active:scale-95"
+                    style={{ background: 'rgba(220,40,40,0.1)', color: '#c02626' }}
+                  >
+                    <Trash2 size={12} />
+                    Удалить точки
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => onDecorDotsChange('halftone')}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium active:scale-95"
+                  style={{ background: 'rgba(26,26,46,0.06)', color: '#1a1a2e' }}
+                >
+                  <Plus size={14} />
+                  Добавить точки
                 </button>
               )}
             </div>

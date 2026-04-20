@@ -4,7 +4,9 @@
 @font-face { font-family: 'HeadingNow Trial'; src: url('/fonts/HeadingNowTrial.ttf') format('truetype'); font-display: swap; }
 
 @font-face { font-family: 'SouthGhetto'; src: url('/fonts/SouthGhetto.ttf') format('truetype'); font-display: swap; }
-@font-face { font-family: 'Marvin Visions'; src: url('/fonts/MarvinVisions.otf') format('opentype'); font-display: swap; }
+/* Marvin Visions объявлен в index.html <style> с font-weight:700 и font-display:block.
+   Здесь дублировать не нужно — дубль с font-display:swap «перекрывал» bold-объявление
+   и визуально заголовки мигрировали на fallback. */
 @font-face { font-family: 'SONGER Grotesque'; src: url('/fonts/SONGERGrotesque.otf') format('opentype'); font-display: swap; }
 @font-face { font-family: 'Coolvetica'; src: url('/fonts/Coolvetica.ttf') format('truetype'); font-display: swap; }
 @font-face { font-family: 'BeerMoney'; src: url('/fonts/BeerMoney.ttf') format('truetype'); font-display: swap; }
@@ -19,6 +21,26 @@
 @font-face { font-family: 'Cera Pro'; src: url('/fonts/CeraProThin.ttf') format('truetype'); font-weight: 100; font-display: swap; }
 @font-face { font-family: 'Gilroy'; src: url('/fonts/Gilroy-Light.otf') format('opentype'); font-weight: 300; font-display: swap; }
 @font-face { font-family: 'Montserrat'; src: url('/fonts/Montserrat-Regular.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'Montserrat'; src: url('/fonts/Montserrat-Bold.ttf') format('truetype'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'Montserrat'; src: url('/fonts/Montserrat-Black.ttf') format('truetype'); font-weight: 900; font-display: swap; }
+
+/* Новая пачка шрифтов (апрель 2026, из папки /шрифты на рабочем столе).
+   Имена в CSS font-family соответствуют FONT_LIST в FontSection.tsx и
+   slide.titleFont/bodyFont — менять нужно синхронно. Все .ttf/.otf файлы
+   содержат кириллические глифы (проверено fontTools.ttLib). */
+@font-face { font-family: 'Nauryz Redkeds'; src: url('/fonts/NauryzRedkeds.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'Metal Lord'; src: url('/fonts/MetalLord.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'Rubik'; src: url('/fonts/Rubik-Regular.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'Postertoaster'; src: url('/fonts/Postertoaster.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'Ekaterina Velikaya'; src: url('/fonts/EkaterinaVelikaya.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'Diploma Script'; src: url('/fonts/DiplomaScript.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'Roslindale'; src: url('/fonts/RoslindaleItalic.otf') format('opentype'); font-style: italic; font-display: swap; }
+@font-face { font-family: 'NT Somic'; src: url('/fonts/NTSomic.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'Soyuz Grotesk'; src: url('/fonts/SoyuzGrotesk.otf') format('opentype'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'Jost'; src: url('/fonts/Jost.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'Gloria Script'; src: url('/fonts/GloriaScript.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'Young Love ES'; src: url('/fonts/YoungLoveES.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'TimesET'; src: url('/fonts/TimesET.ttf') format('truetype'); font-display: swap; }
 
 @tailwind base;
 @tailwind components;

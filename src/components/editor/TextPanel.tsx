@@ -7,6 +7,8 @@ import { rgbaToHex } from "@/lib/utils";
 import { FORMAT_DESIGN } from "./shared-styles";
 import type { SlideFormat } from "./SizePanel";
 import InlineTextEditor from "./InlineTextEditor";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import EmojiPicker, { EmojiStyle, Theme } from "emoji-picker-react";
 
 /** Поля слайда, которые копируются при "применить текст ко всем слайдам".
  *  Единый источник истины. При добавлении нового контрола в TextPanel,
@@ -180,57 +182,97 @@ const TextPanel = ({ currentSlide, initialSection, initialSectionNonce, onSave, 
         </>
       ) : (
         <>
-          {/* Layout 4 (Minimalism) имеет два текстовых блока: intro ("текст
-              перед плашкой") и quote (внутри карточки). Редактируем отдельно,
-              чтобы пользователь мог заполнить оба. Другие layouts используют
-              только slide.body. */}
-          {currentSlide.template === 'minimalism' && currentSlide.layout === 4 ? (
+          {/* Основной текст — универсальный для всех шаблонов. */}
+          <InlineTextEditor
+            value={currentSlide.body}
+            onChange={(html) => onSave({ body: html })}
+            placeholder="Введите основной текст"
+            defaultTextColor={toHex(currentSlide.bodyColor)}
+            defaultHighlightColor={toHex(currentSlide.accentColor)}
+          />
+
+          {/* Подзаголовок — опциональный доп-блок, доступный на любом шаблоне.
+              Пользователь нажимает «+ Добавить подзаголовок» → появляется
+              редактор. Для Layout 4 (Minimalism) блок показывается сразу
+              автоматически, потому что вёрстка layout предполагает текст
+              «над плашкой» + текст «внутри плашки» — см. handleApplyTemplate
+              в Index.tsx, который инициализирует subtitle="" при apply. */}
+          {typeof currentSlide.subtitle === 'string' ? (
             <>
-              <p className="text-[11px] font-medium" style={{ color: 'rgba(26,26,46,0.7)' }}>Текст перед плашкой</p>
-              <InlineTextEditor
-                value={currentSlide.subtitle || ""}
-                onChange={(html) => onSave({ subtitle: html })}
-                placeholder="Это секунда, когда человек замедлился…"
-                defaultTextColor={toHex(currentSlide.bodyColor)}
-                defaultHighlightColor={toHex(currentSlide.accentColor)}
-              />
-              <p className="text-[11px] font-medium" style={{ color: 'rgba(26,26,46,0.7)' }}>Текст внутри плашки</p>
-              <InlineTextEditor
-                value={currentSlide.body}
-                onChange={(html) => onSave({ body: html })}
-                placeholder="Основная мысль в плашке"
-                defaultTextColor={toHex(currentSlide.bodyColor)}
-                defaultHighlightColor={toHex(currentSlide.accentColor)}
-              />
-              {/* Эмодзи-dot в углу плашки. input type=text принимает любой
-                  unicode-эмодзи. maxLength=4 — многие эмодзи — composite (🇺🇸
-                  = 2 code points × 2 = 4). Пустое значение = кружок без
-                  эмодзи. */}
               <div className="flex items-center justify-between">
-                <span className="text-xs" style={{ color: 'rgba(26,26,46,0.6)' }}>Эмодзи в углу</span>
-                <input
-                  type="text"
-                  value={currentSlide.markEmoji ?? "🔥"}
-                  maxLength={4}
-                  onChange={(e) => onSave({ markEmoji: e.target.value })}
-                  placeholder="🔥"
-                  className="w-[56px] rounded-lg px-2 py-1.5 text-base text-center"
-                  style={{
-                    background: 'rgba(255,255,255,0.6)',
-                    border: '1px solid rgba(200,200,220,0.5)',
-                    color: '#1a1a2e',
-                  }}
-                />
+                <p className="text-[11px] font-medium" style={{ color: 'rgba(26,26,46,0.7)' }}>Подзаголовок</p>
+                {/* Убираем подзаголовок только для не-Layout4 (там он встроен в вёрстку). */}
+                {!(currentSlide.template === 'minimalism' && currentSlide.layout === 4) && (
+                  <button
+                    type="button"
+                    onClick={() => onSave({ subtitle: undefined })}
+                    className="text-[10px] font-medium px-2 py-0.5 rounded-md"
+                    style={{ color: 'rgba(26,26,46,0.55)', background: 'rgba(0,0,0,0.04)' }}
+                  >
+                    Убрать
+                  </button>
+                )}
               </div>
+              <InlineTextEditor
+                value={currentSlide.subtitle}
+                onChange={(html) => onSave({ subtitle: html })}
+                placeholder="Дополнительный текст"
+                defaultTextColor={toHex(currentSlide.bodyColor)}
+                defaultHighlightColor={toHex(currentSlide.accentColor)}
+              />
             </>
           ) : (
-            <InlineTextEditor
-              value={currentSlide.body}
-              onChange={(html) => onSave({ body: html })}
-              placeholder="Введите основной текст"
-              defaultTextColor={toHex(currentSlide.bodyColor)}
-              defaultHighlightColor={toHex(currentSlide.accentColor)}
-            />
+            <button
+              type="button"
+              onClick={() => onSave({ subtitle: "" })}
+              className="text-[11px] font-medium py-2 rounded-lg"
+              style={{
+                color: 'rgba(26,26,46,0.7)',
+                background: 'rgba(255,255,255,0.55)',
+                border: '1px dashed rgba(26,26,46,0.2)',
+              }}
+            >
+              + Добавить подзаголовок
+            </button>
+          )}
+
+          {/* Эмодзи-dot — layout-специфичная опция (только Minimalism Layout 4).
+              Popover с emoji-picker-react: стабильный cross-platform выбор,
+              не полагающийся на нативную iOS-клавиатуру. EmojiStyle.NATIVE —
+              используем системные шрифты эмодзи (Apple/Android/Segoe), поэтому
+              в picker'е эмодзи выглядят как на устройстве пользователя. */}
+          {currentSlide.template === 'minimalism' && currentSlide.layout === 4 && (
+            <div className="flex items-center justify-between">
+              <span className="text-xs" style={{ color: 'rgba(26,26,46,0.6)' }}>Эмодзи в углу</span>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Выбрать эмодзи"
+                    className="w-[56px] rounded-lg px-2 py-1.5 text-base text-center transition-colors active:scale-95"
+                    style={{
+                      background: 'rgba(255,255,255,0.6)',
+                      border: '1px solid rgba(200,200,220,0.5)',
+                      color: '#1a1a2e',
+                    }}
+                  >
+                    {currentSlide.markEmoji ?? "🔥"}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent align="end" side="top" className="p-0 w-auto border-none">
+                  <EmojiPicker
+                    onEmojiClick={(data) => onSave({ markEmoji: data.emoji })}
+                    emojiStyle={EmojiStyle.NATIVE}
+                    theme={Theme.LIGHT}
+                    lazyLoadEmojis
+                    width={320}
+                    height={380}
+                    searchPlaceholder="Поиск…"
+                    previewConfig={{ showPreview: false }}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
           )}
           <div className="h-px" style={{ background: 'rgba(26,26,46,0.08)' }} />
           <FontSection label="Шрифт основного текста" settings={bodySettings} onChange={handleChange("body")} onCommit={handleCommit("body")} customFonts={customFonts} onAddCustomFont={handleAddCustomFont} />

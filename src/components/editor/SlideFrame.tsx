@@ -6,7 +6,7 @@ import React from "react";
 import SlideOverlay from "./SlideOverlay";
 import StickerLayer from "./StickerLayer";
 import SlideFactory from "./SlideFactory";
-import { DecorShape } from "./TemplatesPanel";
+import { DecorShape, HalftoneDots } from "./TemplatesPanel";
 import type { Slide } from "./SlideCarousel";
 import type { SlideFormat } from "./SizePanel";
 import {
@@ -167,6 +167,35 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
           Показываем ТОЛЬКО на layout 1 (hook/cover) — layouts 2/3/4 имеют
           собственные декоры внутри своих компонентов. Это защищает от
           наложения цветка поверх photo-блока Layout2 и halftone-облака Layout3. */}
+      {/* Halftone-арка точек — декор Minimalism Layout 3 (по дефолту) и любого
+          другого слайда, где пользователь включил тумблер в BG-панели.
+          Позиционируется bottom-right квадрант; квадрат 65% от меньшей стороны
+          слайда, съезжает на ~20% за границу (чтобы арка обрезалась снизу-справа
+          — как на эталонном скриншоте). Кадрируется overflow:hidden SlideFrame. */}
+      {!overlayOnly && slide.decorDots === 'halftone' && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            // Раньше был right:-12%, bottom:-10% → самые крупные точки (корень
+            // SVG 1100×1100 в bottom-right) ВЫЕЗЖАЛИ за рамку слайда и самая
+            // плотная часть «облака» обрезалась — угол выглядел «голым».
+            // Теперь прижимаем SVG к нижнему-правому углу слайда flush (right:0,
+            // bottom:0), чтобы крупные точки попали точно в угол, а арка
+            // веером раскрывалась вверх-влево. Ширина 80% (чуть больше, чем
+            // было 78%), чтобы охватить больше площади.
+            right: 0,
+            bottom: 0,
+            width: '80%',
+            aspectRatio: '1 / 1',
+            zIndex: 2,
+            pointerEvents: 'none',
+          }}
+        >
+          <HalftoneDots color={slide.decorColor || slide.accentColor || '#D6E8F7'} />
+        </div>
+      )}
+
       {!overlayOnly && slide.decorShape === 'asterisk' && (!slide.layout || slide.layout === 1) && (
         <div
           aria-hidden="true"

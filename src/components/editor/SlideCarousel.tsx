@@ -147,6 +147,9 @@ export interface Slide {
   decorSize?: number;
   decorTop?: number;
   decorLeft?: number;
+  /** Halftone-точки в правом-нижнем углу (Minimalism Layout 3 default).
+   *  Управляется в BG-панели → «Декоративные элементы». 'none' или undefined = скрыто. */
+  decorDots?: 'halftone' | 'none';
   /** Эмодзи в акцент-dot Layout4 (правый-нижний угол quote-карточки).
    *  Любой unicode-эмодзи, дефолт 🔥. Пустая строка = скрыть эмодзи. */
   markEmoji?: string;
@@ -188,7 +191,17 @@ const SlideCarousel = ({
   const currentSlide = slides[activeSlide];
   const editorOpen = false;
 
-  // Text drag state
+  // Text drag state.
+  //
+  // Баг, от которого защищаемся: пользователь таскает текст на слайде A;
+  // во время drag scroll-snap переключает activeSlide на B; titleOverrides
+  // раньше гейтились по `isActive`, поэтому overlay «прыгал» на слайд B —
+  // визуально выглядело как «текст сдвинулся на другом слайде». Коммит
+  // всегда шёл на правильный slide.id (mouseDragRef.slideId / touch-closure),
+  // но визуально overlay мигрировал.
+  //
+  // Фикс: храним `dragSlideId` — id слайда, на котором идёт drag. Overlay
+  // применяется ТОЛЬКО к этому слайду, независимо от текущего activeSlide.
   const textDragTarget = useRef<"title" | "body">("title");
   const touchStartRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number } | null>(null);
   const pinchStartRef = useRef<{ dist: number; scale: number } | null>(null);
@@ -196,6 +209,7 @@ const SlideCarousel = ({
   const [bodyDragOffset, setBodyDragOffset] = useState<{ x: number; y: number } | null>(null);
   const [titlePinchScale, setTitlePinchScale] = useState<number | null>(null);
   const [bodyPinchScale, setBodyPinchScale] = useState<number | null>(null);
+  const [dragSlideId, setDragSlideId] = useState<number | null>(null);
   const mouseDragRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number; slideId: number; target: "title" | "body" } | null>(null);
   const textDragMovedRef = useRef(false);
 
@@ -221,6 +235,7 @@ const SlideCarousel = ({
     if (editorOpen) return;
     textDragTarget.current = target;
     textDragMovedRef.current = false;
+    setDragSlideId(slide.id);
     const scaleKey = target === "title" ? "titleScale" : "bodyScale";
     if (e.touches.length === 2) {
       pinchStartRef.current = { dist: getTouchDist(e), scale: slide[scaleKey] ?? 1 };
@@ -272,6 +287,7 @@ const SlideCarousel = ({
     if (Object.keys(updates).length > 0) onUpdateSlide(slideId, updates);
     pinchStartRef.current = null;
     touchStartRef.current = null;
+    setDragSlideId(null);
   };
 
   // Text mouse drag
@@ -279,6 +295,7 @@ const SlideCarousel = ({
     if (editorOpen) return;
     e.preventDefault();
     textDragMovedRef.current = false;
+    setDragSlideId(slide.id);
     const oxKey = target === "title" ? "titleOffsetX" : "bodyOffsetX";
     const oyKey = target === "title" ? "titleOffsetY" : "bodyOffsetY";
     mouseDragRef.current = { x: e.clientX, y: e.clientY, offsetX: slide[oxKey] ?? 0, offsetY: slide[oyKey] ?? 0, slideId: slide.id, target };
@@ -302,6 +319,7 @@ const SlideCarousel = ({
         setDragForTarget(t, null);
       }
       mouseDragRef.current = null;
+      setDragSlideId(null);
     };
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
@@ -431,12 +449,12 @@ const SlideCarousel = ({
                         else el.pause();
                       }
                     }}
-                    titleOverrides={isActive && (titleDragOffset !== null || titlePinchScale !== null) ? {
+                    titleOverrides={slide.id === dragSlideId && (titleDragOffset !== null || titlePinchScale !== null) ? {
                       offsetX: titleDragOffset?.x ?? (slide.titleOffsetX ?? 0),
                       offsetY: titleDragOffset?.y ?? (slide.titleOffsetY ?? 0),
                       scale: titlePinchScale ?? (slide.titleScale ?? 1),
                     } : undefined}
-                    bodyOverrides={isActive && (bodyDragOffset !== null || bodyPinchScale !== null) ? {
+                    bodyOverrides={slide.id === dragSlideId && (bodyDragOffset !== null || bodyPinchScale !== null) ? {
                       offsetX: bodyDragOffset?.x ?? (slide.bodyOffsetX ?? 0),
                       offsetY: bodyDragOffset?.y ?? (slide.bodyOffsetY ?? 0),
                       scale: bodyPinchScale ?? (slide.bodyScale ?? 1),

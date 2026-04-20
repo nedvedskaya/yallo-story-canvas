@@ -108,10 +108,89 @@ const DecorShape = ({
 
 export { DecorShape };
 
+/** Halftone-арка из точек в правом-нижнем квадранте.
+ *
+ *  Визуал (см. эталон /Яло/минимализм/layout3.html и скриншот Ольги):
+ *    - сетка точек равномерным шагом 44px в квадрате 1100×1100;
+ *    - радиус точки = f(дистанция от нижнего-правого угла): у угла крупные
+ *      (до 13px), по мере удаления уменьшаются, исчезают к противоположному
+ *      (верхне-левому) углу;
+ *    - форма арки возникает сама собой из-за квадратичного затухания —
+ *      без rotate и clipPath;
+ *    - точки с r<0.8 отсекаем (не рендерим), чтобы не плодить артефакты.
+ *
+ *  Компонент самодостаточен: прорисовывает SVG на всю высоту/ширину
+ *  контейнера. Позиционирование (bottom-right quadrant слайда) задаёт
+ *  снаружи — см. SlideFrame.tsx. */
+interface HalftoneDot { cx: number; cy: number; r: number; }
+function generateHalftoneDots(): HalftoneDot[] {
+  const W = 1100, H = 1100;
+  const step = 44;
+  const maxR = 13;
+  const minR = 0.6;
+  const dots: HalftoneDot[] = [];
+  const maxDist = Math.hypot(W, H);
+  for (let y = 0; y <= H; y += step) {
+    for (let x = 0; x <= W; x += step) {
+      const dx = W - x;
+      const dy = H - y;
+      const dist = Math.hypot(dx, dy);
+      // t: 0 в дальнем углу (top-left), 1 в ближнем (bottom-right).
+      const t = 1 - dist / maxDist;
+      // Квадратичное затухание → резкий рост радиуса к углу.
+      const eased = Math.pow(Math.max(0, t), 2);
+      const r = minR + (maxR - minR) * eased;
+      if (r < 0.8) continue;
+      dots.push({ cx: x, cy: y, r });
+    }
+  }
+  return dots;
+}
+
+// Pre-compute — одна и та же сетка для всех рендеров.
+const HALFTONE_DOTS: HalftoneDot[] = generateHalftoneDots();
+
+const HalftoneDots = ({ color }: { color: string }) => (
+  <svg
+    viewBox="0 0 1100 1100"
+    xmlns="http://www.w3.org/2000/svg"
+    preserveAspectRatio="xMidYMid meet"
+    style={{ width: "100%", height: "100%", display: "block" }}
+    aria-hidden="true"
+  >
+    <g fill={color}>
+      {HALFTONE_DOTS.map((d, i) => (
+        <circle key={i} cx={d.cx.toFixed(2)} cy={d.cy.toFixed(2)} r={d.r.toFixed(2)} />
+      ))}
+    </g>
+  </svg>
+);
+
+export { HalftoneDots };
+
 // Шаблон «Минимализм» — 1-в-1 с эталоном claude.design (см.
 // ./Яло/carousel-slide-standalone-src.html). Стилевой пакет задаёт
 // палитру + шрифты + фоновый dot-pattern; конкретный layout для hook —
 // в HookContent.tsx. Другие slide-types пока не переработаны.
+//
+// ─── Системные принципы шаблона «Минимализм» ──────────────────────
+//   • Шрифт заголовка    — Marvin Visions (см. MINIMALISM_TITLE_FONT).
+//                          Для Layout 2/4 есть оверрайд на Space Grotesk,
+//                          потому что Marvin Visions не имеет кириллицы.
+//   • Шрифт основного    — Inter (MINIMALISM_BODY_FONT).
+//     текста
+//   • Акцентный цвет     — #CDE0FA (MINIMALISM_ACCENT). Используется как
+//                          фон-пилюля в заголовке + как точка-эмодзи в
+//                          Layout 4.
+//   • Выделение важных   — <b> жирным (InlineTextEditor.applyBold) или
+//     слов                 подсветка-пилюля (applyHighlightAsPill).
+//   • Выравнивание       — по левому краю (hAlign: "left"). Пользователь
+//                          может переопределить в SlideToolbar.
+//   • Списки             — через точки `•` или стрелки `→`, каждый пункт
+//                          с новой строки. Поддержано в InlineTextEditor
+//                          кнопками-префиксами (handleListPrefix).
+//   • Принципы применяются как дефолты — пользователь может править всё
+//     в редакторе точечно на конкретном слайде.
 const TEMPLATES: SlideTemplate[] = [
   {
     id: "minimalism",
@@ -122,10 +201,11 @@ const TEMPLATES: SlideTemplate[] = [
       // template — включает Minimalism-стилевую рамку в SlideFrame
       // (padding 56/80/80, pill-counter). В новой архитектуре конкретная
       // вёрстка определяется полем `layout` (1..4) на уровне слайда —
-      // handleApplyTemplate раскидывает layouts циклично. Поэтому type/hAlign/
-      // vAlign из шаблона ушли: layout-компонент сам задаёт вёрстку, а
-      // hAlign/vAlign остаются пользовательскими ручками.
+      // handleApplyTemplate раскидывает layouts циклично. vAlign остаётся
+      // пользовательской ручкой, hAlign задаём как системный принцип
+      // Minimalism = «по левому краю».
       template: "minimalism",
+      hAlign: "left",
       bgColor: "#FFFFFF",
       bgImage: undefined,
       bgVideo: undefined,
@@ -154,6 +234,7 @@ const TEMPLATES: SlideTemplate[] = [
     },
     coverApply: {
       template: "minimalism",
+      hAlign: "left",
       bgColor: "#FFFFFF",
       overlayType: "none",
       overlayOpacity: 0,

@@ -36,7 +36,12 @@ import { sanitizeHtml } from "./sanitize";
  *   - renderTitleWithHighlight (layouts/shared.ts)
  *   - applyHighlightAsPill (InlineTextEditor — после миграции) */
 function canonicalPillStyle(bgColor: string): string {
-  return `display:inline-block;background:${bgColor};padding:0.08em 14px 0.12em;border-radius:999px;line-height:1`;
+  // Горизонтальный padding уменьшен до 0.15em (было 8px → 14px → 8px → 0.15em).
+  // Em-based, потому что при больших размерах шрифта px-padding становится
+  // визуально мелким, а при мелких — непропорционально большим. 0.15em ≈ 12%
+  // от размера буквы — плашка вплотную к буквам, как в HTML-эталоне из
+  // референса Ольги. Вертикальный: 0.08em сверху + 0.12em снизу (baseline).
+  return `display:inline-block;background:${bgColor};padding:0.08em 0.15em 0.12em;border-radius:999px;line-height:1`;
 }
 
 /** True, если строка выглядит как HTML (есть хотя бы один открывающий тег). */
@@ -66,11 +71,14 @@ function injectHighlightSpan(plain: string, highlight: string, accentColor: stri
 
 /** Превращает любой `<span>` с background / background-color в канонический
  *  pill-span. Сохраняет остальное содержимое атрибутов и innerHTML как есть.
- *  Идемпотентно: если span уже каноничен, результат совпадает со входом. */
+ *  Идемпотентно: если span уже каноничен, результат совпадает со входом.
+ *  Из span'ов БЕЗ background (обычные color/bold-span'ы от InlineTextEditor)
+ *  удаляем inline font-family и font-size — шрифт должен приходить ТОЛЬКО
+ *  от h1-обёртки layout-компонента, чтобы шаблон Minimalism выглядел единым. */
 function normalizePillSpans(html: string): string {
   // Находим открывающий span-тег с атрибутом style. Извлекаем из style
-  // первое вхождение background(-color): <color>. Если его нет — span не
-  // меняем (это может быть color-span от foreColor).
+  // первое вхождение background(-color): <color>. Если нет — зачищаем
+  // font-family и font-size из style и возвращаем span без них.
   return html.replace(
     /<span\s+([^>]*?)>/gi,
     (match, attrs: string) => {
@@ -78,11 +86,36 @@ function normalizePillSpans(html: string): string {
       if (!styleMatch) return match;
       const style = styleMatch[1];
       const bgMatch = style.match(/background(?:-color)?\s*:\s*([^;]+?)(?:;|$)/i);
-      if (!bgMatch) return match;
-      const bgColor = bgMatch[1].trim();
-      return `<span style="${canonicalPillStyle(bgColor)}">`;
+      if (bgMatch) {
+        const bgColor = bgMatch[1].trim();
+        return `<span style="${canonicalPillStyle(bgColor)}">`;
+      }
+      // Нет background — чистим шрифтовые свойства из остального style.
+      const cleanedStyle = style
+        .replace(/font-family\s*:\s*[^;]+;?/gi, '')
+        .replace(/font-size\s*:\s*[^;]+;?/gi, '')
+        .trim();
+      if (!cleanedStyle) {
+        // Весь style состоял из font-family/size — span без стиля
+        return '<span>';
+      }
+      const cleanedAttrs = attrs.replace(
+        /style\s*=\s*"[^"]*"/i,
+        `style="${cleanedStyle}"`,
+      );
+      return `<span ${cleanedAttrs}>`;
     },
   );
+}
+
+/** Вырезает deprecated <font face="X" size="Y"> теги, которые вставляет
+ *  document.execCommand('fontName'). Нужно, чтобы inline-выбор шрифта в
+ *  тулбаре InlineTextEditor не перекрывал системный шрифт layout-обёртки
+ *  (Marvin Visions для Minimalism). Содержимое между тегами сохраняем. */
+function stripFontTags(html: string): string {
+  return html
+    .replace(/<font\b[^>]*>/gi, '')
+    .replace(/<\/font>/gi, '');
 }
 
 /**
@@ -90,7 +123,8 @@ function normalizePillSpans(html: string): string {
  *
  * Правила:
  *   - Пусто → пусто.
- *   - Если title уже HTML → нормализуем pill-span'ы и санитизируем.
+ *   - Если title уже HTML → нормализуем pill-span'ы, чистим <font>-теги
+ *     и санитизируем.
  *   - Если title plain + highlight задан → оборачиваем highlight в pill.
  *   - Если title plain без highlight → escape и отдаём как есть.
  */
@@ -103,7 +137,7 @@ export function prepareTitleHtml(
 
   let html: string;
   if (looksLikeHtml(title)) {
-    html = normalizePillSpans(title);
+    html = stripFontTags(normalizePillSpans(title));
   } else if (highlight) {
     html = injectHighlightSpan(title, highlight, accentColor);
   } else {

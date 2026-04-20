@@ -32,68 +32,15 @@ import {
 } from "./tokens";
 import { prepareTitleHtml } from "@/lib/title-html";
 
-// Layout3 размеры: title чуть меньше Layout1, body крупнее (ведущий читающий
-// текст).
-function getLayout3Sizes(base: ReturnType<typeof getMinimalismSizes>) {
-  return {
-    titleSize: Math.round(base.titleSize * 0.70),
-    bodySize: Math.round(base.bodySize * 0.72),
-    titleBodyGap: base.titleBodyGap,
-  };
-}
-
-// Генерация точек halftone-арки. Логика 1-в-1 из layout3.html (см. там JS).
-// Выдаёт массив `{cx, cy, r}` в коорд. системе 1100×700.
-interface Dot { cx: number; cy: number; r: number; }
-function generateHalftoneDots(): Dot[] {
-  const W = 1100, H = 700;
-  const cx = W / 2;
-  const step = 60;
-  const rowStep = step * 0.9;
-  const maxR = 14;
-  const minR = 2.0;
-  const cols = 17;
-  const archRows = 9;
-  const tailRows = 7;
-  const rows = archRows + tailRows;
-  const gridW = (cols - 1) * step;
-  const gridH = (archRows - 1) * rowStep;
-  const startX = cx - gridW / 2;
-  const baseY = H / 2 - gridH / 2 + 110;
-  const arcAmp = 220;
-  const dots: Dot[] = [];
-  const ang = (-45 * Math.PI) / 180;
-  const cosA = Math.cos(ang);
-  const sinA = Math.sin(ang);
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      const rowOffset = (row % 2) * (step / 2);
-      const px = startX + col * step + rowOffset;
-      const tx = (px - cx) / (gridW / 2);
-      const lift = (1 - tx * tx) * arcAmp;
-      const py = baseY + row * rowStep - lift;
-      const ncol = (col - (cols - 1) / 2) / ((cols - 1) / 2);
-      const absCol = Math.abs(ncol);
-      if (absCol > 1.05) continue;
-      if (py < -20 || py > H + 20 || px < -20 || px > W + 20) continue;
-      const dxR = px - W / 2;
-      const dyR = py - H / 2;
-      const rx = dxR * cosA - dyR * sinA;
-      const ry = dxR * sinA + dyR * cosA;
-      const score = rx + ry;
-      let t = (score + 400) / 900;
-      t = Math.max(0, Math.min(1, t));
-      const tipFade = 1 - Math.pow(absCol, 2) * 0.35;
-      let r = minR + (maxR - minR) * t * tipFade;
-      if (r < minR) r = minR;
-      dots.push({ cx: px, cy: py, r });
-    }
-  }
-  return dots;
-}
-
-// Pre-compute — одна и та же сетка для всех рендеров, на export-pixel-grid.
-const HALFTONE_DOTS = generateHalftoneDots();
+// Layout 3 использует единые токены шаблона Minimalism — размеры из
+// getMinimalismSizes(format) как у Layout 1/2/4. Принцип: заголовок/основной
+// текст одинакового размера по всей карусели.
+//
+// Halftone-декор (арка точек bottom-right) больше НЕ живёт внутри Layout 3.
+// Он вынесен в SlideFrame как переиспользуемый декоративный элемент,
+// управляемый полем slide.decorDots ('halftone' | 'none'). handleApplyTemplate
+// в Index.tsx выставляет decorDots='halftone' по дефолту для Layout 3 слайдов.
+// Пользователь включает/выключает через BG-панель → «Декоративные элементы».
 
 const MinimalismLayout3: React.FC<SlideContentProps> = ({
   slide,
@@ -119,14 +66,12 @@ const MinimalismLayout3: React.FC<SlideContentProps> = ({
   const titleColor = slide.titleColor || MINIMALISM_TITLE;
   // Layout3 body color из HTML = var(--text) #0A0A0A (не #666 как Layout1).
   const bodyColor = slide.bodyColor || MINIMALISM_TITLE;
-  const halftoneColor = accentColor;
 
   const titleFontFamily = slide.titleFont || MINIMALISM_TITLE_FONT;
   const bodyFontFamily = slide.bodyFont || MINIMALISM_BODY_FONT;
 
   const rs = metrics.renderScale;
-  const base = getMinimalismSizes(format);
-  const sizes = getLayout3Sizes(base);
+  const sizes = getMinimalismSizes(format);
   const titleFontSize = (slide.titleSize ?? sizes.titleSize) * rs;
   const subtitleFontSize = (slide.bodySize ?? sizes.bodySize) * rs;
   const subtitleMarginTop = sizes.titleBodyGap * rs;
@@ -145,36 +90,6 @@ const MinimalismLayout3: React.FC<SlideContentProps> = ({
       className="flex flex-col flex-1 min-h-0 w-full"
       style={{ justifyContent: "center", pointerEvents: "none", position: "relative" }}
     >
-      {/* Halftone decor — абсолютно внизу-справа, rotate -45.
-          SVG viewBox 1100×700; ширина = 110% контент-слоя, съезжает за правый
-          и нижний край (SlideFrame root имеет overflow:hidden — кадрируется). */}
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          right: `${-180 * rs}px`,
-          bottom: `${-180 * rs}px`,
-          width: `${1100 * rs}px`,
-          height: `${700 * rs}px`,
-          transform: "rotate(-45deg)",
-          transformOrigin: "center center",
-          pointerEvents: "none",
-          zIndex: 1,
-        }}
-      >
-        <svg
-          viewBox="0 0 1100 700"
-          preserveAspectRatio="xMidYMid meet"
-          style={{ width: "100%", height: "100%", display: "block" }}
-        >
-          <g fill={halftoneColor}>
-            {HALFTONE_DOTS.map((d, i) => (
-              <circle key={i} cx={d.cx.toFixed(2)} cy={d.cy.toFixed(2)} r={d.r.toFixed(2)} />
-            ))}
-          </g>
-        </svg>
-      </div>
-
       {/* Title — центр вертикали (justifyContent: center на родителе) */}
       <div style={{ width: "100%", pointerEvents: "auto", position: "relative", zIndex: 2 }}>
         <div

@@ -117,6 +117,12 @@ const BottomSheet = ({ activeTab, onClose, currentSlide, textInitialSection, tex
               decorShape={currentSlide.decorShape}
               decorColor={currentSlide.decorColor}
               onDecorChange={(shape) => onUpdateSlide(currentSlide.id, { decorShape: shape })}
+              decorDots={currentSlide.decorDots}
+              onDecorDotsChange={
+                currentSlide.template === 'minimalism'
+                  ? (dots) => onUpdateSlide(currentSlide.id, { decorDots: dots })
+                  : undefined
+              }
             />
           ) : isSize && slideFormat && onSlideFormatChange ? (
             <SizePanel

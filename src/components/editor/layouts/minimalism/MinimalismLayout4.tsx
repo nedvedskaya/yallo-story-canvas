@@ -35,19 +35,10 @@ import {
 } from "./tokens";
 import { prepareTitleHtml } from "@/lib/title-html";
 
-/** Шрифт title для Layout4 — Space Grotesk 700 (cyrillic-compatible).
- *  Override только если пользователь не менял titleFont вручную. */
-const LAYOUT4_TITLE_FONT = "'Space Grotesk', 'Inter', sans-serif";
-
-/** Layout4-специфичные размеры. v1 был 0.92× базы (96px@1080) — крупно;
- *  по скриншоту Ольги реально ~80px@1080 → 0.77×. */
-function getLayout4Sizes(base: ReturnType<typeof getMinimalismSizes>) {
-  return {
-    titleSize: Math.round(base.titleSize * 0.77),
-    bodySize: Math.round(base.bodySize * 0.70),
-    titleBodyGap: Math.round(base.titleBodyGap * 0.9),
-  };
-}
+// Layout 4 использует единые токены шаблона Minimalism: titleFont=Marvin Visions,
+// bodySize/titleSize из getMinimalismSizes(format). Принцип: заголовок одинакового
+// размера на всех слайдах шаблона. Пользователь может переопределить для
+// конкретного слайда через FontSection в TextPanel.
 
 const MinimalismLayout4: React.FC<SlideContentProps> = ({
   slide,
@@ -77,19 +68,15 @@ const MinimalismLayout4: React.FC<SlideContentProps> = ({
   const titleColor = slide.titleColor || MINIMALISM_TITLE;
   const bodyColor = slide.bodyColor || MINIMALISM_BODY;
 
-  const titleFontFamily =
-    slide.titleFont && slide.titleFont !== MINIMALISM_TITLE_FONT
-      ? slide.titleFont
-      : LAYOUT4_TITLE_FONT;
+  const titleFontFamily = slide.titleFont || MINIMALISM_TITLE_FONT;
   const bodyFontFamily = slide.bodyFont || MINIMALISM_BODY_FONT;
 
   const rs = metrics.renderScale;
-  const base = getMinimalismSizes(format);
-  const sizes = getLayout4Sizes(base);
+  const sizes = getMinimalismSizes(format);
   const titleFontSize = (slide.titleSize ?? sizes.titleSize) * rs;
   const subtitleFontSize = (slide.bodySize ?? sizes.bodySize) * rs;
   const subtitleMarginTop = sizes.titleBodyGap * rs;
-  const quoteFontSize = Math.round(sizes.bodySize * 0.92) * rs;
+  const quoteFontSize = (slide.bodySize ?? sizes.bodySize) * rs;
 
   const textAlign = hAlignToText(slide.hAlign);
 
