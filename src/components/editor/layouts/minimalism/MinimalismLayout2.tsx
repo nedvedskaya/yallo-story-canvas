@@ -50,6 +50,7 @@ const MinimalismLayout2: React.FC<SlideContentProps> = ({
   metrics,
   titleOverrides,
   bodyOverrides,
+  subtitleOverrides,
   editorOpen,
   onTitleTouchStart,
   onTitleTouchMove,
@@ -61,9 +62,20 @@ const MinimalismLayout2: React.FC<SlideContentProps> = ({
   onBodyTouchEnd,
   onBodyMouseDown,
   onBodyClick,
+  onSubtitleTouchStart,
+  onSubtitleTouchMove,
+  onSubtitleTouchEnd,
+  onSubtitleMouseDown,
+  onSubtitleClick,
   onSlidePatch,
 }) => {
-  const subtitle = stripHtml(slide.subtitle || slide.body || "");
+  // Теперь body и subtitle — независимые блоки. Пустая строка в subtitle (типа "")
+  // означает «пользователь явно добавил второй блок, но ещё не набрал текст» —
+  // показываем плейсхолдер чтобы был visual affordance для drag/click. undefined =
+  // «нет второго блока» → не рендерим.
+  const body = stripHtml(slide.body || "");
+  const hasSubtitle = typeof slide.subtitle === "string";
+  const subtitle = stripHtml(slide.subtitle || "");
 
   const accentColor = slide.accentColor || MINIMALISM_ACCENT;
   const titleColor = slide.titleColor || MINIMALISM_TITLE;
@@ -86,6 +98,9 @@ const MinimalismLayout2: React.FC<SlideContentProps> = ({
   const bOx = bodyOverrides?.offsetX ?? (slide.bodyOffsetX ?? 0);
   const bOy = bodyOverrides?.offsetY ?? (slide.bodyOffsetY ?? 0);
   const bSc = bodyOverrides?.scale ?? (slide.bodyScale ?? 1);
+  const sOx = subtitleOverrides?.offsetX ?? (slide.subtitleOffsetX ?? 0);
+  const sOy = subtitleOverrides?.offsetY ?? (slide.subtitleOffsetY ?? 0);
+  const sSc = subtitleOverrides?.scale ?? (slide.subtitleScale ?? 1);
 
   // photo-блок: диагональная штриховка.
   const hatchStyle: React.CSSProperties = {
@@ -242,7 +257,7 @@ const MinimalismLayout2: React.FC<SlideContentProps> = ({
           />
         </div>
 
-        {subtitle && (
+        {body && (
           <div
             onTouchStart={onBodyTouchStart}
             onTouchMove={onBodyTouchMove}
@@ -271,7 +286,49 @@ const MinimalismLayout2: React.FC<SlideContentProps> = ({
                 textAlign,
               }}
             >
-              {subtitle}
+              {body}
+            </p>
+          </div>
+        )}
+
+        {/* Второй независимый текстовый блок. Показывается только если пользователь
+            явно добавил его через кнопку «+ Добавить основной текст» в TextPanel
+            (slide.subtitle становится строкой, включая пустую). Имеет собственный
+            transform (sOx/sOy/sSc) → можно таскать отдельно от body. */}
+        {hasSubtitle && (
+          <div
+            onTouchStart={onSubtitleTouchStart}
+            onTouchMove={onSubtitleTouchMove}
+            onTouchEnd={onSubtitleTouchEnd}
+            onMouseDown={onSubtitleMouseDown}
+            style={{
+              touchAction: "none",
+              cursor: editorOpen ? "text" : "grab",
+              marginTop: `${subtitleMarginTop}px`,
+              transform: `translate(${sOx}px, ${sOy}px) scale(${sSc})`,
+              transformOrigin: "center center",
+            }}
+          >
+            <p
+              onClick={onSubtitleClick}
+              className="outline-none cursor-pointer"
+              style={{
+                margin: 0,
+                fontFamily: bodyFontFamily,
+                fontWeight: 400,
+                fontSize: `${subtitleFontSize}px`,
+                lineHeight: slide.bodyLineHeight ?? 1.45,
+                letterSpacing: `${slide.bodyLetterSpacing ?? 0}em`,
+                textTransform: caseToTransform(slide.bodyCase),
+                color: bodyColor,
+                textAlign,
+                // Пустой subtitle: показываем полупрозрачный плейсхолдер чтобы был
+                // visual affordance (иначе пустой <p> схлопнется в 0px и пользователь
+                // потеряет кликабельную зону).
+                opacity: subtitle ? 1 : 0.4,
+              }}
+            >
+              {subtitle || "Второй текст"}
             </p>
           </div>
         )}

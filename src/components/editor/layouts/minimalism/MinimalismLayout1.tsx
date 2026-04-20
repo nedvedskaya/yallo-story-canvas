@@ -52,7 +52,10 @@ const MinimalismLayout1: React.FC<SlideContentProps> = ({
   onBodyMouseDown,
   onBodyClick,
 }) => {
-  const subtitle = stripHtml(slide.subtitle || slide.body || "");
+  // Body — основной блок. subtitle — отдельный «второй блок», им управляет Layout2.
+  // Здесь читаем body первым; fallback на subtitle оставлен для legacy-слайдов,
+  // где текст сохранён в старом поле subtitle.
+  const subtitle = stripHtml(slide.body || slide.subtitle || "");
 
   const accentColor = slide.accentColor || MINIMALISM_ACCENT;
   const titleColor = slide.titleColor || MINIMALISM_TITLE;

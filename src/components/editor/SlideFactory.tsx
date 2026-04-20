@@ -31,6 +31,7 @@ export interface SlideContentProps {
   metrics: SlideMetrics;
   titleOverrides?: { offsetX?: number; offsetY?: number; scale?: number };
   bodyOverrides?: { offsetX?: number; offsetY?: number; scale?: number };
+  subtitleOverrides?: { offsetX?: number; offsetY?: number; scale?: number };
   editorOpen?: boolean;
   onTitleTouchStart?: (e: React.TouchEvent) => void;
   onTitleTouchMove?: (e: React.TouchEvent) => void;
@@ -42,6 +43,11 @@ export interface SlideContentProps {
   onBodyTouchEnd?: () => void;
   onBodyMouseDown?: (e: React.MouseEvent) => void;
   onBodyClick?: () => void;
+  onSubtitleTouchStart?: (e: React.TouchEvent) => void;
+  onSubtitleTouchMove?: (e: React.TouchEvent) => void;
+  onSubtitleTouchEnd?: () => void;
+  onSubtitleMouseDown?: (e: React.MouseEvent) => void;
+  onSubtitleClick?: () => void;
   /** Generic "patch this slide" callback (bound к slide.id в SlideCarousel).
    *  Нужен layouts, которые в UI меняют поля слайда напрямую, минуя BG-panel —
    *  например, photo upload в MinimalismLayout2. undefined для неактивных

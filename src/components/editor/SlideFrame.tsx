@@ -27,6 +27,7 @@ export interface SlideFrameProps {
   height?: number;
   titleOverrides?: { offsetX?: number; offsetY?: number; scale?: number };
   bodyOverrides?: { offsetX?: number; offsetY?: number; scale?: number };
+  subtitleOverrides?: { offsetX?: number; offsetY?: number; scale?: number };
   onTitleTouchStart?: (e: React.TouchEvent) => void;
   onTitleTouchMove?: (e: React.TouchEvent) => void;
   onTitleTouchEnd?: () => void;
@@ -37,6 +38,11 @@ export interface SlideFrameProps {
   onBodyTouchEnd?: () => void;
   onBodyMouseDown?: (e: React.MouseEvent) => void;
   onBodyClick?: () => void;
+  onSubtitleTouchStart?: (e: React.TouchEvent) => void;
+  onSubtitleTouchMove?: (e: React.TouchEvent) => void;
+  onSubtitleTouchEnd?: () => void;
+  onSubtitleMouseDown?: (e: React.MouseEvent) => void;
+  onSubtitleClick?: () => void;
   /** Пробрасывается в SlideFactory → layout для patch'а полей слайда
    *  (photo upload в Layout2 и т.п.). */
   onSlidePatch?: (patch: Partial<Slide>) => void;
@@ -54,9 +60,10 @@ export interface SlideFrameProps {
 const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
   slide, slideIndex, totalSlides, format, scale = 1,
   width, height,
-  titleOverrides, bodyOverrides,
+  titleOverrides, bodyOverrides, subtitleOverrides,
   onTitleTouchStart, onTitleTouchMove, onTitleTouchEnd, onTitleMouseDown, onTitleClick,
   onBodyTouchStart, onBodyTouchMove, onBodyTouchEnd, onBodyMouseDown, onBodyClick,
+  onSubtitleTouchStart, onSubtitleTouchMove, onSubtitleTouchEnd, onSubtitleMouseDown, onSubtitleClick,
   onSlidePatch,
   editorOpen, videoRefCallback, videoMuted = true, overlayOnly = false, dataSlideId,
   onUpdateSticker, onDeleteSticker, stickerInteractive = false,
@@ -103,9 +110,10 @@ const SlideFrame = React.forwardRef<HTMLDivElement, SlideFrameProps>(({
   // Factory props bundle — identical for both positioning branches below.
   const factoryProps = {
     slide, slideIndex, totalSlides, format, scale, metrics,
-    titleOverrides, bodyOverrides, editorOpen,
+    titleOverrides, bodyOverrides, subtitleOverrides, editorOpen,
     onTitleTouchStart, onTitleTouchMove, onTitleTouchEnd, onTitleMouseDown, onTitleClick,
     onBodyTouchStart, onBodyTouchMove, onBodyTouchEnd, onBodyMouseDown, onBodyClick,
+    onSubtitleTouchStart, onSubtitleTouchMove, onSubtitleTouchEnd, onSubtitleMouseDown, onSubtitleClick,
     onSlidePatch,
   } as const;
 

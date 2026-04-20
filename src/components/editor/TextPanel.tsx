@@ -191,21 +191,23 @@ const TextPanel = ({ currentSlide, initialSection, initialSectionNonce, onSave, 
             defaultHighlightColor={toHex(currentSlide.accentColor)}
           />
 
-          {/* Подзаголовок — опциональный доп-блок, доступный на любом шаблоне.
-              Пользователь нажимает «+ Добавить подзаголовок» → появляется
-              редактор. Для Layout 4 (Minimalism) блок показывается сразу
-              автоматически, потому что вёрстка layout предполагает текст
-              «над плашкой» + текст «внутри плашки» — см. handleApplyTemplate
-              в Index.tsx, который инициализирует subtitle="" при apply. */}
+          {/* Второй независимый текстовый блок (бывший «подзаголовок»).
+              Раньше subtitle визуально замещал body (через `subtitle || body`),
+              что было неудобно. Теперь это РЯДОМ стоящий блок со своим
+              drag/scale'ом — пользователь может поместить его в другую часть
+              слайда. Для Layout 4 (Minimalism) блок инициализируется при
+              применении шаблона (handleApplyTemplate выставляет subtitle="").
+              В остальных случаях пользователь сам нажимает «+ Добавить основной
+              текст». */}
           {typeof currentSlide.subtitle === 'string' ? (
             <>
               <div className="flex items-center justify-between">
-                <p className="text-[11px] font-medium" style={{ color: 'rgba(26,26,46,0.7)' }}>Подзаголовок</p>
-                {/* Убираем подзаголовок только для не-Layout4 (там он встроен в вёрстку). */}
+                <p className="text-[11px] font-medium" style={{ color: 'rgba(26,26,46,0.7)' }}>Второй блок текста</p>
+                {/* Убираем блок только для не-Layout4 (там он встроен в вёрстку). */}
                 {!(currentSlide.template === 'minimalism' && currentSlide.layout === 4) && (
                   <button
                     type="button"
-                    onClick={() => onSave({ subtitle: undefined })}
+                    onClick={() => onSave({ subtitle: undefined, subtitleOffsetX: undefined, subtitleOffsetY: undefined, subtitleScale: undefined })}
                     className="text-[10px] font-medium px-2 py-0.5 rounded-md"
                     style={{ color: 'rgba(26,26,46,0.55)', background: 'rgba(0,0,0,0.04)' }}
                   >
@@ -232,7 +234,7 @@ const TextPanel = ({ currentSlide, initialSection, initialSectionNonce, onSave, 
                 border: '1px dashed rgba(26,26,46,0.2)',
               }}
             >
-              + Добавить подзаголовок
+              + Добавить основной текст
             </button>
           )}
 

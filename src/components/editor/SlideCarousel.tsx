@@ -136,6 +136,12 @@ export interface Slide {
   bodyOffsetX?: number;
   bodyOffsetY?: number;
   bodyScale?: number;
+  /** Независимое позиционирование второго текстового блока (subtitle).
+   *  subtitle теперь — отдельный блок (кнопка «+ Добавить основной текст» в TextPanel),
+   *  а не подпись под body. Может лежать в другой части слайда. */
+  subtitleOffsetX?: number;
+  subtitleOffsetY?: number;
+  subtitleScale?: number;
   titleColor?: string;
   bodyColor?: string;
   metaColor?: string;
@@ -202,16 +208,27 @@ const SlideCarousel = ({
   //
   // Фикс: храним `dragSlideId` — id слайда, на котором идёт drag. Overlay
   // применяется ТОЛЬКО к этому слайду, независимо от текущего activeSlide.
-  const textDragTarget = useRef<"title" | "body">("title");
+  type DragTarget = "title" | "body" | "subtitle";
+  const textDragTarget = useRef<DragTarget>("title");
   const touchStartRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number } | null>(null);
   const pinchStartRef = useRef<{ dist: number; scale: number } | null>(null);
   const [titleDragOffset, setTitleDragOffset] = useState<{ x: number; y: number } | null>(null);
   const [bodyDragOffset, setBodyDragOffset] = useState<{ x: number; y: number } | null>(null);
+  const [subtitleDragOffset, setSubtitleDragOffset] = useState<{ x: number; y: number } | null>(null);
   const [titlePinchScale, setTitlePinchScale] = useState<number | null>(null);
   const [bodyPinchScale, setBodyPinchScale] = useState<number | null>(null);
+  const [subtitlePinchScale, setSubtitlePinchScale] = useState<number | null>(null);
   const [dragSlideId, setDragSlideId] = useState<number | null>(null);
-  const mouseDragRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number; slideId: number; target: "title" | "body" } | null>(null);
+  const mouseDragRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number; slideId: number; target: DragTarget } | null>(null);
   const textDragMovedRef = useRef(false);
+
+  // Keys by drag-target → соответствующие поля Slide. Одна мапа, чтоб не плодить
+  // switch'ей в каждом хендлере.
+  const keysForTarget = (t: DragTarget) => {
+    if (t === "title") return { ox: "titleOffsetX" as const, oy: "titleOffsetY" as const, sc: "titleScale" as const };
+    if (t === "body") return { ox: "bodyOffsetX" as const, oy: "bodyOffsetY" as const, sc: "bodyScale" as const };
+    return { ox: "subtitleOffsetX" as const, oy: "subtitleOffsetY" as const, sc: "subtitleScale" as const };
+  };
 
 
   const formatInfo = FORMAT_OPTIONS.find(f => f.id === slideFormat) || FORMAT_OPTIONS[0];
@@ -223,32 +240,44 @@ const SlideCarousel = ({
     const [a, b] = [e.touches[0], e.touches[1]];
     return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
   };
-  const setDragForTarget = (target: "title" | "body", val: { x: number; y: number } | null) => {
-    if (target === "title") setTitleDragOffset(val); else setBodyDragOffset(val);
+  const setDragForTarget = (target: DragTarget, val: { x: number; y: number } | null) => {
+    if (target === "title") setTitleDragOffset(val);
+    else if (target === "body") setBodyDragOffset(val);
+    else setSubtitleDragOffset(val);
   };
-  const setPinchForTarget = (target: "title" | "body", val: number | null) => {
-    if (target === "title") setTitlePinchScale(val); else setBodyPinchScale(val);
+  const setPinchForTarget = (target: DragTarget, val: number | null) => {
+    if (target === "title") setTitlePinchScale(val);
+    else if (target === "body") setBodyPinchScale(val);
+    else setSubtitlePinchScale(val);
+  };
+  const getDragForTarget = (target: DragTarget) => {
+    if (target === "title") return titleDragOffset;
+    if (target === "body") return bodyDragOffset;
+    return subtitleDragOffset;
+  };
+  const getPinchForTarget = (target: DragTarget) => {
+    if (target === "title") return titlePinchScale;
+    if (target === "body") return bodyPinchScale;
+    return subtitlePinchScale;
   };
 
   // Text touch handlers — single-finger drag + pinch-to-scale
-  const handleTextTouchStart = (e: React.TouchEvent, slide: Slide, target: "title" | "body") => {
+  const handleTextTouchStart = (e: React.TouchEvent, slide: Slide, target: DragTarget) => {
     if (editorOpen) return;
     textDragTarget.current = target;
     textDragMovedRef.current = false;
     setDragSlideId(slide.id);
-    const scaleKey = target === "title" ? "titleScale" : "bodyScale";
+    const { ox, oy, sc } = keysForTarget(target);
     if (e.touches.length === 2) {
-      pinchStartRef.current = { dist: getTouchDist(e), scale: slide[scaleKey] ?? 1 };
+      pinchStartRef.current = { dist: getTouchDist(e), scale: slide[sc] ?? 1 };
       touchStartRef.current = null;
     } else if (e.touches.length === 1) {
       pinchStartRef.current = null;
-      const oxKey = target === "title" ? "titleOffsetX" : "bodyOffsetX";
-      const oyKey = target === "title" ? "titleOffsetY" : "bodyOffsetY";
       touchStartRef.current = {
         x: e.touches[0].clientX,
         y: e.touches[0].clientY,
-        offsetX: slide[oxKey] ?? 0,
-        offsetY: slide[oyKey] ?? 0,
+        offsetX: slide[ox] ?? 0,
+        offsetY: slide[oy] ?? 0,
       };
     }
   };
@@ -276,14 +305,12 @@ const SlideCarousel = ({
   const handleTextTouchEnd = (slideId: number) => {
     if (editorOpen) return;
     const t = textDragTarget.current;
-    const scaleKey = t === "title" ? "titleScale" : "bodyScale";
-    const oxKey = t === "title" ? "titleOffsetX" : "bodyOffsetX";
-    const oyKey = t === "title" ? "titleOffsetY" : "bodyOffsetY";
-    const currentPinch = t === "title" ? titlePinchScale : bodyPinchScale;
-    const currentDrag = t === "title" ? titleDragOffset : bodyDragOffset;
+    const { ox, oy, sc } = keysForTarget(t);
+    const currentPinch = getPinchForTarget(t);
+    const currentDrag = getDragForTarget(t);
     const updates: Partial<Slide> = {};
-    if (currentPinch !== null) { updates[scaleKey] = currentPinch; setPinchForTarget(t, null); }
-    if (currentDrag !== null) { updates[oxKey] = currentDrag.x; updates[oyKey] = currentDrag.y; setDragForTarget(t, null); }
+    if (currentPinch !== null) { updates[sc] = currentPinch; setPinchForTarget(t, null); }
+    if (currentDrag !== null) { updates[ox] = currentDrag.x; updates[oy] = currentDrag.y; setDragForTarget(t, null); }
     if (Object.keys(updates).length > 0) onUpdateSlide(slideId, updates);
     pinchStartRef.current = null;
     touchStartRef.current = null;
@@ -291,14 +318,13 @@ const SlideCarousel = ({
   };
 
   // Text mouse drag
-  const handleTextMouseDown = (e: React.MouseEvent, slide: Slide, target: "title" | "body") => {
+  const handleTextMouseDown = (e: React.MouseEvent, slide: Slide, target: DragTarget) => {
     if (editorOpen) return;
     e.preventDefault();
     textDragMovedRef.current = false;
     setDragSlideId(slide.id);
-    const oxKey = target === "title" ? "titleOffsetX" : "bodyOffsetX";
-    const oyKey = target === "title" ? "titleOffsetY" : "bodyOffsetY";
-    mouseDragRef.current = { x: e.clientX, y: e.clientY, offsetX: slide[oxKey] ?? 0, offsetY: slide[oyKey] ?? 0, slideId: slide.id, target };
+    const { ox, oy } = keysForTarget(target);
+    mouseDragRef.current = { x: e.clientX, y: e.clientY, offsetX: slide[ox] ?? 0, offsetY: slide[oy] ?? 0, slideId: slide.id, target };
   };
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
@@ -311,11 +337,10 @@ const SlideCarousel = ({
     const onMouseUp = () => {
       if (!mouseDragRef.current) return;
       const t = mouseDragRef.current.target;
-      const currentDrag = t === "title" ? titleDragOffset : bodyDragOffset;
+      const currentDrag = getDragForTarget(t);
       if (currentDrag !== null) {
-        const oxKey = t === "title" ? "titleOffsetX" : "bodyOffsetX";
-        const oyKey = t === "title" ? "titleOffsetY" : "bodyOffsetY";
-        onUpdateSlide(mouseDragRef.current.slideId, { [oxKey]: currentDrag.x, [oyKey]: currentDrag.y });
+        const { ox, oy } = keysForTarget(t);
+        onUpdateSlide(mouseDragRef.current.slideId, { [ox]: currentDrag.x, [oy]: currentDrag.y });
         setDragForTarget(t, null);
       }
       mouseDragRef.current = null;
@@ -324,7 +349,7 @@ const SlideCarousel = ({
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
     return () => { window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', onMouseUp); };
-  }, [titleDragOffset, bodyDragOffset, onUpdateSlide]);
+  }, [titleDragOffset, bodyDragOffset, subtitleDragOffset, onUpdateSlide]);
 
 
 
@@ -459,6 +484,11 @@ const SlideCarousel = ({
                       offsetY: bodyDragOffset?.y ?? (slide.bodyOffsetY ?? 0),
                       scale: bodyPinchScale ?? (slide.bodyScale ?? 1),
                     } : undefined}
+                    subtitleOverrides={slide.id === dragSlideId && (subtitleDragOffset !== null || subtitlePinchScale !== null) ? {
+                      offsetX: subtitleDragOffset?.x ?? (slide.subtitleOffsetX ?? 0),
+                      offsetY: subtitleDragOffset?.y ?? (slide.subtitleOffsetY ?? 0),
+                      scale: subtitlePinchScale ?? (slide.subtitleScale ?? 1),
+                    } : undefined}
                     onTitleTouchStart={(e) => handleTextTouchStart(e, slide, "title")}
                     onTitleTouchMove={(e) => handleTextTouchMove(e)}
                     onTitleTouchEnd={() => handleTextTouchEnd(slide.id)}
@@ -469,6 +499,11 @@ const SlideCarousel = ({
                     onBodyTouchEnd={() => handleTextTouchEnd(slide.id)}
                     onBodyMouseDown={(e) => handleTextMouseDown(e, slide, "body")}
                     onBodyClick={isActive ? () => handleTextClick("body") : undefined}
+                    onSubtitleTouchStart={(e) => handleTextTouchStart(e, slide, "subtitle")}
+                    onSubtitleTouchMove={(e) => handleTextTouchMove(e)}
+                    onSubtitleTouchEnd={() => handleTextTouchEnd(slide.id)}
+                    onSubtitleMouseDown={(e) => handleTextMouseDown(e, slide, "subtitle")}
+                    onSubtitleClick={isActive ? () => handleTextClick("body") : undefined}
                     onSlidePatch={isActive ? (patch) => onUpdateSlide(slide.id, patch) : undefined}
                     onUpdateSticker={isActive ? onUpdateSticker : undefined}
                     onDeleteSticker={isActive ? onDeleteSticker : undefined}
